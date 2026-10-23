@@ -496,7 +496,7 @@ input[type="date"].fp { width: auto; min-width: 160px; font-family: var(--font-m
 
 <div class="app" id="app">
   <header class="masthead">
-    <div class="mh-top"><span class="label" id="since">For two</span><span class="label" id="pct"></span></div>
+    <div class="mh-top"><span class="label" id="since"></span><span class="label" id="pct"></span></div>
     <h1><em>Winter</em> Bucket List</h1>
     <div class="gauge" aria-hidden="true"><i class="g-done" id="g-done"></i><i class="g-plan" id="g-plan"></i><i class="g-todo" id="g-todo"></i></div>
     <div class="legend" id="legend"></div>
@@ -1221,7 +1221,7 @@ input[type="date"].fp { width: auto; min-width: 160px; font-family: var(--font-m
     $("#legend").innerHTML = loading ? "&nbsp;" : `<span><i style="background:var(--done)"></i><b>${d}</b> done</span><span><i style="background:var(--gold)"></i><b>${p}</b> planned</span><span><i style="background:var(--line-2)"></i><b>${t}</b> to go</span>`;
     $("#pct").textContent = c.total ? `${Math.round((d / c.total) * 100)}% complete` : "";
     const first = c.items.reduce((m, x) => (x.createdAt && x.createdAt < m ? x.createdAt : m), Infinity);
-    $("#since").textContent = isFinite(first) ? `For two · Since ${new Date(first).toLocaleDateString(undefined, { month: "short", year: "numeric" })}` : "For two";
+    $("#since").textContent = isFinite(first) ? `Since ${new Date(first).toLocaleDateString(undefined, { month: "short", year: "numeric" })}` : "";
 
     // notice
     let n = "";
