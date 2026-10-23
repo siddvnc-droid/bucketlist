@@ -76,7 +76,15 @@
   const myEmail = () => (S.user.email || "").toLowerCase();
   const myPhone = () => S.user.phoneNumber || "";
   const isMember = (m) => (myEmail() && (m.emails || []).includes(myEmail())) || (myPhone() && (m.phones || []).includes(myPhone()));
-  function normalizePhone(s) { const t = String(s).replace(/[^\d+]/g, ""); return /^\+\d{8,15}$/.test(t) ? t : null; }
+  function normalizePhone(s) {
+    let t = String(s).trim().replace(/[^\d+]/g, "");
+    if (t.startsWith("00")) t = "+" + t.slice(2);
+    // A number typed without a country code is taken as a US number.
+    if (/^\d{10}$/.test(t)) t = "+1" + t;
+    else if (/^1\d{10}$/.test(t)) t = "+" + t;
+    return /^\+\d{8,15}$/.test(t) ? t : null;
+  }
+  const PHONE_HELP = "Enter your full number, like 555 123 4567. Outside the US, start with + and your country code.";
   function colorFor(id) { let h = 0; for (const ch of String(id)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return ["#3B5BA9", "#7A4FB5", "#B35A2E", "#1F7A58", "#A8436E", "#5E7A1E", "#1A7C95", "#5F6873"][h % 8]; }
   function labelFor(p) { return p.name || p.email || (p.phone ? `Phone ending ${p.phone.slice(-4)}` : ""); }
   function initialsAvatar(text, color) {
@@ -85,20 +93,32 @@
     return "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect width="40" height="40" rx="20" fill="${color}"/><text x="20" y="25.5" font-family="Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#fff" text-anchor="middle">${esc(ch)}</text></svg>`);
   }
   function avatarFor(uid) { const p = S.people[uid] || {}; return p.photo || initialsAvatar(p.name || (p.phone ? p.phone.slice(-2) : p.email), colorFor(uid)); }
-  function friendly(e) {
+  function friendly(e, byPhone) {
     const c = (e && e.code) || "";
+    if (e) console.warn("Sign-in error", e);
+    const noTexts = "Sign-in by text isn't set up for this list yet. Use Continue with Google for now, or let the person who sent you the link know.";
+    if (byPhone && (c === "auth/operation-not-allowed" || c === "auth/billing-not-enabled")) return noTexts;
+    const robot = "Couldn't confirm you're not a robot. Reload the page and try again. If it keeps happening, open the link in Safari or Chrome.";
     return ({
-      "auth/invalid-phone-number": "That phone number doesn't look right. Include your country code, like +15551234567.",
+      "auth/invalid-phone-number": "That phone number doesn't look right. " + PHONE_HELP,
       "auth/missing-phone-number": "Enter your phone number first.",
       "auth/invalid-verification-code": "That code isn't right. Check the text and try again.",
       "auth/code-expired": "That code has expired. Ask for a new one.",
+      "auth/session-expired": "That code has expired. Ask for a new one.",
+      "auth/invalid-verification-id": "That code has expired. Ask for a new one.",
+      "auth/missing-verification-code": "Enter the 6-digit code from the text.",
+      "auth/quota-exceeded": "Too many codes have been sent today. Try again tomorrow, or use Continue with Google.",
+      "auth/captcha-check-failed": robot,
+      "auth/invalid-app-credential": robot,
+      "auth/missing-app-credential": robot,
+      "auth/error-code:-39": "Couldn't send a text to that number right now. Try again later, or use Continue with Google.",
       "auth/too-many-requests": "Too many tries. Wait a few minutes and try again.",
       "auth/operation-not-allowed": "This sign-in method isn't turned on for the project yet.",
       "auth/billing-not-enabled": "Phone sign-in needs billing turned on in Firebase. Use Google for now.",
       "auth/unauthorized-domain": "This web address isn't allowed to sign in yet. Add it under Authentication → Settings → Authorized domains.",
       "auth/popup-closed-by-user": "The sign-in window was closed before finishing.",
       "auth/network-request-failed": "Couldn't reach Google. Check your connection and try again.",
-    })[c] || "Sign-in didn't work. Try again.";
+    })[c] || `Sign-in didn't work (${c || "unknown error"}). Try again, or use Continue with Google.`;
   }
 
   /* ---------- storage the app uses ---------- */
@@ -197,8 +217,9 @@
     const st = document.createElement("style"); st.id = "fb-css";
     st.textContent = `
       #fb-gate { position: fixed; inset: 0; z-index: 80; background: var(--bg); display: grid; place-items: center; overflow: auto;
+        grid-template-columns: minmax(0, 420px); justify-content: center;
         padding: 24px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px)); }
-      .fb-card { width: min(420px, 100%); background: var(--surface); border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow-2); padding: 32px 28px 28px; display: flex; flex-direction: column; gap: 14px; }
+      .fb-card { width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow-2); padding: 32px 28px 28px; display: flex; flex-direction: column; gap: 14px; }
       .fb-card h2 { font-family: var(--font-display); font-weight: 400; font-size: clamp(32px, 8vw, 40px); line-height: 1; letter-spacing: -0.015em; margin: 2px 0 0; text-wrap: balance; }
       .fb-card p { margin: 0; color: var(--muted); }
       .fb-card b { color: var(--ink); font-weight: 500; overflow-wrap: anywhere; }
@@ -262,14 +283,14 @@
       <button type="button" class="btn primary fb-wide" id="fb-google">${G_ICON} Continue with Google</button>
       <div class="fb-or">or use your phone</div>
       <form class="fb-row" id="fb-phone-form" autocomplete="on">
-        <input class="fb-input" id="fb-phone" type="tel" autocomplete="tel" placeholder="+1 555 123 4567" aria-label="Phone number with country code">
+        <input class="fb-input" id="fb-phone" type="tel" autocomplete="tel" placeholder="555 123 4567" aria-label="Phone number">
         <button type="submit" class="btn" id="fb-send">Text me a code</button>
       </form>
       <form class="fb-row" id="fb-code-form" hidden>
         <input class="fb-input" id="fb-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code" aria-label="Code from the text message">
         <button type="submit" class="btn primary">Sign in</button>
       </form>
-      <p class="fb-hint" id="fb-msg" role="status">Include your country code, like +1 for the US.</p>
+      <p class="fb-hint" id="fb-msg" role="status">Outside the US, start with + and your country code.</p>
     </div>`;
     const { F } = S;
     $("fb-google").onclick = async () => {
@@ -285,7 +306,7 @@
     $("fb-phone-form").onsubmit = async (ev) => {
       ev.preventDefault();
       const phone = normalizePhone($("fb-phone").value);
-      if (!phone) { setMsg("Enter your number with the country code, like +15551234567.", true); return; }
+      if (!phone) { setMsg(PHONE_HELP, true); return; }
       const btn = $("fb-send"); btn.disabled = true; setMsg("Sending a code…");
       try {
         if (!verifier) verifier = new F.RecaptchaVerifier(S.auth, "fb-send", { size: "invisible" });
@@ -293,7 +314,7 @@
         $("fb-code-form").hidden = false; $("fb-code").focus();
         setMsg(`We texted a code to ${phone}.`);
       } catch (e) {
-        setMsg(friendly(e), true);
+        setMsg(friendly(e, true), true);
         try { verifier && verifier.clear(); } catch {}
         verifier = null;
       }
@@ -303,7 +324,7 @@
       ev.preventDefault();
       if (!confirmation) return;
       setMsg("Checking the code…");
-      try { await confirmation.confirm($("fb-code").value.trim()); } catch (e) { setMsg(friendly(e), true); }
+      try { await confirmation.confirm($("fb-code").value.trim()); } catch (e) { setMsg(friendly(e, true), true); }
     };
   }
 
@@ -350,7 +371,7 @@
       <div class="sheet-body">
         <ul class="fb-members" id="fb-members"></ul>
         <form class="step-add" id="fb-add" autocomplete="off">
-          <input id="fb-add-input" maxlength="120" placeholder="friend@gmail.com or +15551234567" aria-label="Email or phone number to add">
+          <input id="fb-add-input" maxlength="120" placeholder="friend@gmail.com or 555 123 4567" aria-label="Email or phone number to add">
           <button type="submit" class="btn sm ghost">Add</button>
         </form>
         <p class="fb-hint" id="fb-add-msg" role="status"></p>
@@ -388,7 +409,7 @@
         field = "emails";
       } else {
         value = normalizePhone(raw);
-        if (!value) { msg("Enter the phone number with its country code, like +15551234567.", true); return; }
+        if (!value) { msg("That phone number doesn't look right. Enter the full number, like 555 123 4567. Outside the US, start with + and the country code.", true); return; }
         field = "phones";
       }
       try {
