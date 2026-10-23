@@ -37,6 +37,7 @@
   --toast-bg: #121614;
   --toast-ink: #F2F4F1;
   --toast-act: #E2C27A;
+  --snow: rgba(112, 142, 184, 0.72);
   --k1: #2E56B8; --k2: #6D45B0; --k3: #B2552B; --k4: #1E7B5A; --k5: #AE3D69; --k6: #667F1E; --k7: #17809A; --k8: #5F6873;
   --shadow-1: 0 1px 2px rgba(15, 19, 17, .05), 0 1px 1px rgba(15, 19, 17, .03);
   --shadow-2: 0 14px 34px -10px rgba(15, 19, 17, .22), 0 4px 10px -4px rgba(15, 19, 17, .08);
@@ -54,7 +55,7 @@
     --done: #5CC89B; --on-done: #05140D; --danger: #FF8A80; --danger-soft: #331715; --focus: #8EAEFF;
     --doc: #101A2B; --doc-ink: #EEE8D9; --doc-ink-2: #C9C3B3; --doc-muted: #8D93A1; --doc-line: #243149;
     --guill: rgba(221, 187, 114, 0.085); --guill-2: rgba(221, 187, 114, 0.12); --stamp-blend: normal; --scrim: rgba(0, 0, 0, .6);
-    --toast-bg: #ECEEF0; --toast-ink: #111418; --toast-act: #8F6E28;
+    --toast-bg: #ECEEF0; --toast-ink: #111418; --toast-act: #8F6E28; --snow: rgba(255, 255, 255, 0.9);
     --k1: #86A6F5; --k2: #B99CF0; --k3: #F09A6E; --k4: #62CFA2; --k5: #F08DB4; --k6: #B9D162; --k7: #62CBE3; --k8: #9AA3AE;
     --shadow-1: 0 1px 2px rgba(0, 0, 0, .5); --shadow-2: 0 16px 40px -10px rgba(0, 0, 0, .7); --shadow-3: 0 30px 80px -20px rgba(0, 0, 0, .8);
     --doc-shadow: 0 24px 48px -28px rgba(0, 0, 0, .8);
@@ -67,7 +68,7 @@
   --done: #5CC89B; --on-done: #05140D; --danger: #FF8A80; --danger-soft: #331715; --focus: #8EAEFF;
   --doc: #101A2B; --doc-ink: #EEE8D9; --doc-ink-2: #C9C3B3; --doc-muted: #8D93A1; --doc-line: #243149;
   --guill: rgba(221, 187, 114, 0.085); --guill-2: rgba(221, 187, 114, 0.12); --stamp-blend: normal; --scrim: rgba(0, 0, 0, .6);
-  --toast-bg: #ECEEF0; --toast-ink: #111418; --toast-act: #8F6E28;
+  --toast-bg: #ECEEF0; --toast-ink: #111418; --toast-act: #8F6E28; --snow: rgba(255, 255, 255, 0.9);
   --k1: #86A6F5; --k2: #B99CF0; --k3: #F09A6E; --k4: #62CFA2; --k5: #F08DB4; --k6: #B9D162; --k7: #62CBE3; --k8: #9AA3AE;
   --shadow-1: 0 1px 2px rgba(0, 0, 0, .5); --shadow-2: 0 16px 40px -10px rgba(0, 0, 0, .7); --shadow-3: 0 30px 80px -20px rgba(0, 0, 0, .8);
   --doc-shadow: 0 24px 48px -28px rgba(0, 0, 0, .8);
@@ -460,6 +461,9 @@ input[type="date"].fp { width: auto; min-width: 160px; font-family: var(--font-m
 .toast button { border: 0; background: none; color: var(--toast-act); font-weight: 600; font-size: 13.5px; padding: 4px 8px; border-radius: 8px; }
 .toast button:hover { background: color-mix(in srgb, var(--toast-ink) 10%, transparent); }
 
+/* snowfall when something new is added */
+canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 65; }
+
 @media (max-width: 600px) {
   body { padding-block: 28px 96px; }
   .app { gap: 24px; }
@@ -674,7 +678,7 @@ input[type="date"].fp { width: auto; min-width: 160px; font-family: var(--font-m
   function readLocal(coll) { try { const v = JSON.parse(localStorage.getItem(LKEYS[coll])); return Array.isArray(v) ? v : null; } catch { return null; } }
   function writeLocal(coll, list, quiet) {
     try { localStorage.setItem(LKEYS[coll], JSON.stringify(list)); } catch {}
-    if (coll === "activities") state.items = list; else state.cats = list;
+    if (coll === "activities") { state.items = list; checkNew(list, false); } else state.cats = list;
     if (!quiet) render();
   }
   // Same rule as the shared store: nested objects merge, everything else replaces.
@@ -801,6 +805,77 @@ input[type="date"].fp { width: auto; min-width: 160px; font-family: var(--font-m
   function redrawAll() { $$("canvas.guill").forEach(drawGuilloche); }
   try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => requestAnimationFrame(redrawAll)); } catch {}
   new MutationObserver(() => requestAnimationFrame(redrawAll)).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+  /* ---------- snowfall: plays whenever either of you adds an activity ---------- */
+  const seenIds = new Set();
+  let seenReady = false;
+  // Snow only for ids never seen before, so loading the page or undoing a delete stays quiet.
+  function checkNew(list, fromCache) {
+    let added = 0;
+    for (const x of list) if (x && x.id && !seenIds.has(x.id)) { seenIds.add(x.id); added++; }
+    if (!seenReady) { if (!fromCache) seenReady = true; return; }
+    if (added) letItSnow(Math.min(110 + added * 25, 240));
+  }
+  const snow = { cv: null, ctx: null, flakes: [], raf: 0, last: 0, end: 0, color: "", dpr: 1 };
+  function sizeSnow() {
+    if (!snow.cv) return;
+    snow.dpr = Math.min(2, window.devicePixelRatio || 1);
+    snow.cv.width = Math.round(innerWidth * snow.dpr); snow.cv.height = Math.round(innerHeight * snow.dpr);
+  }
+  function letItSnow(amount) {
+    try { if (matchMedia("(prefers-reduced-motion: reduce)").matches) return; } catch {}
+    if (!snow.cv) {
+      snow.cv = document.createElement("canvas"); snow.cv.className = "snow"; snow.cv.setAttribute("aria-hidden", "true");
+      document.body.appendChild(snow.cv); snow.ctx = snow.cv.getContext("2d");
+      addEventListener("resize", sizeSnow);
+    }
+    if (!snow.ctx) return;
+    sizeSnow();
+    snow.color = getComputedStyle(document.documentElement).getPropertyValue("--snow").trim() || "rgba(255,255,255,.9)";
+    const now = performance.now(), W = innerWidth, H = innerHeight;
+    const n = Math.max(0, Math.min(amount, 320 - snow.flakes.length));
+    for (let i = 0; i < n; i++) {
+      const r = 1.1 + Math.random() ** 2 * 3.4;
+      snow.flakes.push({
+        x: Math.random() * W, y: -30 + Math.random() * H * 0.6, r,
+        vy: 55 + r * 22 + Math.random() * 40, sway: 8 + Math.random() * 26, freq: 0.5 + Math.random() * 1.1, phase: Math.random() * Math.PI * 2,
+        crystal: r > 2.6 && Math.random() < 0.55, rot: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 1.4,
+        born: now + Math.random() * 700,
+      });
+    }
+    snow.end = now + 4200;
+    if (!snow.raf) { snow.last = now; snow.raf = requestAnimationFrame(stepSnow); }
+  }
+  function stepSnow(t) {
+    const ctx = snow.ctx, dpr = snow.dpr, dt = Math.min(0.05, (t - snow.last) / 1000);
+    snow.last = t;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    ctx.fillStyle = ctx.strokeStyle = snow.color;
+    ctx.lineCap = "round";
+    const fadeAll = Math.max(0, Math.min(1, (snow.end - t) / 1400));
+    snow.flakes = snow.flakes.filter((f) => f.y < innerHeight + 12 && t < snow.end);
+    for (const f of snow.flakes) {
+      if (t < f.born) continue;
+      f.y += f.vy * dt; f.rot += f.vr * dt;
+      const x = f.x + Math.sin(f.phase + (t / 1000) * f.freq) * f.sway;
+      ctx.globalAlpha = Math.min(1, (t - f.born) / 400) * fadeAll;
+      if (f.crystal) {
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let k = 0; k < 3; k++) {
+          const a = f.rot + (k * Math.PI) / 3, dx = Math.cos(a) * f.r * 1.9, dy = Math.sin(a) * f.r * 1.9;
+          ctx.moveTo(x - dx, f.y - dy); ctx.lineTo(x + dx, f.y + dy);
+        }
+        ctx.stroke();
+      } else {
+        ctx.beginPath(); ctx.arc(x, f.y, f.r, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+    if (snow.flakes.length) snow.raf = requestAnimationFrame(stepSnow);
+    else { snow.raf = 0; ctx.clearRect(0, 0, innerWidth, innerHeight); }
+  }
 
   /* ---------- small builders ---------- */
   function catLabel(c, fallback) {
@@ -1244,7 +1319,7 @@ input[type="date"].fp { width: auto; min-width: 160px; font-family: var(--font-m
     gd.hidden = !d; gp.hidden = !p; gt.hidden = !!c.total && !t;
     $("#legend").innerHTML = loading ? "&nbsp;" : `<span><i style="background:var(--done)"></i><b>${d}</b> done</span><span><i style="background:var(--gold)"></i><b>${p}</b> planned</span><span><i style="background:var(--line-2)"></i><b>${t}</b> to go</span>`;
     $("#pct").textContent = c.total ? `${Math.round((d / c.total) * 100)}% complete` : "";
-    const first = c.items.reduce((m, x) => (x.createdAt && x.createdAt < m ? x.createdAt : m), Infinity);
+    const first = c.items.reduce((m, x) => (x.createdAt > 1e12 && x.createdAt < m ? x.createdAt : m), Infinity);
     $("#since").textContent = isFinite(first) ? `Since ${new Date(first).toLocaleDateString(undefined, { month: "short", year: "numeric" })}` : "";
 
     // notice
@@ -1538,7 +1613,7 @@ input[type="date"].fp { width: auto; min-width: 160px; font-family: var(--font-m
     render();
   }
   function subscribe(coll, onData, retried) {
-    dbNs.collection(coll).onSnapshot((snap) => onData(snap.docs.map((d) => ({ id: d.id, ...d.data() }))), (err) => {
+    dbNs.collection(coll).onSnapshot((snap) => onData(snap.docs.map((d) => ({ id: d.id, ...d.data() })), snap.metadata || {}), (err) => {
       if (err && err.code === "unavailable" && !retried) { setTimeout(() => subscribe(coll, onData, true), 2000); return; }
       if (err && err.code === "revoked") { state.canWrite = false; render(); return; }
       toast("Lost the connection to your shared list. Reload the page to reconnect.");
@@ -1556,7 +1631,7 @@ input[type="date"].fp { width: auto; min-width: 160px; font-family: var(--font-m
     }
     dbNs = db;
     subscribe("categories", (list) => { state.cats = list; state.catsLoaded = true; render(); });
-    subscribe("activities", (list) => { state.items = list; if (state.mode === "loading") state.mode = "db"; render(); });
+    subscribe("activities", (list, meta) => { state.items = list; if (state.mode === "loading") state.mode = "db"; render(); checkNew(list, !!meta.fromCache); });
   }
   boot();
 })();
