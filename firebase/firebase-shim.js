@@ -25,6 +25,7 @@
   const LISTS = {
     "229b0612c15bde32": { word: "Winter", effect: "snow" },
     "85a6421012a78716": { word: "2027", effect: "confetti" },
+    "6d72527ff61fe8d9": { word: "2027", effect: "confetti" }, // the first 2027 link, before it was replaced
   };
 
   const match = location.hash.slice(1).match(/^[A-Za-z0-9_-]{20,64}$/);

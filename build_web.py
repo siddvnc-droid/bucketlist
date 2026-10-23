@@ -5,7 +5,7 @@ The app is the same file published on claude.ai. This wraps it in a full
 HTML page and loads firebase/firebase-shim.js first, which connects it to
 Cloud Firestore. Run this after changing bucketlist.html, then `firebase deploy`.
 """
-import shutil
+import hashlib
 from pathlib import Path
 
 ROOT = Path(__file__).parent
@@ -24,7 +24,7 @@ HEAD = """<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
 <style>body { margin: 0; }</style>
-<script src="firebase-shim.js"></script>
+<script src="firebase-shim.js?v=VERSION"></script>
 </head>
 <body>
 """
@@ -36,9 +36,12 @@ def main():
         if src.count(old) != 1:
             raise SystemExit(f"Expected exactly one {old!r} in bucketlist.html")
         src = src.replace(old, new)
+    shim = (ROOT / "firebase" / "firebase-shim.js").read_bytes()
+    # A new file name for every version, so a page never runs with an older saved copy of the shim.
+    version = hashlib.sha256(shim).hexdigest()[:10]
     WEB.mkdir(exist_ok=True)
-    (WEB / "index.html").write_text(HEAD + src + "\n</body>\n</html>\n", encoding="utf-8")
-    shutil.copy(ROOT / "firebase" / "firebase-shim.js", WEB / "firebase-shim.js")
+    (WEB / "index.html").write_text(HEAD.replace("VERSION", version) + src + "\n</body>\n</html>\n", encoding="utf-8")
+    (WEB / "firebase-shim.js").write_bytes(shim)
     print("wrote web/index.html and web/firebase-shim.js")
 
 
