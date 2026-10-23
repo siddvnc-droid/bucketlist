@@ -276,15 +276,20 @@ h1 em { font-style: italic; color: var(--ink-2); }
 .idea:hover { background: var(--surface); border-color: var(--line-2); color: var(--ink); }
 
 /* ---------- composer ---------- */
+/* two rows: what to add on top, its category and the Add button underneath */
 .composer {
-  display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
-  padding: 7px 7px 7px 16px; box-shadow: var(--shadow-1); transition: border-color .15s, box-shadow .2s;
+  display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+  box-shadow: var(--shadow-1); transition: border-color .15s, box-shadow .2s;
 }
 .composer:focus-within { border-color: var(--line-2); box-shadow: 0 0 0 4px color-mix(in srgb, var(--focus) 12%, transparent), var(--shadow-1); }
-.composer > svg { width: 18px; height: 18px; color: var(--muted); }
+.composer-top { display: flex; align-items: center; gap: 10px; padding: 7px 14px 5px 16px; }
+.composer-top > svg { width: 18px; height: 18px; color: var(--muted); }
 .composer input { flex: 1 1 auto; min-width: 0; height: 40px; border: 0; outline: none; background: transparent; font-size: 16px; }
 .composer input::placeholder { color: var(--faint); }
-.composer .picker { flex: 0 1 auto; max-width: 180px; }
+.composer-bottom { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 10px; border-top: 1px solid var(--line); }
+.composer .picker { flex: 0 1 auto; min-width: 0; max-width: 280px; }
+.composer-hint { flex: 1 1 auto; min-width: 0; font-size: 12.5px; color: var(--faint); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.composer-bottom .btn { flex: none; }
 .composer:focus-within .kbd { display: none; }
 @media (hover: none) { .kbd { display: none; } }
 .paste { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; box-shadow: var(--shadow-1); display: flex; flex-direction: column; gap: 10px; margin-top: -16px; }
@@ -524,11 +529,11 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   .stub { padding: 20px 18px 20px; }
   .hero-stamp { right: 14px; top: 44px; }
   .stamp.big { width: 112px; height: 112px; }
-  .composer { flex-wrap: wrap; row-gap: 6px; padding: 6px 7px 7px 12px; }
-  .composer > svg, .composer .kbd { display: none; }
-  .composer input { flex: 1 1 100%; }
+  .composer-top { padding: 5px 12px 3px 14px; }
+  .composer-top > svg, .composer .kbd, .composer-hint { display: none; }
+  .composer-bottom { padding: 7px; }
   .composer .picker { flex: 1 1 auto; max-width: none; }
-  .composer .btn { flex: none; height: 34px; padding: 0 16px; }
+  .composer-bottom .btn { height: 34px; padding: 0 16px; }
   .toolbar { flex-direction: column; align-items: stretch; }
   .toolbar .seg { width: 100%; }
   .toolbar .seg button { flex: 1 1 0; padding: 0 6px; }
@@ -576,11 +581,16 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
 
   <section aria-label="Add an activity" id="add-area" hidden>
     <form class="composer" id="composer" autocomplete="off">
-      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>
-      <input id="new-title" maxlength="200" placeholder="Add something to do together…" aria-label="New activity">
-      <span class="kbd" aria-hidden="true" title="Press N to add">N</span>
-      <button type="button" class="picker" id="composer-cat" data-act="pop" data-kind="composer-cat" data-pop-anchor="composer-cat" aria-haspopup="listbox" aria-expanded="false" aria-label="Category for new activity"></button>
-      <button type="submit" class="btn primary sm">Add</button>
+      <div class="composer-top">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>
+        <input id="new-title" maxlength="200" placeholder="Add something to do together…" aria-label="New activity">
+        <span class="kbd" aria-hidden="true" title="Press N to add">N</span>
+      </div>
+      <div class="composer-bottom">
+        <button type="button" class="picker" id="composer-cat" data-act="pop" data-kind="composer-cat" data-pop-anchor="composer-cat" aria-haspopup="listbox" aria-expanded="false" aria-label="Category for new activity"></button>
+        <span class="composer-hint">Press Enter to add · Paste a list to add several</span>
+        <button type="submit" class="btn primary sm">Add</button>
+      </div>
     </form>
   </section>
   <div id="paste" class="paste" hidden></div>
