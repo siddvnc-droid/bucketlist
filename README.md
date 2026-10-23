@@ -32,3 +32,13 @@ Each activity is one document in the `activities` collection:
 | `checklist` | Planning steps, keyed by step id: `{ text, done, order, who, doneBy }`. A removed step is set to `null`. |
 
 Each category is one document in the `categories` collection: `{ name, color, order }`, where `color` is 1–8.
+
+## Copies for other lists
+
+Each published copy is a separate page with its own link, its own list and its own sharing. Copies are built from `bucketlist.html` by `make_copies.py`, which only changes the page title and heading:
+
+| Copy | File |
+| --- | --- |
+| 2027 Bucket List | [`copies/2027-bucket-list.html`](copies/2027-bucket-list.html) |
+
+To add a copy, add a line to `COPIES` in `make_copies.py`. After changing `bucketlist.html`, run `python3 make_copies.py` and republish each copy so they all stay on the same version of the app.
