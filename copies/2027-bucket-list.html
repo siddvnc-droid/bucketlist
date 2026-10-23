@@ -38,6 +38,7 @@
   --toast-ink: #F2F4F1;
   --toast-act: #E2C27A;
   --snow: rgba(112, 142, 184, 0.72);
+  --cal-bg: #FFFFFF; --cal-ink: #111111; --cal-red: #FF3B30; --swipe-red: #FF3B30;
   --k1: #2E56B8; --k2: #6D45B0; --k3: #B2552B; --k4: #1E7B5A; --k5: #AE3D69; --k6: #667F1E; --k7: #17809A; --k8: #5F6873;
   --shadow-1: 0 1px 2px rgba(15, 19, 17, .05), 0 1px 1px rgba(15, 19, 17, .03);
   --shadow-2: 0 14px 34px -10px rgba(15, 19, 17, .22), 0 4px 10px -4px rgba(15, 19, 17, .08);
@@ -55,7 +56,7 @@
     --done: #5CC89B; --on-done: #05140D; --danger: #FF8A80; --danger-soft: #331715; --focus: #8EAEFF;
     --doc: #101A2B; --doc-ink: #EEE8D9; --doc-ink-2: #C9C3B3; --doc-muted: #8D93A1; --doc-line: #243149;
     --guill: rgba(221, 187, 114, 0.085); --guill-2: rgba(221, 187, 114, 0.12); --stamp-blend: normal; --scrim: rgba(0, 0, 0, .6);
-    --toast-bg: #ECEEF0; --toast-ink: #111418; --toast-act: #8F6E28; --snow: rgba(255, 255, 255, 0.9);
+    --toast-bg: #ECEEF0; --toast-ink: #111418; --toast-act: #8F6E28; --snow: rgba(255, 255, 255, 0.9); --cal-bg: #1C1C1E; --cal-ink: #FFFFFF; --cal-red: #FF453A; --swipe-red: #FF453A;
     --k1: #86A6F5; --k2: #B99CF0; --k3: #F09A6E; --k4: #62CFA2; --k5: #F08DB4; --k6: #B9D162; --k7: #62CBE3; --k8: #9AA3AE;
     --shadow-1: 0 1px 2px rgba(0, 0, 0, .5); --shadow-2: 0 16px 40px -10px rgba(0, 0, 0, .7); --shadow-3: 0 30px 80px -20px rgba(0, 0, 0, .8);
     --doc-shadow: 0 24px 48px -28px rgba(0, 0, 0, .8);
@@ -68,7 +69,7 @@
   --done: #5CC89B; --on-done: #05140D; --danger: #FF8A80; --danger-soft: #331715; --focus: #8EAEFF;
   --doc: #101A2B; --doc-ink: #EEE8D9; --doc-ink-2: #C9C3B3; --doc-muted: #8D93A1; --doc-line: #243149;
   --guill: rgba(221, 187, 114, 0.085); --guill-2: rgba(221, 187, 114, 0.12); --stamp-blend: normal; --scrim: rgba(0, 0, 0, .6);
-  --toast-bg: #ECEEF0; --toast-ink: #111418; --toast-act: #8F6E28; --snow: rgba(255, 255, 255, 0.9);
+  --toast-bg: #ECEEF0; --toast-ink: #111418; --toast-act: #8F6E28; --snow: rgba(255, 255, 255, 0.9); --cal-bg: #1C1C1E; --cal-ink: #FFFFFF; --cal-red: #FF453A; --swipe-red: #FF453A;
   --k1: #86A6F5; --k2: #B99CF0; --k3: #F09A6E; --k4: #62CFA2; --k5: #F08DB4; --k6: #B9D162; --k7: #62CBE3; --k8: #9AA3AE;
   --shadow-1: 0 1px 2px rgba(0, 0, 0, .5); --shadow-2: 0 16px 40px -10px rgba(0, 0, 0, .7); --shadow-3: 0 30px 80px -20px rgba(0, 0, 0, .8);
   --doc-shadow: 0 24px 48px -28px rgba(0, 0, 0, .8);
@@ -195,13 +196,15 @@ h1 em { font-style: italic; color: var(--ink-2); }
 .doc-top .label b { color: var(--doc-ink); font-weight: 500; }
 .doc-grid { display: grid; grid-template-columns: 118px minmax(0, 1fr); gap: 26px; padding: 18px 26px 4px; align-items: start; }
 .doc-date {
-  border: 1px solid var(--doc-line); border-radius: 14px; text-align: center; padding: 16px 0 14px;
-  background: color-mix(in srgb, var(--doc) 55%, var(--surface)); display: flex; flex-direction: column; gap: 6px;
+  /* styled after Apple's Calendar icon: red weekday over a big date */
+  border-radius: 24px; text-align: center; padding: 12px 4px 13px; background: var(--cal-bg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 10px 26px -14px rgba(15, 25, 50, .45);
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
 }
-.dd-day { font-family: var(--font-display); font-size: 60px; line-height: .82; letter-spacing: -0.03em; }
-.dd-mon { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: .24em; padding-left: .24em; }
-.dd-dow { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .16em; color: var(--doc-muted); text-transform: uppercase; }
-.doc-date.tbd .dd-day { font-size: 34px; line-height: 1; color: var(--doc-muted); font-style: italic; }
+.dd-dow { font-family: var(--font-ui); font-size: 12px; font-weight: 600; color: var(--cal-red); letter-spacing: 0; white-space: nowrap; }
+.dd-day { font-family: var(--font-ui); font-weight: 400; font-size: 64px; line-height: 1; letter-spacing: -0.05em; color: var(--cal-ink); margin-left: -0.05em; font-variant-numeric: lining-nums; }
+.dd-mon { font-family: var(--font-ui); font-size: 11.5px; font-weight: 500; color: var(--muted); white-space: nowrap; }
+.doc-date.tbd .dd-day { color: var(--faint); }
 .doc-main { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
 .doc h2 {
   font-family: var(--font-display); font-weight: 400; font-size: clamp(32px, 6vw, 46px); line-height: 1; letter-spacing: -0.015em;
@@ -307,9 +310,28 @@ h1 em { font-style: italic; color: var(--ink-2); }
 
 /* ---------- list ---------- */
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow-1); }
+#list .card { overflow: hidden; }
 .rows { list-style: none; margin: 0; padding: 6px 0; }
-.row { position: relative; display: flex; align-items: flex-start; gap: 4px; padding: 0 10px 0 16px; }
-.row + .row::before { content: ""; position: absolute; top: 0; left: 60px; right: 18px; height: 1px; background: var(--line); transition: opacity .12s; }
+.row { position: relative; touch-action: pan-y; }
+.row-inner { position: relative; z-index: 1; display: flex; align-items: flex-start; gap: 4px; padding: 0 10px 0 16px; background: var(--surface); transition: transform .34s var(--ease); }
+.row + .row::before { content: ""; position: absolute; z-index: 2; pointer-events: none; top: 0; left: 60px; right: 18px; height: 1px; background: var(--line); transition: opacity .12s; }
+/* swipe left to delete, like Apple's lists */
+.swipe-actions { position: absolute; inset: 0; display: flex; justify-content: flex-end; background: var(--swipe-red); visibility: hidden; }
+.row.swiping .swipe-actions, .row.swiped .swipe-actions, .row.swipe-gone .swipe-actions { visibility: visible; }
+.swipe-del { width: max(88px, var(--reveal, 88px)); height: 100%; border: 0; background: none; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12.5px; font-weight: 600; transition: width .12s; }
+.swipe-del svg { width: 19px; height: 19px; }
+.row.swipe-full .swipe-del { align-items: flex-start; padding-left: 24px; }
+.row.swiped .row-inner { transform: translateX(-88px); }
+.row.swipe-gone .row-inner { transform: translateX(-100%) !important; transition: transform .24s ease-in; }
+.row.swipe-gone { overflow: hidden; animation: rowOut .3s cubic-bezier(.4, 0, .2, 1) .2s both; }
+.row-plan {
+  flex: none; align-self: center; display: inline-flex; align-items: center; gap: 5px; height: 32px; padding: 0 8px 0 11px; margin-left: 2px;
+  border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); font-size: 13px; font-weight: 500;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.row-plan svg { width: 14px; height: 14px; }
+.row-plan svg:first-child { color: var(--cal-red); }
+.row-plan:hover { background: var(--surface-2); border-color: var(--line-2); color: var(--ink); }
 .row:hover + .row::before, .row:hover::before { opacity: 0; }
 .cb { flex: none; width: 34px; height: 34px; margin-top: 8px; display: grid; place-items: center; border: 0; padding: 0; background: none; border-radius: 50%; color: var(--line-2); }
 .cb svg { width: 23px; height: 23px; overflow: visible; }
@@ -433,7 +455,28 @@ h1 em { font-style: italic; color: var(--ink-2); }
 .fp:hover:not([readonly]) { background: var(--surface-2); }
 .fp:focus { outline: none; background: var(--surface); border-color: var(--line-2); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 14%, transparent); }
 textarea.fp { resize: none; overflow: hidden; line-height: 1.5; }
-input[type="date"].fp { width: auto; min-width: 160px; font-family: var(--font-mono); font-size: 13px; letter-spacing: .02em; }
+.dp-trigger { display: inline-flex; align-items: center; gap: 8px; width: auto; text-align: left; cursor: pointer; font-weight: 500; margin-right: 0; }
+.dp-trigger svg { width: 15px; height: 15px; color: var(--cal-red); }
+.dp-trigger.is-empty { color: var(--faint); font-weight: 400; }
+.dp-trigger[aria-expanded="true"] { background: var(--surface-2); }
+.dp-trigger[disabled] { cursor: default; }
+/* month calendar styled after Apple Calendar */
+.dp-cal { margin-top: 10px; padding: 14px 12px 10px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: var(--shadow-1); max-width: 340px; animation: calIn .22s var(--ease); }
+@keyframes calIn { from { opacity: 0; transform: translateY(-4px); } }
+.cal-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 10px 8px; }
+.cal-title { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+.cal-title span { font-weight: 400; color: var(--muted); }
+.cal-nav { display: flex; align-items: center; gap: 2px; }
+.cal-nav button { border: 0; background: none; color: var(--cal-red); height: 32px; min-width: 32px; padding: 0 8px; border-radius: 9px; font-size: 14px; font-weight: 500; display: grid; place-items: center; }
+.cal-nav button:hover { background: color-mix(in srgb, var(--cal-red) 10%, transparent); }
+.cal-nav svg { width: 18px; height: 18px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 2px; }
+.cal-dow { text-align: center; font-size: 10.5px; font-weight: 600; letter-spacing: .02em; color: var(--faint); padding-bottom: 6px; }
+.cal-day { justify-self: center; width: 38px; height: 38px; border-radius: 50%; border: 0; padding: 0; background: none; font-size: 16px; font-variant-numeric: tabular-nums; color: var(--ink); display: grid; place-items: center; transition: background .12s, color .12s; }
+.cal-day:hover { background: var(--surface-3); }
+.cal-day.today { color: var(--cal-red); font-weight: 600; }
+.cal-day.sel { background: var(--cal-red); color: #fff; font-weight: 600; }
+.cal-day:disabled { opacity: .3; cursor: default; background: none; }
 .date-row { display: flex; align-items: center; gap: 6px 10px; flex-wrap: wrap; }
 .date-row .fp { margin-right: 0; }
 .qd { height: 28px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); font-size: 12.5px; color: var(--ink-2); }
@@ -471,8 +514,8 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   .app { gap: 24px; }
   .doc-top { padding: 18px 18px 0; }
   .doc-grid { grid-template-columns: 82px minmax(0, 1fr); gap: 16px; padding: 16px 18px 4px; }
-  .dd-day { font-size: 44px; } .doc-date { padding: 12px 0 10px; }
-  .doc-date.tbd .dd-day { font-size: 26px; }
+  .dd-day { font-size: 44px; } .doc-date { padding: 9px 2px 10px; border-radius: 18px; }
+  .dd-dow { font-size: 10px; } .dd-mon { font-size: 10px; }
   .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; }
   .doc-actions { padding: 16px 18px 0; }
   .doc-actions .btn { flex: 1 1 auto; }
@@ -489,7 +532,9 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   .toolbar .seg { width: 100%; }
   .toolbar .seg button { flex: 1 1 0; padding: 0 6px; }
   .toolbar .picker { align-self: flex-start; }
-  .row { padding: 0 6px 0 8px; }
+  .row-inner { padding: 0 6px 0 8px; }
+  .row-plan svg:last-child { display: none; }
+  .row-plan { padding: 0 10px; }
   .row + .row::before { left: 52px; right: 12px; }
   .row-meta .note { max-width: 100%; }
   .stamps { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 6px; }
@@ -572,6 +617,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     x: `<svg viewBox="0 0 16 16" ${S}><path d="M4 4l8 8M12 4l-8 8"/></svg>`,
     chev: `<svg viewBox="0 0 16 16" ${S}><path d="M4.5 6.5L8 10l3.5-3.5"/></svg>`,
     right: `<svg viewBox="0 0 16 16" ${S}><path d="M6.5 4L10.5 8l-4 4"/></svg>`,
+    left: `<svg viewBox="0 0 16 16" ${S}><path d="M9.5 4L5.5 8l4 4"/></svg>`,
     plus: `<svg viewBox="0 0 16 16" ${S}><path d="M8 3.5v9M3.5 8h9"/></svg>`,
     trash: `<svg viewBox="0 0 16 16" ${S}><path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 8.5h5.8l.6-8.5"/></svg>`,
     cal: `<svg viewBox="0 0 16 16" ${S}><rect x="2.5" y="3.5" width="11" height="10" rx="2"/><path d="M2.5 7h11M5.5 2v3M10.5 2v3"/></svg>`,
@@ -599,6 +645,8 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     linger: new Map(),         // id -> { from, t0 }: just-completed rows that stay a moment before leaving
     fresh: new Map(),          // id -> t0: just-completed, for the check and stamp animations
     heroStamp: null, heroT0: 0,
+    cal: { open: null, y: 0, m: 0 },  // month calendar open in the details panel
+    swipeOpen: null, swipeGone: new Set(),
   };
   if (!["todo", "planned", "done", "all"].includes(state.filter)) state.filter = "todo";
   let dbNs = null, userNs = null, toastTimer = null, undoFn = null;
@@ -879,6 +927,46 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     else { snow.raf = 0; ctx.clearRect(0, 0, innerWidth, innerHeight); }
   }
 
+  /* ---------- date picker: a month calendar styled after Apple Calendar ---------- */
+  function dpHTML(field, value, label, readOnly, max) {
+    return `<input type="text" hidden class="dp-value" data-key="s:${field}" data-field="${field}" value="${esc(validISO(value) ? value : "")}"${max ? ` data-max="${max}"` : ""}>
+      <button type="button" class="fp dp-trigger" data-act="cal-toggle" data-field="${field}" aria-expanded="false" aria-label="${esc(label)}" ${readOnly ? "disabled" : ""}></button>`;
+  }
+  function openCal(field, value) {
+    const d = validISO(value) ? parseISO(value) : new Date();
+    state.cal = { open: field, y: d.getFullYear(), m: d.getMonth(), anim: true };
+  }
+  function calendarHTML(field, value, max) {
+    const { y, m } = state.cal, first = new Date(y, m, 1), days = new Date(y, m + 1, 0).getDate(), today = todayISO();
+    const dows = Array.from({ length: 7 }, (_, i) => new Date(2024, 0, 7 + i).toLocaleDateString(undefined, { weekday: "short" }).toUpperCase());
+    let cells = dows.map((d) => `<span class="cal-dow" aria-hidden="true">${esc(d)}</span>`).join("");
+    for (let i = 0; i < first.getDay(); i++) cells += "<span></span>";
+    for (let d = 1; d <= days; d++) {
+      const day = iso(new Date(y, m, d)), off = max && day > max;
+      cells += `<button type="button" class="cal-day${day === value ? " sel" : ""}${day === today ? " today" : ""}" data-act="cal-pick" data-field="${field}" data-v="${day}" aria-pressed="${day === value}" aria-label="${esc(fmtDate(day, { day: true, year: true }))}"${off ? " disabled" : ""}>${d}</button>`;
+    }
+    return `<div class="cal-head"><span class="cal-title">${esc(first.toLocaleDateString(undefined, { month: "long" }))} <span>${y}</span></span>
+      <span class="cal-nav"><button type="button" data-act="cal-today">Today</button><button type="button" data-act="cal-prev" aria-label="Previous month">${ICON.left}</button><button type="button" data-act="cal-next" aria-label="Next month">${ICON.right}</button></span></div>
+      <div class="cal-grid">${cells}</div>`;
+  }
+  function renderCalendars() {
+    $$("#dialog-root input.dp-value").forEach((inp) => {
+      const f = inp.dataset.field, v = inp.value, open = state.cal.open === f;
+      const trig = $(`#dialog-root .dp-trigger[data-field="${f}"]`), cal = $(`#dialog-root .dp-cal[data-cal-for="${f}"]`);
+      if (trig) {
+        trig.innerHTML = `${ICON.cal}<span>${validISO(v) ? esc(fmtDate(v, { day: true, year: true })) : trig.disabled ? "No date" : "Pick a date"}</span>`;
+        trig.classList.toggle("is-empty", !validISO(v));
+        trig.setAttribute("aria-expanded", String(open));
+      }
+      if (!cal) return;
+      if (!open) { cal.hidden = true; cal.innerHTML = ""; return; }
+      cal.hidden = false;
+      cal.style.animation = state.cal.anim ? "" : "none";
+      state.cal.anim = false;
+      cal.innerHTML = calendarHTML(f, v, inp.dataset.max || "");
+    });
+  }
+
   /* ---------- small builders ---------- */
   function catLabel(c, fallback) {
     return c ? `<i class="dot" style="--dot:${catVar(c)}"></i><span class="pl">${esc(c.name)}</span>`
@@ -954,8 +1042,8 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
           <canvas class="guill" aria-hidden="true"></canvas>
           ${top("Next up", `Adventure <b>Nº ${pad(stamped ? no - 1 : no)}</b>`)}
           <div class="doc-grid">
-            ${dated ? `<div class="doc-date"><span class="dd-day">${d.getDate()}</span><span class="dd-mon">${MON[d.getMonth()]}${d.getFullYear() !== new Date().getFullYear() ? ` ’${String(d.getFullYear()).slice(2)}` : ""}</span><span class="dd-dow">${esc(d.toLocaleDateString(undefined, { weekday: "short" }))}</span></div>`
-                    : `<div class="doc-date tbd"><span class="dd-day">tbd</span><span class="dd-dow">Date</span></div>`}
+            ${dated ? `<div class="doc-date"><span class="dd-dow">${esc(d.toLocaleDateString(undefined, { weekday: "long" }))}</span><span class="dd-day">${d.getDate()}</span><span class="dd-mon">${esc(d.toLocaleDateString(undefined, d.getFullYear() !== new Date().getFullYear() ? { month: "short", year: "numeric" } : { month: "long" }))}</span></div>`
+                    : `<div class="doc-date tbd"><span class="dd-dow">No date</span><span class="dd-day">–</span><span class="dd-mon">To be set</span></div>`}
             <div class="doc-main">
               <h2><button type="button" class="doc-title-btn" data-act="open-sheet" data-id="${esc(next.id)}">${esc(next.title)}</button></h2>
               ${next.planNote ? `<p class="lede">${esc(next.planNote)}</p>` : ""}
@@ -1043,12 +1131,18 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       end = `<span class="mini-stamp" style="--ink-c:${cat ? catVar(cat) : "var(--done)"}">${validISO(item.doneOn) ? stampDate(item.doneOn) : "Done"}</span>`;
     } else if (item.addedBy) end = avatar(item.addedBy, "Added by {name}");
     const leaving = lg && state.filter !== "all";
-    return `<li class="row${checked ? " is-done" : ""}${leaving ? " leaving" : ""}" style="--t:-${t0 ? Date.now() - t0 : 0}ms">
-      <button type="button" class="cb${checked ? " on" : ""}${t0 ? " pop" : ""}" ${w ? "" : "disabled"} data-act="${checked ? "uncomplete" : "complete"}" data-id="${id}" aria-label="${checked ? "Mark as not done" : "Mark as done"}: ${esc(item.title)}">${CB_SVG}</button>
-      <button type="button" class="row-open" data-act="open-sheet" data-id="${id}">
-        <span class="row-main"><span class="row-title">${esc(item.title)}</span>${meta.length ? `<span class="row-meta">${meta.join("")}</span>` : ""}</span>
-        <span class="row-end">${end}${ICON.right}</span>
-      </button>
+    const planBtn = w && st === "todo" && !lg;
+    const cls = `row${checked ? " is-done" : ""}${leaving ? " leaving" : ""}${state.swipeOpen === item.id ? " swiped" : ""}${state.swipeGone.has(item.id) ? " swipe-gone" : ""}`;
+    return `<li class="${cls}" data-row="${id}" style="--t:-${t0 ? Date.now() - t0 : 0}ms">
+      ${w ? `<div class="swipe-actions"><button type="button" class="swipe-del" data-act="swipe-delete" data-id="${id}" tabindex="-1" aria-label="Delete ${esc(item.title)}">${ICON.trash}Delete</button></div>` : ""}
+      <div class="row-inner">
+        <button type="button" class="cb${checked ? " on" : ""}${t0 ? " pop" : ""}" ${w ? "" : "disabled"} data-act="${checked ? "uncomplete" : "complete"}" data-id="${id}" aria-label="${checked ? "Mark as not done" : "Mark as done"}: ${esc(item.title)}">${CB_SVG}</button>
+        <button type="button" class="row-open" data-act="open-sheet" data-id="${id}">
+          <span class="row-main"><span class="row-title">${esc(item.title)}</span>${meta.length ? `<span class="row-meta">${meta.join("")}</span>` : ""}</span>
+          <span class="row-end">${end}${planBtn ? "" : ICON.right}</span>
+        </button>
+        ${planBtn ? `<button type="button" class="row-plan" data-act="plan-row" data-id="${id}" aria-label="Plan ${esc(item.title)}">${ICON.cal}<span>Plan</span>${ICON.right}</button>` : ""}
+      </div>
     </li>`;
   }
   function stampCardHTML(item) {
@@ -1063,7 +1157,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   function renderList(c) {
     const el = $("#list");
     if (state.mode === "loading") {
-      el.innerHTML = `<div class="card"><ul class="rows">${[62, 48, 56].map((w) => `<li class="row" style="padding:18px 20px;gap:16px"><span class="sk" style="width:22px;height:22px;border-radius:50%"></span><span class="sk" style="height:14px;width:${w}%;margin-top:4px"></span></li>`).join("")}</ul></div>`;
+      el.innerHTML = `<div class="card"><ul class="rows">${[62, 48, 56].map((w) => `<li class="row" style="display:flex;padding:18px 20px;gap:16px"><span class="sk" style="width:22px;height:22px;border-radius:50%"></span><span class="sk" style="height:14px;width:${w}%;margin-top:4px"></span></li>`).join("")}</ul></div>`;
       return;
     }
     const inTab = (x, tab) => (statusOf(x) === tab || (state.linger.get(x.id) || {}).from === tab) && matchesCat(x);
@@ -1112,14 +1206,14 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
         <dt>Category</dt>
         <dd><button type="button" class="picker bare" data-act="pop" data-kind="sheet-cat" data-pop-anchor="sheet-cat" aria-haspopup="listbox" aria-expanded="false" ${w ? "" : "disabled"}>${catLabel(cat, "No category")}${w ? ICON.chev : ""}</button></dd>
         ${st === "planned" ? `
-        <dt>Date</dt>
-        <dd><div class="date-row"><input type="date" class="fp" data-key="s:plannedFor" data-field="plannedFor" value="${esc(validISO(item.plannedFor) ? item.plannedFor : "")}" aria-label="Planned date" ${ro}>
-          ${w ? `<button type="button" class="qd" data-act="quick-date" data-v="weekend">This weekend</button><button type="button" class="qd" data-act="quick-date" data-v="month">In a month</button>${validISO(item.plannedFor) ? `<button type="button" class="qd" data-act="quick-date" data-v="clear">No date</button>` : ""}` : ""}</div></dd>
+        <dt class="top">Date</dt>
+        <dd><div class="date-row">${dpHTML("plannedFor", item.plannedFor, "Planned date", !w)}
+          ${w ? `<button type="button" class="qd" data-act="quick-date" data-v="weekend">This weekend</button><button type="button" class="qd" data-act="quick-date" data-v="month">In a month</button>${validISO(item.plannedFor) ? `<button type="button" class="qd" data-act="quick-date" data-v="clear">No date</button>` : ""}` : ""}</div><div class="dp-cal" data-cal-for="plannedFor" hidden></div></dd>
         <dt class="top">Plan</dt>
         <dd><textarea class="fp autogrow" rows="1" maxlength="300" data-key="s:planNote" data-field="planNote" placeholder="Where, who books what…" aria-label="Plan notes" ${ro}>${esc(item.planNote || "")}</textarea></dd>` : ""}
         ${st === "done" ? `
-        <dt>Done on</dt>
-        <dd><input type="date" class="fp" data-key="s:doneOn" data-field="doneOn" value="${esc(validISO(item.doneOn) ? item.doneOn : "")}" max="${todayISO()}" aria-label="Done on" ${ro}></dd>
+        <dt class="top">Done on</dt>
+        <dd><div class="date-row">${dpHTML("doneOn", item.doneOn, "Done on", !w, todayISO())}</div><div class="dp-cal" data-cal-for="doneOn" hidden></div></dd>
         <dt class="top">Memory</dt>
         <dd><textarea class="fp autogrow" rows="1" maxlength="300" data-key="s:memory" data-field="memory" placeholder="A line to remember it by" aria-label="Memory" ${ro}>${esc(item.memory || "")}</textarea></dd>` : ""}
         <dt class="top">Notes</dt>
@@ -1179,7 +1273,8 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       const fresh = state.dialogFresh; state.dialogFresh = false;
       requestAnimationFrame(() => scrim.classList.add("open"));
       if (fresh) {
-        const f = state.sheetFocus && $(`[data-field="${state.sheetFocus}"]`, sheet);
+        const fv = state.sheetFocus && $(`[data-field="${state.sheetFocus}"]`, sheet);
+        const f = fv && fv.hidden ? $(`.dp-trigger[data-field="${state.sheetFocus}"]`, sheet) : fv;
         if (f) { f.focus({ preventScroll: true }); f.classList.add("flash"); } else sheet.focus({ preventScroll: true });
         state.sheetFocus = null;
       }
@@ -1193,7 +1288,11 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     $$(".seg", root).forEach(syncSeg);
     updateSaveState();
   }
-  function openSheet(id, focusField) { closePop(); state.sheet = id; state.sheetFocus = focusField || null; state.sheetConfirm = false; state.sheetLeave = false; state.manager = false; state.dialogFresh = true; render(); }
+  function openSheet(id, focusField) {
+    closePop(); closeSwipe();
+    state.cal.open = null;
+    if (focusField === "plannedFor") { const it = find(id); openCal("plannedFor", it && it.plannedFor); }
+    state.sheet = id; state.sheetFocus = focusField || null; state.sheetConfirm = false; state.sheetLeave = false; state.manager = false; state.dialogFresh = true; render(); }
   function openManager() { closePop(); state.managerReturn = state.sheet; state.sheet = null; state.manager = true; state.catConfirm = null; state.dialogFresh = true; render(); }
   function closeDialog(force) {
     if (!state.sheet && !state.manager) return;
@@ -1358,6 +1457,8 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     renderList(c);
     renderDialog(c);
     restoreDrafts(drafts);
+    renderCalendars();
+    updateSaveState();
     refreshPop(c);
     syncAnchors();
     fillAvatars();
@@ -1453,6 +1554,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     if (!tgt.closest) return;
     if (tgt.closest("#toast-undo")) { const fn = undoFn; hideToast(); if (fn) await fn(); return; }
     if (state.pop && !tgt.closest("#pop") && !tgt.closest("[data-pop-anchor]")) closePop();
+    if (state.swipeOpen && !tgt.closest("#list")) closeSwipe();
     const b = tgt.closest("[data-act]"); if (!b) return;
     const act = b.dataset.act;
     if (act === "scrim") { if (tgt === b) closeDialog(); return; }
@@ -1461,6 +1563,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     const tid = b.dataset.task, task = item && tid ? tasksOf(item).find((x) => x.id === tid) : null;
     switch (act) {
       case "tab":
+        closeSwipe();
         state.filter = b.dataset.v; safeSet("bucketlist.filter", state.filter); render();
         if (b.closest("#next")) $("#toolbar").scrollIntoView({ behavior: "smooth", block: "start" });
         break;
@@ -1501,6 +1604,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       case "plan-pick": if (item) { state.suggestion = null; if (await updateItem(id, { status: "planned" })) openSheet(id); } break;
       case "set-status": {
         const it = find(state.sheet), v = b.dataset.v; if (!it || statusOf(it) === v) break;
+        state.cal.open = null;
         const seg = b.closest(".seg"); $$("button", seg).forEach((x) => x.setAttribute("aria-checked", String(x === b))); syncSeg(seg);
         if (v === "done") { state.fresh.set(it.id, Date.now()); setTimeout(() => state.fresh.delete(it.id), 2000); await updateItem(it.id, { status: "done", doneOn: it.doneOn || todayISO(), doneAt: Date.now(), doneBy: state.me || null }); }
         else await updateItem(it.id, statusOf(it) === "done" ? { status: v, doneOn: null, doneAt: null, doneBy: null } : { status: v });
@@ -1512,7 +1616,38 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
         if (b.dataset.v === "weekend") { const day = dt.getDay(); dt.setDate(dt.getDate() + (day === 0 ? 0 : 6 - day)); input.value = iso(dt); }
         else if (b.dataset.v === "month") { dt.setMonth(dt.getMonth() + 1); input.value = iso(dt); }
         else input.value = "";
-        updateSaveState(); break;
+        if (state.cal.open === "plannedFor") openCal("plannedFor", input.value);
+        renderCalendars(); updateSaveState(); break;
+      }
+      case "cal-toggle": {
+        const f = b.dataset.field, inp = $(`#dialog-root [data-field="${f}"]`);
+        if (state.cal.open === f) state.cal.open = null; else openCal(f, inp && inp.value);
+        renderCalendars(); break;
+      }
+      case "cal-prev": case "cal-next": {
+        const step = act === "cal-next" ? 1 : -1, d0 = new Date(state.cal.y, state.cal.m + step, 1);
+        state.cal.y = d0.getFullYear(); state.cal.m = d0.getMonth(); renderCalendars(); break;
+      }
+      case "cal-today": { const t = new Date(); state.cal.y = t.getFullYear(); state.cal.m = t.getMonth(); renderCalendars(); break; }
+      case "cal-pick": {
+        const f = b.dataset.field, inp = $(`#dialog-root [data-field="${f}"]`); if (!inp) break;
+        inp.value = b.dataset.v; state.cal.open = null;
+        renderCalendars(); updateSaveState();
+        const trig = $(`#dialog-root .dp-trigger[data-field="${f}"]`); if (trig) trig.focus({ preventScroll: true });
+        break;
+      }
+      case "plan-row": {
+        if (!item) break;
+        const prev = statusOf(item);
+        state.filter = "planned"; safeSet("bucketlist.filter", "planned");
+        if (prev !== "planned" && !(await updateItem(id, { status: "planned" }))) { render(); break; }
+        openSheet(id, "plannedFor");
+        if (prev !== "planned") toast(`Moved “${item.title}” to Planned`, () => updateItem(id, { status: prev }));
+        break;
+      }
+      case "swipe-delete": {
+        const li = b.closest("li.row"); if (item && li) swipeDelete(id, li);
+        break;
       }
       case "sheet-save": saveSheet(b.dataset.close === "1"); break;
       case "sheet-discard": closeDialog(true); break;
@@ -1520,10 +1655,8 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       case "sheet-delete-cancel": state.sheetConfirm = false; render(); break;
       case "sheet-delete-confirm": {
         if (!item) break;
-        const { id: _drop, ...data } = item;
         closeDialog(true);
-        if (state.suggestion === id) state.suggestion = null;
-        if (await remove("activities", id)) toast(`Deleted “${item.title}”`, () => setDoc("activities", id, data));
+        await deleteWithUndo(item);
         break;
       }
       case "paste-cancel": state.paste = null; render(); $("#new-title").focus(); break;
@@ -1578,6 +1711,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   document.addEventListener("keydown", (ev) => {
     const t = ev.target;
     if (ev.key === "Escape") {
+      if (state.swipeOpen && !state.sheet && !state.manager) { closeSwipe(); return; }
       if (state.pop) { ev.preventDefault(); closePop(true); }
       else if (state.catConfirm) { state.catConfirm = null; render(); }
       else if (state.sheetConfirm) { state.sheetConfirm = false; render(); }
@@ -1630,6 +1764,96 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     if (lines.length < 2) return;
     ev.preventDefault(); state.paste = lines; renderPaste();
   });
+
+  /* ---------- swipe left to delete, like Apple's lists ---------- */
+  const SWIPE_W = 88;
+  let sw = null, wh = null, suppressClick = false;
+  function closeSwipe() {
+    if (!state.swipeOpen) return;
+    state.swipeOpen = null;
+    $$("#list li.swiped").forEach((li) => { li.classList.add("swiping"); li.classList.remove("swiped"); setTimeout(() => li.classList.remove("swiping"), 360); });
+  }
+  async function deleteWithUndo(item) {
+    const { id, ...data } = item;
+    if (state.suggestion === id) state.suggestion = null;
+    const ok = await remove("activities", id);
+    if (ok) toast(`Deleted “${item.title}”`, () => setDoc("activities", id, data));
+    return ok;
+  }
+  function swipeDelete(id, li) {
+    const item = find(id); if (!item || state.swipeGone.has(id)) return;
+    state.swipeOpen = null; state.swipeGone.add(id);
+    li.classList.remove("swiped"); li.classList.add("swipe-gone");
+    setTimeout(async () => { const ok = await deleteWithUndo(item); state.swipeGone.delete(id); if (!ok) render(); }, 460);
+  }
+  function startSwipe(li) {
+    const id = li.dataset.row;
+    if (state.swipeOpen && state.swipeOpen !== id) closeSwipe();
+    const inner = li.querySelector(".row-inner");
+    inner.style.transition = "none";
+    li.classList.add("swiping");
+    return { id, li, inner, base: li.classList.contains("swiped") ? -SWIPE_W : 0, x: 0 };
+  }
+  function dragTo(s, x) {
+    const W = s.li.offsetWidth;
+    s.x = Math.max(-W, Math.min(0, x));
+    s.inner.style.transform = `translateX(${s.x}px)`;
+    s.li.style.setProperty("--reveal", `${-s.x}px`);
+    s.li.classList.toggle("swipe-full", -s.x > W * 0.55);
+  }
+  function settleSwipe(s) {
+    const { id, li, inner, x } = s, W = li.offsetWidth;
+    inner.style.transition = ""; void inner.offsetWidth;
+    inner.style.transform = ""; li.style.removeProperty("--reveal"); li.classList.remove("swipe-full");
+    if (-x > W * 0.55) { swipeDelete(id, li); return; }
+    if (-x > SWIPE_W / 2) { state.swipeOpen = id; li.classList.add("swiped"); }
+    else { if (state.swipeOpen === id) state.swipeOpen = null; li.classList.remove("swiped"); }
+    setTimeout(() => li.classList.remove("swiping"), 360);
+  }
+  const listEl = $("#list");
+  listEl.addEventListener("pointerdown", (e) => {
+    if (!state.canWrite || (e.pointerType === "mouse" && e.button !== 0)) return;
+    const li = e.target.closest("li.row[data-row]");
+    if (!li || e.target.closest(".swipe-del") || state.swipeGone.has(li.dataset.row)) return;
+    sw = { li, x0: e.clientX, y0: e.clientY, pid: e.pointerId, s: null };
+  });
+  listEl.addEventListener("pointermove", (e) => {
+    if (!sw || e.pointerId !== sw.pid) return;
+    const dx = e.clientX - sw.x0, dy = e.clientY - sw.y0;
+    if (!sw.s) {
+      if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * 1.3) { sw.s = startSwipe(sw.li); try { sw.li.setPointerCapture(e.pointerId); } catch {} }
+      else if (Math.abs(dy) > 10) { sw = null; return; }
+      else return;
+    }
+    e.preventDefault();
+    dragTo(sw.s, sw.s.base + dx);
+  });
+  const endSwipe = (e) => {
+    if (!sw || e.pointerId !== sw.pid) return;
+    const s = sw.s; sw = null;
+    if (!s) return;
+    suppressClick = true; setTimeout(() => (suppressClick = false), 80);
+    settleSwipe(s);
+  };
+  listEl.addEventListener("pointerup", endSwipe);
+  listEl.addEventListener("pointercancel", endSwipe);
+  // Two-finger swipes on a trackpad arrive as sideways scrolling.
+  listEl.addEventListener("wheel", (e) => {
+    if (!state.canWrite || Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+    const li = e.target.closest("li.row[data-row]");
+    if (!li || state.swipeGone.has(li.dataset.row)) return;
+    e.preventDefault();
+    if (!wh || wh.li !== li) { if (wh) { clearTimeout(wh.t); settleSwipe(wh); } wh = startSwipe(li); wh.acc = 0; }
+    wh.acc += e.deltaX;
+    dragTo(wh, wh.base - wh.acc);
+    clearTimeout(wh.t);
+    wh.t = setTimeout(() => { const s = wh; wh = null; settleSwipe(s); }, 160);
+  }, { passive: false });
+  // A drag shouldn't also count as a click, and tapping elsewhere closes an open swipe.
+  listEl.addEventListener("click", (e) => {
+    if (suppressClick) { suppressClick = false; e.stopPropagation(); e.preventDefault(); return; }
+    if (state.swipeOpen && !e.target.closest(".swipe-del")) { closeSwipe(); e.stopPropagation(); e.preventDefault(); }
+  }, true);
 
   /* ---------- boot ---------- */
   function startLocal() {

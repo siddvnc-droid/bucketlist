@@ -4,6 +4,9 @@ A shared bucket list for two people, styled like a passport.
 
 - **Next up**: your soonest planned activity is shown as a travel document, with the date, a countdown and a "Before we go" checklist. If nothing is planned, "Pick one for us" suggests a random activity (from the selected category, if you've filtered by one).
 - **Add activities**: type in the add box (press <kbd>N</kbd> from anywhere) and choose a category. Paste a list with one activity per line to add them all at once. Every new activity sets off a short snowfall, for whoever has the page open (it's skipped for people who turn on reduced motion on their device).
+- **Plan from the list**: every To do row has a **Plan** button on its right. It moves the activity to Planned and opens its planning view with the calendar showing.
+- **Swipe to delete**: swipe a row left (or drag it with the mouse, or two-finger swipe on a trackpad) to reveal **Delete**; swipe all the way to delete straight away. Every delete can be undone.
+- **Calendar**: dates are picked from a month calendar styled after Apple Calendar, and the Next up card shows the date like Apple's Calendar icon.
 - **Tick things off**: tap the circle on any row. It animates, moves to your Stamps page, and the message at the bottom lets you undo.
 - **Stamps**: every completed activity becomes an ink stamp in its category's color, with the date and the line you wrote to remember it by.
 - **Reschedule or undo**: on the Next up card, "Reschedule" opens the date and "Cancel plan" moves the activity back to To do (its plan notes and checklist are kept). Each stamp has an undo button to remove it if you ticked something off by mistake; the activity goes back to Planned if it had a date, otherwise To do. The same "Cancel plan" and "Remove stamp" buttons are at the bottom of every activity's details, and each one can be undone from the message that appears.
