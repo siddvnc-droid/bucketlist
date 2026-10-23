@@ -534,10 +534,11 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   .stub { padding: 20px 18px 20px; }
   .hero-stamp { right: 14px; top: 44px; }
   .stamp.big { width: 112px; height: 112px; }
-  .composer { padding-left: 12px; }
-  .composer > svg { display: none; }
-  .composer .picker { max-width: 118px; }
-  .composer .picker .pl.placeholder { display: none; }
+  .composer { flex-wrap: wrap; row-gap: 6px; padding: 6px 7px 7px 12px; }
+  .composer > svg, .composer .kbd { display: none; }
+  .composer input { flex: 1 1 100%; }
+  .composer .picker { flex: 1 1 auto; max-width: none; }
+  .composer .btn { flex: none; height: 34px; padding: 0 16px; }
   .toolbar { flex-direction: column; align-items: stretch; }
   .toolbar .seg { width: 100%; }
   .toolbar .seg button { flex: 1 1 0; padding: 0 6px; }
