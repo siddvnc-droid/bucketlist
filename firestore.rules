@@ -1,13 +1,50 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Each list lives under lists/<secret id>, the part of the link after "#".
-    // Anyone with the link can read and change that list. Nobody can browse
-    // or search for other lists, because there is no rule that allows it.
-    match /lists/{listId}/{coll}/{docId} {
-      allow read, delete: if listId.size() >= 20 && coll in ['activities', 'categories'];
-      allow create, update: if listId.size() >= 20 && coll in ['activities', 'categories']
-        && request.resource.data.size() <= 40;
+
+    function signedIn() { return request.auth != null; }
+    function myEmail() {
+      return request.auth.token.get('email_verified', false) == true
+        ? request.auth.token.get('email', '').lower() : '';
+    }
+    function myPhone() { return request.auth.token.get('phone_number', ''); }
+    // A list document holds the Google emails and phone numbers allowed in.
+    function isMemberOf(data) {
+      return signedIn() && (
+        (myEmail() != '' && myEmail() in data.get('emails', [])) ||
+        (myPhone() != '' && myPhone() in data.get('phones', [])));
+    }
+    function member(listId) {
+      return isMemberOf(get(/databases/$(database)/documents/lists/$(listId)).data);
+    }
+    function validList(d) {
+      return d.keys().hasOnly(['emails', 'phones', 'createdBy', 'createdAt'])
+        && d.emails is list && d.phones is list
+        && d.emails.size() <= 25 && d.phones.size() <= 25;
+    }
+
+    // Each list lives at lists/<id>, the part of the link after "#".
+    // Nobody can browse or search for lists; there is no rule that allows it.
+    match /lists/{listId} {
+      // Signed-in people may check whether a list exists, and members may read it.
+      allow get: if signedIn() && (resource == null || isMemberOf(resource.data));
+      // The first person to open a new list becomes its first member.
+      allow create: if listId.size() >= 20 && validList(request.resource.data)
+        && isMemberOf(request.resource.data) && request.resource.data.createdBy == request.auth.uid;
+      // Members can add or remove people, but can't remove themselves.
+      allow update: if isMemberOf(resource.data) && validList(request.resource.data)
+        && isMemberOf(request.resource.data);
+
+      match /{coll}/{docId} {
+        allow read, delete: if coll in ['activities', 'categories'] && member(listId);
+        allow create, update: if coll in ['activities', 'categories'] && member(listId)
+          && request.resource.data.size() <= 40;
+      }
+      // Each member keeps their own name and photo here so others can see who did what.
+      match /people/{uid} {
+        allow read: if member(listId);
+        allow write: if member(listId) && request.auth.uid == uid;
+      }
     }
   }
 }

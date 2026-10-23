@@ -1,0 +1,120 @@
+{
+  "activities": [
+    {
+      "id": "0mzk4uolmeq78vu4xtg6",
+      "data": {
+        "addedBy": null,
+        "category": "",
+        "categoryId": "food-and-drinks",
+        "createdAt": 1792771565006,
+        "doneAt": null,
+        "doneBy": null,
+        "doneOn": null,
+        "memory": "",
+        "notes": "",
+        "planNote": "",
+        "plannedFor": null,
+        "status": "todo",
+        "title": "Grand Central Oyster Bar"
+      }
+    },
+    {
+      "id": "309y2g92iv7vg3ym01br",
+      "data": {
+        "addedBy": null,
+        "category": "",
+        "categoryId": "0q4o9e4ea2qmw3p0blfs",
+        "createdAt": 1792769052110,
+        "doneAt": null,
+        "doneBy": null,
+        "doneOn": null,
+        "memory": "",
+        "notes": "",
+        "planNote": "",
+        "plannedFor": null,
+        "status": "todo",
+        "title": "Ballet"
+      }
+    },
+    {
+      "id": "ftfmipz495z7hgv4m137",
+      "data": {
+        "addedBy": null,
+        "category": "",
+        "categoryId": "just-for-fun",
+        "createdAt": 1792769034294,
+        "doneAt": null,
+        "doneBy": null,
+        "doneOn": null,
+        "memory": "",
+        "notes": "",
+        "planNote": "",
+        "plannedFor": null,
+        "status": "todo",
+        "title": "Bathhouse Massage"
+      }
+    },
+    {
+      "id": "qeuc3rj8f20ka8aa5t3e",
+      "data": {
+        "addedBy": null,
+        "category": "",
+        "categoryId": "just-for-fun",
+        "createdAt": 1792771050410,
+        "doneAt": null,
+        "doneBy": null,
+        "doneOn": null,
+        "memory": "",
+        "notes": "",
+        "planNote": "",
+        "plannedFor": null,
+        "status": "todo",
+        "title": "Gun Range"
+      }
+    },
+    {
+      "id": "sixf7f2h1y6fztkkk5x6",
+      "data": {
+        "addedBy": null,
+        "category": "",
+        "categoryId": "food-and-drinks",
+        "createdAt": 1792727337056,
+        "doneAt": null,
+        "doneBy": null,
+        "doneOn": null,
+        "memory": "",
+        "notes": "",
+        "planNote": "",
+        "plannedFor": null,
+        "status": "todo",
+        "title": "Tokyo Record Bar"
+      }
+    }
+  ],
+  "categories": [
+    {
+      "id": "0q4o9e4ea2qmw3p0blfs",
+      "data": {
+        "color": 2,
+        "name": "Night Activity",
+        "order": 8
+      }
+    },
+    {
+      "id": "food-and-drinks",
+      "data": {
+        "color": 3,
+        "name": "Food & Drinks",
+        "order": 2
+      }
+    },
+    {
+      "id": "just-for-fun",
+      "data": {
+        "color": 6,
+        "name": "Day Activity",
+        "order": 7
+      }
+    }
+  ]
+}

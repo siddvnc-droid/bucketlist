@@ -45,8 +45,9 @@ To add a copy, add a line to `COPIES` in `make_copies.py`. After changing `bucke
 
 ## Hosting on Firebase
 
-The same app can also run on Firebase (project `winter-bucket-list`), with your list stored in Cloud Firestore.
+The same app can also run on Firebase (project `winter-bucket-list`), with sign-in through Firebase Authentication and lists stored in Cloud Firestore.
 
-- `web/` is the site that gets published. Build it with `python3 build_web.py` (it wraps `bucketlist.html` and adds `firebase/firebase-shim.js`, which connects the app to Firestore).
-- Each list is opened with a private link: `https://winter-bucket-list.web.app/#<list id>`. Anyone with the link can view and edit that list; nobody can browse other lists. The rules are in `firestore.rules`.
+- `web/` is the site that gets published. Build it with `python3 build_web.py`. It wraps `bucketlist.html` and adds `firebase/firebase-shim.js`, which handles sign-in and connects the app to Firestore.
+- Each list has its own link: `https://winter-bucket-list.web.app/#<list id>`. People sign in with Google or a phone number, and only the emails and phone numbers added under **People** can open the list. The first person to open a new list becomes its first member. The rules are in `firestore.rules`.
+- `firebase/exports/winter-bucket-list.json` is the Winter list saved from claude.ai. Import it from **People → Bring over a list**.
 - To publish: `npm install -g firebase-tools`, `firebase login`, then `firebase deploy` from this folder.
