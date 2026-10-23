@@ -2,208 +2,256 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Geist:wght@400;500;600&family=Geist+Mono:wght@500;600&display=swap">
 <style>
-/* Layout: one narrow column — progress, a "next up" ticket stub, an add bar, then the list with passport-style DONE stamps. */
+/* Layout: one 720px column — header with progress ring, a "next up" card with a calendar tile, then one panel holding add bar, filter and list. Amber is the single accent; green only means done. */
 :root {
-  --paper: #EEF2F5;
-  --card: #FFFFFF;
-  --ink: #15202C;
-  --muted: #5A6A7B;
-  --line: #D3DCE4;
-  --accent: #F2AE1C;      /* marigold: the ticket */
-  --accent-ink: #2A1E00;
-  --stamp: #1D7A54;       /* green: done */
-  --stamp-soft: #E2F2EA;
-  --danger: #B42318;
-  --focus: #2F5BEA;
+  --bg: #F5F6F8;
+  --surface: #FFFFFF;
+  --surface-2: #F1F3F6;
+  --ink: #121721;
+  --ink-2: #3A4250;
+  --muted: #6B7380;
+  --line: #E3E6EB;
+  --line-strong: #CDD2DA;
+  --accent: #EBA21A;
+  --accent-soft: #FDF2DC;
+  --accent-ink: #7A4E00;
+  --on-accent: #3D2800;
+  --done: #16835A;
+  --done-soft: #E2F3EB;
+  --on-done: #FFFFFF;
+  --danger: #C4321F;
+  --danger-soft: #FCEAE7;
+  --on-danger: #FFFFFF;
+  --focus: #3B6FE0;
+  --c1: #3B6FE0; --c2: #8B4FD8; --c3: #D9541A; --c4: #0D9A72; --c5: #D6407A; --c6: #6B7380;
+  --shadow: 0 1px 2px rgb(16 24 40 / .05), 0 1px 3px rgb(16 24 40 / .07);
+  --shadow-pop: 0 10px 30px rgb(16 24 40 / .14), 0 2px 6px rgb(16 24 40 / .08);
   --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
-  --font-body: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --font-body: "Geist", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #0E151D; --card: #16202B; --ink: #E6EDF3; --muted: #93A3B4; --line: #2A3846;
-    --accent: #F5B935; --accent-ink: #231900; --stamp: #4CC38A; --stamp-soft: #15301F;
-    --danger: #FF8A80; --focus: #8FB0FF; color-scheme: dark;
+    --bg: #0D1117; --surface: #151B23; --surface-2: #1C232D; --ink: #E8ECF1; --ink-2: #C2C9D2; --muted: #8C96A3;
+    --line: #262E39; --line-strong: #364050; --accent: #F2B13A; --accent-soft: #33270F; --accent-ink: #F5C86E; --on-accent: #2A1B00;
+    --done: #3FC48A; --done-soft: #12291E; --on-done: #05200F; --danger: #FF7B6B; --danger-soft: #3A1A16; --on-danger: #2A0A06;
+    --focus: #7EA2FF; --c1: #7EA2FF; --c2: #B88CF5; --c3: #FF8A57; --c4: #3CCB9E; --c5: #F27CA8; --c6: #8C96A3;
+    --shadow: 0 1px 2px rgb(0 0 0 / .4); --shadow-pop: 0 12px 32px rgb(0 0 0 / .5); color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --paper: #0E151D; --card: #16202B; --ink: #E6EDF3; --muted: #93A3B4; --line: #2A3846;
-  --accent: #F5B935; --accent-ink: #231900; --stamp: #4CC38A; --stamp-soft: #15301F;
-  --danger: #FF8A80; --focus: #8FB0FF; color-scheme: dark;
+  --bg: #0D1117; --surface: #151B23; --surface-2: #1C232D; --ink: #E8ECF1; --ink-2: #C2C9D2; --muted: #8C96A3;
+  --line: #262E39; --line-strong: #364050; --accent: #F2B13A; --accent-soft: #33270F; --accent-ink: #F5C86E; --on-accent: #2A1B00;
+  --done: #3FC48A; --done-soft: #12291E; --on-done: #05200F; --danger: #FF7B6B; --danger-soft: #3A1A16; --on-danger: #2A0A06;
+  --focus: #7EA2FF; --c1: #7EA2FF; --c2: #B88CF5; --c3: #FF8A57; --c4: #3CCB9E; --c5: #F27CA8; --c6: #8C96A3;
+  --shadow: 0 1px 2px rgb(0 0 0 / .4); --shadow-pop: 0 12px 32px rgb(0 0 0 / .5); color-scheme: dark;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body {
-  background: var(--paper);
-  color: var(--ink);
-  font: 15px/1.5 var(--font-body);
+  background: var(--bg); color: var(--ink);
+  font: 15px/1.5 var(--font-body); -webkit-font-smoothing: antialiased;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 28px 64px;
+  padding-block: 40px 72px;
 }
-.wrap { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+.app { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
 button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+svg { flex: none; }
 
-/* Header + progress */
-header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; }
-h1 {
-  font-family: var(--font-display); font-weight: 800; font-size: clamp(2rem, 6vw, 2.9rem);
-  line-height: 1; letter-spacing: -0.02em; margin: 0; text-wrap: balance;
-}
-.progress { display: flex; flex-direction: column; gap: 6px; min-width: 180px; flex: 0 1 240px; }
-.progress-num { font-family: var(--font-mono); font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; display: flex; justify-content: space-between; gap: 8px; }
-.progress-num b { color: var(--ink); font-weight: 700; }
-.bar { height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; }
-.bar > i { display: block; height: 100%; width: 0; background: var(--stamp); border-radius: inherit; transition: width .5s ease; }
+/* ---------- header ---------- */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-bottom: 8px; }
+.brand { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.75rem, 5vw, 2.25rem); line-height: 1.05; letter-spacing: -0.025em; margin: 0; text-wrap: balance; }
+.summary { margin: 0; color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+.summary b { color: var(--ink-2); font-weight: 600; }
+.ring { position: relative; width: 60px; height: 60px; flex: none; }
+.ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring .track { stroke: var(--line); }
+.ring .fill { stroke: var(--done); transition: stroke-dashoffset .6s ease; }
+.ring span { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-mono); font-weight: 600; font-size: 0.8rem; font-variant-numeric: tabular-nums; }
 
-.notice { font-size: 0.9rem; color: var(--muted); border: 1px dashed var(--line); border-radius: 10px; padding: 10px 14px; }
+/* ---------- shared surfaces ---------- */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
+.eyebrow { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 
-/* Ticket (next up) */
-.ticket {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; background: var(--accent); color: var(--accent-ink);
-  border-radius: 14px; position: relative; overflow: hidden; --stub-w: 136px;
-}
-.ticket.empty { background: var(--card); color: var(--ink); border: 1.5px dashed var(--line); }
-.ticket-main { padding: 20px 22px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-.eyebrow { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; opacity: .8; }
-.ticket h2 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.5rem, 4.6vw, 2.1rem); line-height: 1.08; margin: 0; letter-spacing: -0.01em; text-wrap: balance; overflow-wrap: anywhere; }
-.ticket .sub { margin: 0; font-size: 0.95rem; opacity: .85; overflow-wrap: anywhere; }
-.ticket-stub {
-  border-left: 2px dashed color-mix(in srgb, currentColor 35%, transparent);
-  padding: 20px 22px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  text-align: center; width: var(--stub-w); font-family: var(--font-mono); font-variant-numeric: tabular-nums;
-}
-.ticket::before, .ticket::after { /* perforation notches */
-  content: ""; position: absolute; right: calc(var(--stub-w) - 9px); width: 18px; height: 18px;
-  border-radius: 50%; background: var(--paper);
-}
-.ticket::before { top: -9px; } .ticket::after { bottom: -9px; }
-.ticket.empty::before, .ticket.empty::after { display: none; }
-.stub-day { font-size: 2.4rem; font-weight: 700; line-height: 1; }
-.stub-mon { font-size: 0.8rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
-.stub-count { font-size: 0.75rem; margin-top: 8px; opacity: .85; }
-.ticket .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.notice { display: flex; gap: 10px; align-items: flex-start; font-size: 0.875rem; color: var(--ink-2); background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; }
+.notice svg { width: 16px; height: 16px; margin-top: 2px; color: var(--muted); }
 
-/* Buttons */
+/* ---------- buttons ---------- */
 .btn {
-  border: 1.5px solid currentColor; background: transparent; border-radius: 999px; padding: 6px 14px;
-  font-weight: 600; font-size: 0.9rem; cursor: pointer; line-height: 1.3;
+  display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border-radius: 8px;
+  border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink);
+  font-weight: 500; font-size: 0.875rem; white-space: nowrap; transition: background .12s, border-color .12s;
 }
-.btn:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
-.btn.solid { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-.btn.solid:hover { opacity: .9; }
-.ticket:not(.empty) .btn.solid { background: var(--accent-ink); color: var(--accent); border-color: var(--accent-ink); }
-.btn.green { background: var(--stamp); border-color: var(--stamp); color: var(--card); }
-.btn.danger { color: var(--danger); }
-.btn:disabled { opacity: .5; cursor: default; }
-.link { background: none; border: 0; padding: 4px 6px; color: var(--muted); font-size: 0.85rem; font-weight: 600; cursor: pointer; border-radius: 6px; }
-.link:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 7%, transparent); }
-.link.danger:hover { color: var(--danger); }
+.btn:hover { background: var(--surface-2); }
+.btn svg { width: 15px; height: 15px; }
+.btn.primary { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.btn.primary:hover { background: var(--ink-2); border-color: var(--ink-2); }
+.btn.success { background: var(--done); border-color: var(--done); color: var(--on-done); }
+.btn.success:hover { filter: brightness(1.06); }
+.btn.danger { background: var(--danger); border-color: var(--danger); color: var(--on-danger); }
+.btn.ghost { border-color: transparent; background: transparent; color: var(--ink-2); }
+.btn.ghost:hover { background: var(--surface-2); }
+.btn:disabled { opacity: .45; cursor: default; }
+.icon-btn { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; border: 0; background: transparent; color: var(--muted); }
+.icon-btn:hover, .icon-btn[aria-expanded="true"] { background: var(--surface-2); color: var(--ink); }
+.icon-btn svg { width: 18px; height: 18px; }
+.text-btn { border: 0; background: none; padding: 0; color: var(--ink-2); font-weight: 500; font-size: 0.85rem; text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
+.text-btn:hover { color: var(--ink); text-decoration-color: currentColor; }
 
-/* Add bar */
-.add { display: flex; flex-direction: column; gap: 8px; }
-.add-row { display: flex; flex-wrap: wrap; gap: 8px; }
+/* ---------- next up ---------- */
+.next { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 20px; padding: 20px; align-items: start; }
+.cal { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; text-align: center; background: var(--surface); }
+.cal-mon { background: var(--accent); color: var(--on-accent); font-size: 0.7rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; padding: 4px 0; }
+.cal-day { font-family: var(--font-display); font-weight: 700; font-size: 2rem; line-height: 1; padding: 10px 0 4px; font-variant-numeric: tabular-nums; }
+.cal-dow { font-size: 0.72rem; color: var(--muted); padding-bottom: 8px; }
+.cal.tbd .cal-day { font-size: 1.1rem; padding: 16px 0 10px; color: var(--muted); }
+.next-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.next-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.next h2 { font-family: var(--font-display); font-weight: 600; font-size: clamp(1.35rem, 4vw, 1.65rem); line-height: 1.15; letter-spacing: -0.015em; margin: 0; text-wrap: balance; overflow-wrap: anywhere; }
+.next p { margin: 0; color: var(--ink-2); overflow-wrap: anywhere; }
+.pill { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; background: var(--accent-soft); color: var(--accent-ink); font-variant-numeric: tabular-nums; }
+.pill.late { background: var(--danger-soft); color: var(--danger); }
+.next .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.next.empty { grid-template-columns: 44px minmax(0, 1fr); align-items: center; }
+.empty-icon { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-ink); }
+.empty-icon svg { width: 22px; height: 22px; }
+.next.empty .row { display: flex; align-items: center; justify-content: space-between; gap: 12px 16px; flex-wrap: wrap; }
+.next.empty p { color: var(--muted); }
+.next .editor { grid-column: 1 / -1; margin: 4px 0 0; }
+
+/* ---------- panel: add + filter + list ---------- */
+.panel { overflow: visible; }
+.add { padding: 16px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+.add-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.input-wrap { position: relative; flex: 3 1 260px; min-width: 0; }
+.input-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--muted); pointer-events: none; }
 .field {
-  background: var(--card); border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 12px; min-width: 0;
+  width: 100%; height: 38px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line-strong);
+  background: var(--surface); min-width: 0; transition: border-color .12s, box-shadow .12s;
 }
-.field:focus { border-color: var(--focus); outline: none; }
-#new-title { flex: 3 1 240px; }
-#new-cat { flex: 1 1 130px; }
-textarea.field { width: 100%; resize: vertical; min-height: 120px; line-height: 1.5; }
-.add-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.field::placeholder { color: var(--muted); }
+.field:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 20%, transparent); }
+.input-wrap .field { padding-left: 36px; }
+#new-cat { flex: 1 1 140px; width: auto; }
+.add-row .btn { height: 38px; }
+textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: vertical; line-height: 1.55; }
+.add-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; min-height: 22px; }
 .hint { font-size: 0.82rem; color: var(--muted); }
 
-/* Tabs */
-.tabs { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 1.5px solid var(--line); }
-.tab {
-  background: none; border: 0; border-bottom: 3px solid transparent; margin-bottom: -1.5px; padding: 8px 12px;
-  font-weight: 600; color: var(--muted); cursor: pointer;
-}
-.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
-.tab .n { font-family: var(--font-mono); font-size: 0.78rem; font-variant-numeric: tabular-nums; margin-left: 4px; opacity: .8; }
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--surface-2); flex-wrap: wrap; }
+.seg button { border: 0; background: transparent; height: 30px; padding: 0 12px; border-radius: 7px; font-size: 0.85rem; font-weight: 500; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+.seg button:hover { color: var(--ink); }
+.seg button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+.seg .n { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 
-/* List */
-.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.list { list-style: none; margin: 0; padding: 0; }
 .item {
-  display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 4px 12px; align-items: start;
-  padding: 14px 4px; border-bottom: 1px solid var(--line);
+  position: relative; display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 2px 14px; align-items: start;
+  padding: 14px 12px 14px 16px; border-top: 1px solid var(--line); transition: background .12s;
 }
+.item:first-child { border-top: 0; }
+.item:hover { background: color-mix(in srgb, var(--surface-2) 55%, transparent); }
+.list > .item:last-child { border-radius: 0 0 14px 14px; }
 .check {
-  width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--muted); background: transparent;
-  cursor: pointer; display: grid; place-items: center; margin-top: 1px; padding: 0;
+  width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--line-strong); background: var(--surface);
+  display: grid; place-items: center; padding: 0; margin-top: 1px; color: transparent; transition: all .12s;
 }
-.check:hover { border-color: var(--stamp); background: var(--stamp-soft); }
-.check svg { width: 14px; height: 14px; opacity: 0; }
-.check:hover svg { opacity: .6; }
-.item.done .check { background: var(--stamp); border-color: var(--stamp); }
-.item.done .check svg { opacity: 1; color: var(--card); }
+.check svg { width: 12px; height: 12px; }
+.check:hover { border-color: var(--done); color: var(--done); background: var(--done-soft); }
+.item.done .check { background: var(--done); border-color: var(--done); color: var(--on-done); }
 .check[disabled] { cursor: default; }
-.body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.title { font-weight: 600; font-size: 1.02rem; overflow-wrap: anywhere; }
-.meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 0.84rem; color: var(--muted); }
-.tag { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: .04em; text-transform: uppercase; border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; }
-.chip-plan { font-family: var(--font-mono); font-size: 0.78rem; background: color-mix(in srgb, var(--accent) 28%, transparent); color: var(--ink); border-radius: 5px; padding: 1px 7px; font-variant-numeric: tabular-nums; }
-.notes { color: var(--muted); font-size: 0.9rem; overflow-wrap: anywhere; white-space: pre-wrap; }
-.memory { font-size: 0.92rem; font-style: italic; overflow-wrap: anywhere; white-space: pre-wrap; }
-.memory::before { content: "“"; } .memory::after { content: "”"; }
-.av { width: 18px; height: 18px; border-radius: 50%; vertical-align: -4px; object-fit: cover; background: var(--line); }
-.row-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 2px; align-items: center; }
+.body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.title { font-weight: 500; overflow-wrap: anywhere; line-height: 1.4; }
+.item.done .title { color: var(--ink-2); }
+.notes { color: var(--muted); font-size: 0.875rem; overflow-wrap: anywhere; white-space: pre-wrap; }
+.memory { color: var(--ink-2); font-size: 0.875rem; overflow-wrap: anywhere; white-space: pre-wrap; padding-left: 10px; border-left: 2px solid var(--done-soft); }
+.meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 0.8rem; color: var(--muted); }
+.cat { display: inline-flex; align-items: center; gap: 6px; }
+.cat i { width: 8px; height: 8px; border-radius: 50%; background: var(--dot, var(--c6)); }
+.when { display: inline-flex; align-items: center; gap: 5px; color: var(--accent-ink); font-weight: 500; font-variant-numeric: tabular-nums; }
+.when svg { width: 13px; height: 13px; }
+.when.late { color: var(--danger); }
+.av { width: 18px; height: 18px; border-radius: 50%; object-fit: cover; background: var(--line); }
+.side { display: flex; align-items: center; gap: 6px; }
+.quick { opacity: 0; transition: opacity .12s; height: 30px; padding: 0 10px; }
+.item:hover .quick, .item:focus-within .quick { opacity: 1; }
+@media (hover: none) { .quick { display: none; } }
 .stamp {
-  font-family: var(--font-mono); font-weight: 700; color: var(--stamp); border: 2px solid var(--stamp); border-radius: 6px;
-  padding: 2px 8px; transform: rotate(-6deg); text-align: center; line-height: 1.15; font-variant-numeric: tabular-nums;
-  font-size: 0.68rem; letter-spacing: .08em; text-transform: uppercase; justify-self: end; white-space: nowrap;
+  font-family: var(--font-mono); font-weight: 600; font-size: 0.66rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--done); border: 1.5px solid var(--done); border-radius: 5px; padding: 2px 7px; transform: rotate(-4deg);
+  white-space: nowrap; font-variant-numeric: tabular-nums; margin-right: 4px;
 }
-.stamp b { display: block; font-size: 0.9rem; letter-spacing: .14em; }
 .stamp.fresh { animation: thunk .45s cubic-bezier(.2, 1.6, .4, 1) both; }
-@keyframes thunk { from { transform: rotate(-18deg) scale(1.9); opacity: 0; } to { transform: rotate(-6deg) scale(1); opacity: 1; } }
-.item .side { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+@keyframes thunk { from { transform: rotate(-16deg) scale(1.8); opacity: 0; } to { transform: rotate(-4deg) scale(1); opacity: 1; } }
 
-/* Inline editor */
-.editor {
-  grid-column: 2 / -1; display: flex; flex-direction: column; gap: 8px; margin-top: 8px; padding: 12px;
-  background: var(--card); border: 1.5px solid var(--line); border-radius: 10px; color: var(--ink);
+/* row menu */
+.menu-wrap { position: relative; }
+.menu {
+  position: absolute; right: 0; top: calc(100% + 4px); z-index: 15; min-width: 176px; padding: 4px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow-pop);
+  display: flex; flex-direction: column;
 }
-.ticket .editor { margin-top: 2px; }
-.editor label { font-size: 0.82rem; font-weight: 600; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
-.editor .row { display: flex; flex-wrap: wrap; gap: 8px; }
-.editor .row > label { flex: 1 1 160px; }
-.editor .field { width: 100%; }
-.editor .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.menu button { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; border: 0; background: none; padding: 8px 10px; border-radius: 6px; font-size: 0.875rem; color: var(--ink); }
+.menu button svg { width: 15px; height: 15px; color: var(--muted); }
+.menu button:hover, .menu button:focus-visible { background: var(--surface-2); outline: none; }
+.menu .sep { height: 1px; background: var(--line); margin: 4px 0; }
+.menu .danger, .menu .danger svg { color: var(--danger); }
 
-.empty-state { text-align: center; padding: 36px 16px; color: var(--muted); display: flex; flex-direction: column; gap: 6px; align-items: center; }
-.empty-state strong { color: var(--ink); font-family: var(--font-display); font-size: 1.2rem; }
+/* inline editor */
+.editor {
+  grid-column: 2 / -1; display: flex; flex-direction: column; gap: 12px; margin-top: 10px; padding: 14px;
+  background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px;
+}
+.editor label { display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem; font-weight: 500; color: var(--ink-2); }
+.editor .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.editor .btns { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.editor .hint { margin-right: auto; align-self: center; }
+.editor p { margin: 0; color: var(--ink-2); }
+
+.empty-state { text-align: center; padding: 44px 20px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; align-items: center; font-size: 0.9rem; }
+.empty-state strong { color: var(--ink); font-weight: 600; font-size: 1rem; }
+.skeleton { padding: 18px 16px; display: flex; flex-direction: column; gap: 14px; }
+.skeleton i { display: block; height: 14px; border-radius: 6px; background: var(--surface-2); }
 
 .toast {
-  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px));
-  background: var(--ink); color: var(--paper); padding: 10px 16px; border-radius: 10px; font-size: 0.9rem;
-  max-width: min(92vw, 520px); box-shadow: 0 6px 24px rgb(0 0 0 / .2); z-index: 20;
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 30;
+  background: var(--ink); color: var(--surface); padding: 10px 16px; border-radius: 10px; font-size: 0.875rem;
+  max-width: min(92vw, 520px); box-shadow: var(--shadow-pop);
 }
 
 @media (max-width: 560px) {
-  .ticket { grid-template-columns: 1fr; }
-  .ticket-stub { border-left: 0; border-top: 2px dashed color-mix(in srgb, currentColor 35%, transparent); flex-direction: row; gap: 10px; justify-content: flex-start; padding: 12px 22px; width: auto; }
-  .stub-count { margin: 0 0 0 auto; }
-  .ticket::before, .ticket::after { display: none; }
-  .item { grid-template-columns: 30px minmax(0, 1fr); }
-  .item .side { grid-column: 2; flex-direction: row; justify-content: space-between; align-items: center; width: 100%; }
-  .item .side .stamp { order: 2; }
-  .row-actions { justify-content: flex-start; margin-left: -6px; }
+  body { padding-block: 24px 64px; }
+  .next { grid-template-columns: 64px minmax(0, 1fr); gap: 14px; padding: 16px; }
+  .next .actions .btn { flex: 1 1 auto; justify-content: center; }
+  .item { grid-template-columns: 24px minmax(0, 1fr) auto; padding: 14px 8px 14px 14px; gap: 2px 12px; }
+  .stamp { display: none; }
+  .add-row .btn { flex: 1 1 100%; justify-content: center; }
+  .toolbar { padding: 10px 12px; }
+  .seg { width: 100%; }
+  .seg button { flex: 1 1 0; justify-content: center; padding: 0 6px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .stamp.fresh { animation: none; }
-  .bar > i { transition: none; }
+  *, *::before, *::after { transition: none !important; animation: none !important; }
 }
 </style>
 
-<div class="wrap">
-  <header>
-    <h1>Our Bucket List</h1>
-    <div class="progress" aria-label="Progress">
-      <div class="progress-num"><span><b id="done-n">0</b> of <b id="total-n">0</b> done</span><span id="pct">0%</span></div>
-      <div class="bar"><i id="bar"></i></div>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <h1>Our Bucket List</h1>
+      <p class="summary" id="summary">Loading…</p>
+    </div>
+    <div class="ring" id="ring" role="img" aria-label="0% done">
+      <svg viewBox="0 0 60 60" aria-hidden="true"><circle class="track" cx="30" cy="30" r="25" fill="none" stroke-width="5"/><circle class="fill" id="ring-fill" cx="30" cy="30" r="25" fill="none" stroke-width="5" stroke-linecap="round" stroke-dasharray="157.08" stroke-dashoffset="157.08"/></svg>
+      <span id="ring-pct">0%</span>
     </div>
   </header>
 
@@ -211,25 +259,29 @@ textarea.field { width: 100%; resize: vertical; min-height: 120px; line-height: 
 
   <section id="next" aria-label="Next up"></section>
 
-  <form id="add" class="add" autocomplete="off">
-    <div class="add-row" id="single-row">
-      <input id="new-title" class="field" placeholder="Add an activity, e.g. See the northern lights" aria-label="Activity" maxlength="200">
-      <input id="new-cat" class="field" placeholder="Category (optional)" aria-label="Category" list="cats" maxlength="40">
-      <button class="btn solid" type="submit">Add</button>
+  <section class="card panel" aria-label="Activities">
+    <form id="add" class="add" autocomplete="off" hidden>
+      <div class="add-row" id="single-row">
+        <div class="input-wrap">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>
+          <input id="new-title" class="field" placeholder="Add an activity, e.g. See the northern lights" aria-label="Activity" maxlength="200">
+        </div>
+        <input id="new-cat" class="field" placeholder="Category" aria-label="Category (optional)" list="cats" maxlength="40">
+        <button class="btn primary" type="submit">Add</button>
+      </div>
+      <div id="bulk-row" hidden>
+        <textarea id="bulk-text" class="field" aria-label="Paste your list" placeholder="Paste your list here, one activity per line.&#10;Bullets and numbers are removed for you."></textarea>
+      </div>
+      <div class="add-foot">
+        <button type="button" class="text-btn" id="toggle-bulk">Paste a whole list</button>
+        <span class="hint" id="bulk-hint" hidden></span>
+        <button type="button" class="btn primary" id="bulk-add" hidden>Add all</button>
+      </div>
+      <datalist id="cats"></datalist>
+    </form>
+    <div class="toolbar">
+      <div class="seg" role="tablist" id="tabs" aria-label="Filter activities"></div>
     </div>
-    <div id="bulk-row" hidden>
-      <textarea id="bulk-text" class="field" placeholder="Paste your list here, one activity per line.&#10;Bullets and numbers are removed for you."></textarea>
-    </div>
-    <div class="add-foot">
-      <button type="button" class="link" id="toggle-bulk">Paste a whole list</button>
-      <span class="hint" id="bulk-hint" hidden></span>
-      <button type="button" class="btn solid" id="bulk-add" hidden>Add all</button>
-    </div>
-    <datalist id="cats"></datalist>
-  </form>
-
-  <section aria-label="Activities">
-    <div class="tabs" role="tablist" id="tabs"></div>
     <ul class="list" id="list"></ul>
     <div id="list-empty" class="empty-state" hidden></div>
   </section>
@@ -240,17 +292,30 @@ textarea.field { width: 100%; resize: vertical; min-height: 120px; line-height: 
 (() => {
   const $ = (s) => document.querySelector(s);
   const LOCAL_KEY = "bucketlist.items.v1";
-  const CHECK_SVG = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg>';
+  const ICON = {
+    check: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg>',
+    dots: '<svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><circle cx="4.5" cy="10" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="15.5" cy="10" r="1.6"/></svg>',
+    cal: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="3.5" width="11" height="10" rx="2"/><path d="M2.5 7h11M5.5 2v3M10.5 2v3"/></svg>',
+    edit: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.5 2.5l3 3L6 13H3v-3z"/></svg>',
+    trash: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5h11M6 4.5V3h4v1.5M4 4.5l.7 9h6.6l.7-9"/></svg>',
+    undo: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3L2 6l3 3"/><path d="M2 6h7.5a4 4 0 010 8H6"/></svg>',
+    x: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>',
+    dice: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><circle cx="8.5" cy="8.5" r="1.1" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.1" fill="currentColor"/><circle cx="12" cy="12" r="1.1" fill="currentColor"/></svg>',
+    flag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg>',
+    trophy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 01-8 0zM8 6H5a3 3 0 003 4M16 6h3a3 3 0 01-3 4M12 13v4M8.5 20h7"/></svg>',
+    info: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.25"/><path d="M8 7.2V11M8 5v.01"/></svg>',
+  };
 
   const state = {
-    mode: "loading",      // loading | db | local | unavailable
+    mode: "loading",       // loading | db | local | unavailable
     items: [],
     canWrite: true,
     me: null,
     filter: safeGet("bucketlist.filter") || "todo",
-    editor: null,          // { id, kind: plan|done|edit|delete, where: hero|list }
-    suggestion: null,      // id picked by "Pick one for us"
-    fresh: new Set(),      // ids just marked done (stamp animation)
+    editor: null,           // { id, kind: plan|done|edit|delete, where: hero|list }
+    menu: null,             // id of the row whose menu is open
+    suggestion: null,       // id picked by "Pick one for us"
+    fresh: new Set(),       // ids just marked done (stamp animation)
   };
   let col = null, userNs = null;
   const profiles = {};
@@ -270,11 +335,12 @@ textarea.field { width: 100%; resize: vertical; min-height: 120px; line-height: 
   }
   function countdown(s) {
     const n = daysUntil(s);
-    if (n === 0) return "today";
-    if (n === 1) return "tomorrow";
-    if (n === -1) return "yesterday";
-    return n > 0 ? `in ${n} days` : `${-n} days ago`;
+    if (n === 0) return "Today";
+    if (n === 1) return "Tomorrow";
+    if (n === -1) return "Yesterday";
+    return n > 0 ? `In ${n} days` : `${-n} days ago`;
   }
+  function catColor(c) { let h = 0; for (const ch of c.toLowerCase()) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return `var(--c${(h % 6) + 1})`; }
   function toast(msg) {
     const t = $("#toast"); t.textContent = msg; t.hidden = false;
     clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 4200);
@@ -341,8 +407,7 @@ textarea.field { width: 100%; resize: vertical; min-height: 120px; line-height: 
   }
   async function fillAvatars() {
     if (!userNs) return;
-    const imgs = [...document.querySelectorAll("img.av[data-uid]")];
-    const ids = [...new Set(imgs.map((i) => i.dataset.uid))];
+    const ids = [...new Set([...document.querySelectorAll("img.av[data-uid]")].map((i) => i.dataset.uid))];
     if (!ids.length) return;
     const ps = await userNs.profiles(ids);
     Object.assign(profiles, ps);
@@ -357,37 +422,40 @@ textarea.field { width: 100%; resize: vertical; min-height: 120px; line-height: 
   /* ---------- rendering ---------- */
   function editorHTML(item, kind) {
     const id = esc(item.id);
+    const cancel = `<button type="button" class="btn ghost" data-act="cancel">Cancel</button>`;
     if (kind === "plan") return `
       <div class="editor" data-editor="${id}">
-        <div class="row">
-          <label>When?<input type="date" class="field" name="date" value="${esc(item.plannedFor || "")}" min="${todayISO()}"></label>
+        <div class="grid">
+          <label>Date<input type="date" class="field" name="date" value="${esc(item.plannedFor || "")}" min="${todayISO()}"></label>
           <label>Plan notes<input class="field" name="planNote" maxlength="200" placeholder="Where, who books what…" value="${esc(item.planNote || "")}"></label>
         </div>
-        <div class="btns"><button class="btn solid" data-act="save-plan" data-id="${id}">Save plan</button><button class="btn" data-act="cancel">Cancel</button></div>
-        <span class="hint">Leave the date empty if you haven't picked one yet.</span>
+        <div class="btns"><span class="hint">No date yet? Leave it empty.</span>${cancel}<button type="button" class="btn primary" data-act="save-plan" data-id="${id}">Save plan</button></div>
       </div>`;
-    if (kind === "done") return `
+    if (kind === "done") {
+      const def = item.doneOn || (validISO(item.plannedFor) && daysUntil(item.plannedFor) <= 0 ? item.plannedFor : todayISO());
+      return `
       <div class="editor" data-editor="${id}">
-        <div class="row">
-          <label>Done on<input type="date" class="field" name="date" value="${esc(item.doneOn || item.plannedFor && daysUntil(item.plannedFor) <= 0 && item.plannedFor || todayISO())}" max="${todayISO()}"></label>
+        <div class="grid">
+          <label>Done on<input type="date" class="field" name="date" value="${esc(def)}" max="${todayISO()}"></label>
           <label>How was it?<input class="field" name="memory" maxlength="300" placeholder="A line to remember it by (optional)" value="${esc(item.memory || "")}"></label>
         </div>
-        <div class="btns"><button class="btn green" data-act="save-done" data-id="${id}">Mark as done</button><button class="btn" data-act="cancel">Cancel</button></div>
+        <div class="btns">${cancel}<button type="button" class="btn success" data-act="save-done" data-id="${id}">${ICON.check} Mark as done</button></div>
       </div>`;
+    }
     if (kind === "edit") return `
       <div class="editor" data-editor="${id}">
-        <div class="row">
+        <div class="grid">
           <label>Activity<input class="field" name="title" maxlength="200" value="${esc(item.title)}"></label>
           <label>Category<input class="field" name="category" maxlength="40" list="cats" value="${esc(item.category || "")}"></label>
         </div>
         <label>Notes<input class="field" name="notes" maxlength="500" placeholder="Ideas, links, costs…" value="${esc(item.notes || "")}"></label>
         ${item.status === "done" ? `<label>How was it?<input class="field" name="memory" maxlength="300" value="${esc(item.memory || "")}"></label>` : ""}
-        <div class="btns"><button class="btn solid" data-act="save-edit" data-id="${id}">Save</button><button class="btn" data-act="cancel">Cancel</button></div>
+        <div class="btns">${cancel}<button type="button" class="btn primary" data-act="save-edit" data-id="${id}">Save changes</button></div>
       </div>`;
     if (kind === "delete") return `
       <div class="editor" data-editor="${id}">
-        <span>Delete “${esc(item.title)}”? It disappears for both of you.</span>
-        <div class="btns"><button class="btn danger" data-act="confirm-delete" data-id="${id}">Delete</button><button class="btn" data-act="cancel">Keep it</button></div>
+        <p>Delete “${esc(item.title)}”? It disappears for both of you.</p>
+        <div class="btns"><button type="button" class="btn ghost" data-act="cancel">Keep it</button><button type="button" class="btn danger" data-act="confirm-delete" data-id="${id}">Delete</button></div>
       </div>`;
     return "";
   }
@@ -396,84 +464,100 @@ textarea.field { width: 100%; resize: vertical; min-height: 120px; line-height: 
     return e && e.id === item.id && e.where === where ? editorHTML(item, e.kind) : "";
   }
 
+  function calTile(iso) {
+    if (!validISO(iso)) return `<div class="cal tbd" aria-label="Date to be decided"><div class="cal-mon">Date</div><div class="cal-day">TBD</div></div>`;
+    const d = parseISO(iso);
+    const yr = d.getFullYear() !== new Date().getFullYear() ? ` ’${String(d.getFullYear()).slice(2)}` : "";
+    return `<div class="cal" aria-label="${esc(fmtDate(iso, true))}"><div class="cal-mon">${esc(d.toLocaleDateString(undefined, { month: "short" }))}${yr}</div><div class="cal-day">${d.getDate()}</div><div class="cal-dow">${esc(d.toLocaleDateString(undefined, { weekday: "short" }))}</div></div>`;
+  }
+
   function renderNext(todo, planned, total) {
     const el = $("#next");
     const w = state.canWrite;
-    if (state.mode === "loading") { el.innerHTML = `<div class="ticket empty"><div class="ticket-main"><span class="eyebrow">Next up</span><p class="sub">Loading your list…</p></div></div>`; return; }
+    if (state.mode === "loading") { el.innerHTML = `<div class="card next empty"><div class="empty-icon">${ICON.flag}</div><div class="next-body"><span class="eyebrow">Next up</span><p>Loading your list…</p></div></div>`; return; }
     const next = planned[0];
     if (next) {
       const dated = validISO(next.plannedFor);
-      const d = dated ? parseISO(next.plannedFor) : null;
-      const overdue = dated && daysUntil(next.plannedFor) < 0;
+      const late = dated && daysUntil(next.plannedFor) < 0;
+      const more = planned.length - 1;
       el.innerHTML = `
-        <div class="ticket">
-          <div class="ticket-main">
-            <span class="eyebrow">Next up${planned.length > 1 ? ` · ${planned.length - 1} more planned` : ""}</span>
+        <div class="card next">
+          ${calTile(next.plannedFor)}
+          <div class="next-body">
+            <div class="next-head"><span class="eyebrow">Next up</span>${dated ? `<span class="pill${late ? " late" : ""}">${countdown(next.plannedFor)}</span>` : ""}</div>
             <h2>${esc(next.title)}</h2>
-            ${next.planNote ? `<p class="sub">${esc(next.planNote)}</p>` : ""}
-            ${overdue ? `<p class="sub"><b>That date has passed. Did you go?</b></p>` : ""}
+            ${next.planNote ? `<p>${esc(next.planNote)}</p>` : ""}
+            ${late ? `<p>That date has passed. Did you go?</p>` : ""}
             ${w ? `<div class="actions">
-              <button class="btn solid" data-act="open" data-kind="done" data-where="hero" data-id="${esc(next.id)}">We did it</button>
-              <button class="btn" data-act="open" data-kind="plan" data-where="hero" data-id="${esc(next.id)}">${dated ? "Change date" : "Pick a date"}</button>
-              <button class="btn" data-act="unplan" data-id="${esc(next.id)}">Unplan</button>
+              <button type="button" class="btn success" data-act="open" data-kind="done" data-where="hero" data-id="${esc(next.id)}">${ICON.check} We did it</button>
+              <button type="button" class="btn" data-act="open" data-kind="plan" data-where="hero" data-id="${esc(next.id)}">${ICON.cal} ${dated ? "Change date" : "Pick a date"}</button>
+              <button type="button" class="btn ghost" data-act="unplan" data-id="${esc(next.id)}">Unplan</button>
             </div>` : ""}
-            ${editorFor(next, "hero")}
+            ${more > 0 ? `<button type="button" class="text-btn" data-act="filter" data-filter="planned" style="align-self:flex-start;margin-top:6px">${more} more planned</button>` : ""}
           </div>
-          <div class="ticket-stub">
-            ${dated ? `<span class="stub-day">${d.getDate()}</span><span class="stub-mon">${d.toLocaleDateString(undefined, { month: "short" })} ${d.getFullYear() !== new Date().getFullYear() ? d.getFullYear() : ""}</span><span class="stub-count">${countdown(next.plannedFor)}</span>`
-                     : `<span class="stub-mon">Date</span><span class="stub-count">to be decided</span>`}
-          </div>
+          ${editorFor(next, "hero")}
         </div>`;
       return;
     }
     const sug = state.suggestion && todo.find((x) => x.id === state.suggestion);
     if (sug) {
       el.innerHTML = `
-        <div class="ticket">
-          <div class="ticket-main">
-            <span class="eyebrow">How about…</span>
+        <div class="card next">
+          <div class="cal tbd"><div class="cal-mon">Pick</div><div class="cal-day" style="color:var(--accent-ink)">${ICON.dice.replace('<svg ', '<svg style="width:26px;height:26px" ')}</div></div>
+          <div class="next-body">
+            <div class="next-head"><span class="eyebrow">How about this one?</span><span class="pill">Random pick of ${todo.length}</span></div>
             <h2>${esc(sug.title)}</h2>
-            ${sug.notes ? `<p class="sub">${esc(sug.notes)}</p>` : ""}
+            ${sug.notes ? `<p>${esc(sug.notes)}</p>` : ""}
             ${w ? `<div class="actions">
-              <button class="btn solid" data-act="open" data-kind="plan" data-where="hero" data-id="${esc(sug.id)}">Plan this one</button>
-              ${todo.length > 1 ? `<button class="btn" data-act="pick">Pick another</button>` : ""}
-              <button class="btn" data-act="clear-pick">Not now</button>
+              <button type="button" class="btn primary" data-act="open" data-kind="plan" data-where="hero" data-id="${esc(sug.id)}">${ICON.cal} Plan this one</button>
+              ${todo.length > 1 ? `<button type="button" class="btn" data-act="pick">Pick another</button>` : ""}
+              <button type="button" class="btn ghost" data-act="clear-pick">Not now</button>
             </div>` : ""}
-            ${editorFor(sug, "hero")}
           </div>
-          <div class="ticket-stub"><span class="stub-mon">Random pick</span><span class="stub-count">1 of ${todo.length}</span></div>
+          ${editorFor(sug, "hero")}
         </div>`;
       return;
     }
-    let msg, action = "";
-    if (!total) msg = "Add your activities below and this is where your next adventure shows up.";
-    else if (!todo.length) msg = "You've done everything on the list. Time to dream up some more.";
+    let title, msg, icon = ICON.flag, action = "";
+    if (!total) { title = "Start your list"; msg = "Add the things you want to do together below. Your next adventure will show up here."; }
+    else if (!todo.length) { title = "All done!"; msg = "You've ticked off everything on the list. Time to dream up more."; icon = ICON.trophy; }
     else {
-      msg = `Nothing planned yet. ${todo.length} ${todo.length === 1 ? "activity is" : "activities are"} waiting.`;
-      if (w) action = `<div class="actions"><button class="btn solid" data-act="pick">Pick one for us</button></div>`;
+      title = "Nothing planned yet";
+      msg = `${todo.length} ${todo.length === 1 ? "activity is" : "activities are"} waiting for a date.`;
+      if (w) action = `<button type="button" class="btn primary" data-act="pick">${ICON.dice.replace('<svg ', '<svg style="width:16px;height:16px" ')} Pick one for us</button>`;
     }
-    el.innerHTML = `<div class="ticket empty"><div class="ticket-main"><span class="eyebrow">Next up</span><p class="sub">${msg}</p>${action}</div></div>`;
+    el.innerHTML = `<div class="card next empty"><div class="empty-icon">${icon}</div><div class="row"><div class="next-body"><strong>${title}</strong><p>${msg}</p></div>${action}</div></div>`;
+  }
+
+  function menuHTML(item) {
+    const id = esc(item.id), done = item.status === "done", planned = item.status === "planned";
+    const b = (act, icon, label, extra = "", cls = "") => `<button type="button" role="menuitem" class="${cls}" data-act="${act}" data-id="${id}" ${extra}>${icon}${label}</button>`;
+    const items = done
+      ? [b("open", ICON.edit, "Edit", 'data-kind="edit" data-where="list"'), b("undo", ICON.undo, "Mark as not done")]
+      : [
+          b("open", ICON.check, "Mark as done", 'data-kind="done" data-where="list"'),
+          b("open", ICON.cal, planned ? "Change date" : "Plan it", 'data-kind="plan" data-where="list"'),
+          planned ? b("unplan", ICON.x, "Unplan") : "",
+          b("open", ICON.edit, "Edit", 'data-kind="edit" data-where="list"'),
+        ];
+    return `<div class="menu" role="menu">${items.join("")}<div class="sep"></div>${b("open", ICON.trash, "Delete", 'data-kind="delete" data-where="list"', "danger")}</div>`;
   }
 
   function itemHTML(item) {
-    const w = state.canWrite, id = esc(item.id), done = item.status === "done";
-    const planned = item.status === "planned";
+    const w = state.canWrite, id = esc(item.id), done = item.status === "done", planned = item.status === "planned";
     const meta = [];
-    if (item.category) meta.push(`<span class="tag">${esc(item.category)}</span>`);
-    if (planned) meta.push(`<span class="chip-plan">${validISO(item.plannedFor) ? `${esc(fmtDate(item.plannedFor, true))} · ${countdown(item.plannedFor)}` : "Planned · date TBD"}</span>`);
+    if (item.category) meta.push(`<span class="cat" style="--dot:${catColor(item.category)}"><i></i>${esc(item.category)}</span>`);
+    if (planned) {
+      const late = validISO(item.plannedFor) && daysUntil(item.plannedFor) < 0;
+      meta.push(`<span class="when${late ? " late" : ""}">${ICON.cal}${validISO(item.plannedFor) ? `${esc(fmtDate(item.plannedFor, true))} · ${countdown(item.plannedFor)}` : "Planned · date TBD"}</span>`);
+    }
+    if (done && validISO(item.doneOn)) meta.push(`<span>Done ${esc(fmtDate(item.doneOn))}</span>`);
     const who = done ? avatar(item.doneBy || item.addedBy, "Ticked off") : avatar(item.addedBy, "Added");
     if (who) meta.push(who);
-    const actions = !w ? "" : done
-      ? `<button class="link" data-act="open" data-kind="edit" data-where="list" data-id="${id}">Edit</button>
-         <button class="link" data-act="undo" data-id="${id}">Not done</button>
-         <button class="link danger" data-act="open" data-kind="delete" data-where="list" data-id="${id}">Delete</button>`
-      : `<button class="link" data-act="open" data-kind="plan" data-where="list" data-id="${id}">${planned ? "Reschedule" : "Plan"}</button>
-         ${planned ? `<button class="link" data-act="unplan" data-id="${id}">Unplan</button>` : ""}
-         <button class="link" data-act="open" data-kind="edit" data-where="list" data-id="${id}">Edit</button>
-         <button class="link danger" data-act="open" data-kind="delete" data-where="list" data-id="${id}">Delete</button>`;
+    const menuOpen = state.menu === item.id;
     return `
-      <li class="item${done ? " done" : ""}" data-item="${id}">
-        <button class="check" ${w ? "" : "disabled"} data-act="${done ? "undo" : "open"}" data-kind="done" data-where="list" data-id="${id}" aria-label="${done ? "Mark as not done" : "Mark as done"}: ${esc(item.title)}">${CHECK_SVG}</button>
+      <li class="item${done ? " done" : ""}">
+        <button type="button" class="check" ${w ? "" : "disabled"} data-act="${done ? "undo" : "open"}" data-kind="done" data-where="list" data-id="${id}" aria-label="${done ? "Mark as not done" : "Mark as done"}: ${esc(item.title)}">${ICON.check}</button>
         <div class="body">
           <span class="title">${esc(item.title)}</span>
           ${item.notes ? `<span class="notes">${esc(item.notes)}</span>` : ""}
@@ -481,8 +565,12 @@ textarea.field { width: 100%; resize: vertical; min-height: 120px; line-height: 
           ${meta.length ? `<span class="meta">${meta.join("")}</span>` : ""}
         </div>
         <div class="side">
-          ${done ? `<span class="stamp${state.fresh.has(item.id) ? " fresh" : ""}"><b>Done</b>${validISO(item.doneOn) ? esc(fmtDate(item.doneOn)) : ""}</span>` : ""}
-          <div class="row-actions">${actions}</div>
+          ${done ? `<span class="stamp${state.fresh.has(item.id) ? " fresh" : ""}">Done</span>` : ""}
+          ${w && !done && !planned ? `<button type="button" class="btn ghost quick" data-act="open" data-kind="plan" data-where="list" data-id="${id}">${ICON.cal} Plan</button>` : ""}
+          ${w ? `<div class="menu-wrap">
+            <button type="button" class="icon-btn" data-act="menu" data-id="${id}" aria-haspopup="menu" aria-expanded="${menuOpen}" aria-label="More actions for ${esc(item.title)}">${ICON.dots}</button>
+            ${menuOpen ? menuHTML(item) : ""}
+          </div>` : ""}
         </div>
         ${editorFor(item, "list")}
       </li>`;
@@ -510,19 +598,22 @@ textarea.field { width: 100%; resize: vertical; min-height: 120px; line-height: 
     const planned = items.filter((x) => x.status === "planned").sort(byPlanned);
     const done = items.filter((x) => x.status === "done").sort(byDone);
     const total = items.length;
+    if (state.menu && !items.some((x) => x.id === state.menu)) state.menu = null;
 
-    $("#done-n").textContent = done.length;
-    $("#total-n").textContent = total;
     const pct = total ? Math.round((done.length / total) * 100) : 0;
-    $("#pct").textContent = pct + "%";
-    $("#bar").style.width = pct + "%";
+    $("#ring-fill").setAttribute("stroke-dashoffset", (157.08 * (1 - pct / 100)).toFixed(2));
+    $("#ring-pct").textContent = pct + "%";
+    $("#ring").setAttribute("aria-label", `${done.length} of ${total} done`);
+    $("#summary").innerHTML = state.mode === "loading" ? "Loading…"
+      : total ? `<b>${done.length}</b> of <b>${total}</b> done · <b>${planned.length}</b> planned · <b>${todo.length}</b> to go`
+      : "Things we want to do together";
 
     const notice = $("#notice");
     let n = "";
     if (state.mode === "local") n = "Saved in this browser only. Publish this page as a Claude artifact to share the list with your friend.";
     else if (state.mode === "unavailable") n = "The shared list isn't available in this view. Open it on claude.ai while signed in.";
     else if (state.mode === "db" && !state.canWrite) n = "You can view this list. To add or tick off activities, ask the owner to share it with you as an Editor.";
-    notice.textContent = n; notice.hidden = !n;
+    notice.innerHTML = n ? `${ICON.info}<span>${esc(n)}</span>` : ""; notice.hidden = !n;
 
     $("#add").hidden = !state.canWrite || state.mode === "unavailable" || state.mode === "loading";
     $("#cats").innerHTML = [...new Set(items.map((x) => (x.category || "").trim()).filter(Boolean))].sort().map((c) => `<option value="${esc(c)}">`).join("");
@@ -530,18 +621,20 @@ textarea.field { width: 100%; resize: vertical; min-height: 120px; line-height: 
     renderNext(todo, planned, total);
 
     const tabs = [["todo", "To do", todo.length], ["planned", "Planned", planned.length], ["done", "Done", done.length], ["all", "All", total]];
-    $("#tabs").innerHTML = tabs.map(([k, label, c]) => `<button class="tab" role="tab" data-act="filter" data-filter="${k}" aria-selected="${state.filter === k}">${label}<span class="n">${c}</span></button>`).join("");
+    $("#tabs").innerHTML = tabs.map(([k, label, c]) => `<button type="button" role="tab" data-act="filter" data-filter="${k}" aria-selected="${state.filter === k}">${label}<span class="n">${c}</span></button>`).join("");
 
     const shown = state.filter === "todo" ? todo : state.filter === "planned" ? planned : state.filter === "done" ? done : [...planned, ...todo, ...done];
-    $("#list").innerHTML = state.mode === "loading" ? "" : shown.map(itemHTML).join("");
+    $("#list").innerHTML = state.mode === "loading"
+      ? `<li class="skeleton" aria-hidden="true"><i style="width:62%"></i><i style="width:44%"></i><i style="width:55%"></i></li>`
+      : shown.map(itemHTML).join("");
 
     const empty = $("#list-empty");
     let e = "";
     if (state.mode !== "loading" && !shown.length) {
-      if (!total) e = `<strong>Your bucket list is empty</strong><span>Add activities one at a time above, or paste your whole list in one go.</span>`;
+      if (!total) e = `<strong>Your list is empty</strong><span>Add activities one at a time above, or paste your whole list in one go.</span>`;
       else if (state.filter === "todo") e = `<strong>Nothing left to do</strong><span>Everything is planned or done.</span>`;
-      else if (state.filter === "planned") e = `<strong>Nothing planned</strong><span>Choose “Plan” on any activity to set a date.</span>`;
-      else if (state.filter === "done") e = `<strong>No stamps yet</strong><span>Tick off your first activity and it shows up here.</span>`;
+      else if (state.filter === "planned") e = `<strong>Nothing planned</strong><span>Open the ⋯ menu on any activity and choose “Plan it”.</span>`;
+      else if (state.filter === "done") e = `<strong>Nothing ticked off yet</strong><span>Mark your first activity as done and it shows up here.</span>`;
     }
     empty.innerHTML = e; empty.hidden = !e;
 
@@ -557,16 +650,23 @@ textarea.field { width: 100%; resize: vertical; min-height: 120px; line-height: 
     return v;
   }
   function openEditor(id, kind, where) {
-    state.editor = { id, kind, where }; render();
+    state.editor = { id, kind, where }; state.menu = null; render();
     const box = document.querySelector(`[data-editor="${CSS.escape(id)}"]`);
     const first = box && box.querySelector("input, button"); if (first) first.focus();
   }
 
   document.addEventListener("click", async (ev) => {
-    const b = ev.target.closest("[data-act]"); if (!b) return;
+    const b = ev.target.closest("[data-act]");
+    if (state.menu && !ev.target.closest(".menu-wrap")) { state.menu = null; if (!b) render(); }
+    if (!b) return;
     ev.preventDefault();
     const act = b.dataset.act, id = b.dataset.id, item = id && find(id);
     switch (act) {
+      case "menu": {
+        state.menu = state.menu === id ? null : id; render();
+        const first = state.menu && document.querySelector(".menu button"); if (first) first.focus();
+        break;
+      }
       case "filter": state.filter = b.dataset.filter; safeSet("bucketlist.filter", state.filter); state.editor = null; render(); break;
       case "open": if (item) openEditor(id, b.dataset.kind, b.dataset.where); break;
       case "cancel": state.editor = null; render(); break;
@@ -584,7 +684,7 @@ textarea.field { width: 100%; resize: vertical; min-height: 120px; line-height: 
         if (await updateItem(id, { status: "planned", plannedFor: date, planNote: v.planNote || "" })) toast(date ? `Planned for ${fmtDate(date, true)}.` : "Added to your plans.");
         render(); break;
       }
-      case "unplan": state.editor = null; await updateItem(id, { status: "todo", plannedFor: null, planNote: "" }); render(); break;
+      case "unplan": state.editor = null; state.menu = null; await updateItem(id, { status: "todo", plannedFor: null, planNote: "" }); render(); break;
       case "save-done": {
         const v = editorValues(id);
         const date = validISO(v.date) ? v.date : todayISO();
@@ -592,7 +692,7 @@ textarea.field { width: 100%; resize: vertical; min-height: 120px; line-height: 
         if (await updateItem(id, { status: "done", doneOn: date, doneAt: Date.now(), memory: v.memory || "", doneBy: state.me || null })) toast(`Ticked off: ${item ? item.title : "activity"}.`);
         render(); setTimeout(() => state.fresh.delete(id), 1500); break;
       }
-      case "undo": state.editor = null; await updateItem(id, { status: "todo", doneOn: null, doneAt: null, doneBy: null, plannedFor: null }); render(); break;
+      case "undo": state.editor = null; state.menu = null; await updateItem(id, { status: "todo", doneOn: null, doneAt: null, doneBy: null, plannedFor: null }); render(); break;
       case "save-edit": {
         const v = editorValues(id);
         if (!v.title) { toast("Give the activity a name first."); break; }
@@ -604,10 +704,13 @@ textarea.field { width: 100%; resize: vertical; min-height: 120px; line-height: 
     }
   });
   document.addEventListener("keydown", (ev) => {
-    if (ev.key === "Escape" && state.editor) { state.editor = null; render(); }
+    if (ev.key === "Escape") {
+      if (state.menu) { const id = state.menu; state.menu = null; render(); const t = document.querySelector(`[data-act="menu"][data-id="${CSS.escape(id)}"]`); if (t) t.focus(); }
+      else if (state.editor) { state.editor = null; render(); }
+    }
     if (ev.key === "Enter" && ev.target.matches("[data-editor] input")) {
       ev.preventDefault();
-      const box = ev.target.closest("[data-editor]"); const save = box.querySelector("[data-act^='save'], [data-act='confirm-delete']"); if (save) save.click();
+      const save = ev.target.closest("[data-editor]").querySelector("[data-act^='save'], [data-act='confirm-delete']"); if (save) save.click();
     }
   });
 
