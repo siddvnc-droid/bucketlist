@@ -260,7 +260,7 @@ h1 em { font-style: italic; color: var(--ink-2); }
 .cl-bar { width: 84px; height: 4px; border-radius: 4px; background: var(--surface-3); overflow: hidden; }
 .cl-bar i { display: block; height: 100%; background: var(--done); border-radius: inherit; transition: width .5s var(--ease); }
 .steps { list-style: none; margin: 0 -8px; padding: 0; display: flex; flex-direction: column; }
-.step { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto auto; align-items: center; gap: 4px 12px; min-height: 40px; padding: 4px 6px 4px 8px; border-radius: 10px; transition: background .12s; }
+.step { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; align-items: center; gap: 4px 12px; min-height: 40px; padding: 4px 6px 4px 8px; border-radius: 10px; transition: background .12s; }
 .step:hover { background: var(--surface-2); }
 .sbox { width: 20px; height: 20px; padding: 0; border-radius: 6px; border: 1.5px solid var(--line-2); background: var(--surface); display: grid; place-items: center; color: transparent; transition: background .15s, border-color .15s, color .15s; }
 .sbox svg { width: 12px; height: 12px; }
@@ -269,13 +269,9 @@ h1 em { font-style: italic; color: var(--ink-2); }
 .step.done .sbox { background: var(--done); border-color: var(--done); color: var(--on-done); }
 .stext { font-size: 14.5px; overflow-wrap: anywhere; line-height: 1.4; transition: color .2s; }
 .step.done .stext { color: var(--faint); text-decoration: line-through; text-decoration-thickness: 1px; }
-.claim { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 9px; border: 0; border-radius: 7px; background: none; font-size: 12px; font-weight: 500; color: var(--muted); white-space: nowrap; }
-.claim:hover { background: var(--surface-3); color: var(--ink); }
-.claim.on { padding: 0 3px; }
-.claim .av { width: 22px; height: 22px; }
-.step .claim:not(.on), .step .sdel { opacity: 0; transition: opacity .12s; }
-.step:hover .claim, .step:focus-within .claim, .step:hover .sdel, .step:focus-within .sdel { opacity: 1; }
-@media (hover: none) { .step .claim:not(.on), .step .sdel { opacity: 1; } }
+.step .sdel { opacity: 0; transition: opacity .12s; }
+.step:hover .sdel, .step:focus-within .sdel { opacity: 1; }
+@media (hover: none) { .step .sdel { opacity: 1; } }
 .step-add { display: flex; align-items: center; gap: 10px; border: 1px dashed var(--line-2); border-radius: 11px; padding: 0 5px 0 12px; height: 42px; transition: border-color .15s, background .15s; }
 .step-add:focus-within { border-style: solid; border-color: var(--ink-2); background: var(--surface); }
 .step-add > svg { width: 15px; height: 15px; color: var(--muted); }
@@ -1073,24 +1069,16 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     const ideas = STEP_IDEAS.filter((s) => !have.has(s.toLowerCase()));
     const steps = tasks.map((t) => {
       const tid = esc(t.id);
-      let claim = "<span></span>";
-      if (userNs && state.me) {
-        if (t.who) {
-          const mine = t.who === state.me;
-          const av = avatar(t.who, mine ? "You're on it" : "{name} is on it");
-          claim = w ? `<button type="button" class="claim on" data-act="task-claim" data-id="${id}" data-task="${tid}" aria-label="${mine ? "Unassign yourself" : "Take this step over"}">${av}</button>` : `<span class="claim on">${av}</span>`;
-        } else if (w) claim = `<button type="button" class="claim" data-act="task-claim" data-id="${id}" data-task="${tid}">I'll do it</button>`;
-      }
       return `<li class="step${t.done ? " done" : ""}">
         <button type="button" class="sbox" ${w ? "" : "disabled"} data-act="task-toggle" data-id="${id}" data-task="${tid}" aria-pressed="${!!t.done}" aria-label="${t.done ? "Mark step not done" : "Mark step done"}: ${esc(t.text)}">${ICON.check}</button>
-        <span class="stext">${esc(t.text)}</span>${claim}
+        <span class="stext">${esc(t.text)}</span>
         ${w ? `<button type="button" class="icon-btn sm danger sdel" data-act="task-del" data-id="${id}" data-task="${tid}" aria-label="Remove step: ${esc(t.text)}">${ICON.x}</button>` : "<span></span>"}
       </li>`;
     }).join("");
     return `<div class="cl">
       <div class="cl-head"><span class="cl-title">Before we go</span>${tasks.length ? `<span class="cl-prog">${done}/${tasks.length}<span class="cl-bar" aria-hidden="true"><i style="width:${Math.round((done / tasks.length) * 100)}%"></i></span></span>` : ""}</div>
       ${tasks.length ? `<ul class="steps">${steps}</ul>` : ""}
-      ${w ? `<label class="step-add">${ICON.plus}<input data-key="task:${where}:${id}" maxlength="140" placeholder="${tasks.length ? "Add a step" : "Add the first step, e.g. Book flights"}" aria-label="Add a step to ${esc(item.title)}"><button type="button" class="btn sm ghost" data-act="task-add" data-id="${id}" data-where="${where}">Add</button></label>` : ""}
+      ${w ? `<label class="step-add">${ICON.plus}<input data-key="task:${where}:${id}" maxlength="140" placeholder="${tasks.length ? "Add a step" : "Add the first step"}" aria-label="Add a step to ${esc(item.title)}"><button type="button" class="btn sm ghost" data-act="task-add" data-id="${id}" data-where="${where}">Add</button></label>` : ""}
       ${w && tasks.length < 3 && ideas.length ? `<div class="ideas">${ideas.slice(0, 5).map((s) => `<button type="button" class="idea" data-act="task-suggest" data-id="${id}" data-text="${esc(s)}">${esc(s)}</button>`).join("")}</div>` : ""}
     </div>`;
   }
@@ -1773,7 +1761,6 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       }
       case "task-suggest": if (item) await addTask(item, b.dataset.text); break;
       case "task-toggle": if (task) await updateItem(id, { checklist: { [tid]: { done: !task.done, doneBy: !task.done ? state.me || null : null } } }); break;
-      case "task-claim": if (task && state.me) await updateItem(id, { checklist: { [tid]: { who: task.who === state.me ? null : state.me } } }); break;
       case "task-del": if (task) await updateItem(id, { checklist: { [tid]: null } }); break;
 
       /* categories */
