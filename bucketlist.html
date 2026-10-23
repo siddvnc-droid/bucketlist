@@ -412,6 +412,8 @@ h1 em { font-style: italic; color: var(--ink-2); }
 .sheet-foot .who { display: inline-flex; align-items: center; gap: 8px; }
 .foot-confirm { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-left: auto; color: var(--ink-2); }
 .foot-actions { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; margin-left: auto; }
+.foot-actions #sheet-save { margin-left: 6px; }
+.save-hint { font-size: 12.5px; color: var(--gold); margin-left: 8px; }
 .dlg-title { font-family: var(--font-display); font-weight: 400; font-size: 30px; line-height: 1; margin: 0 0 6px; }
 .dlg-sub { margin: 0; color: var(--muted); font-size: 13.5px; }
 .title-input {
@@ -561,7 +563,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   const LKEYS = { activities: "bucketlist.items.v1", categories: "bucketlist.categories.v1" };
   // Starter categories for the browser-only copy. The shared list keeps its categories in the database.
   const LOCAL_STARTER_CATS = [["Travel", 1], ["Food and Drinks", 3], ["Outdoors", 4], ["Adventure", 2], ["Culture & Events", 5], ["Learn Something", 7], ["Just for Fun", 6]];
-  const STEP_IDEAS = ["Book tickets", "Pick Date", "Make Reservation"];
+  const STEP_IDEAS = ["Book tickets", "Pick a Date", "Make Reservation"];
   const COLORS = 8;
   const MON = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
   const S = 'fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
@@ -1126,9 +1128,11 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       ${st === "planned" || tasks.length ? `<section class="sheet-cl">${checklistHTML(item, "sheet")}</section>` : ""}`;
     const reverse = st === "planned" ? `<button type="button" class="btn sm ghost" data-act="cancel-plan" data-id="${id}">${ICON.x} Cancel plan</button>`
       : st === "done" ? `<button type="button" class="btn sm ghost" data-act="unstamp" data-id="${id}">${ICON.undo} Remove stamp</button>` : "";
-    const foot = `${who}${w ? (state.sheetConfirm
+    const foot = `${who}${w ? (state.sheetLeave
+      ? `<span class="foot-confirm">Save your changes?<button type="button" class="btn sm ghost" data-act="sheet-discard">Discard</button><button type="button" class="btn sm primary" data-act="sheet-save" data-close="1">Save</button></span>`
+      : state.sheetConfirm
       ? `<span class="foot-confirm">Delete for both of you?<button type="button" class="btn sm ghost" data-act="sheet-delete-cancel">Cancel</button><button type="button" class="btn sm danger" data-act="sheet-delete-confirm" data-id="${id}">Delete</button></span>`
-      : `<span class="foot-actions">${reverse}<button type="button" class="btn sm ghost danger-text" data-act="sheet-delete">${ICON.trash} Delete</button></span>`) : ""}`;
+      : `<span class="foot-actions">${reverse}<button type="button" class="btn sm ghost danger-text" data-act="sheet-delete">${ICON.trash} Delete</button><span class="save-hint" id="save-hint" hidden>Unsaved changes</span><button type="button" class="btn sm primary" id="sheet-save" data-act="sheet-save" disabled>Save</button></span>`) : ""}`;
     return { head, body, foot, status: st };
   }
   function managerParts(c) {
@@ -1187,11 +1191,15 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     }
     $$(".autogrow", root).forEach(grow);
     $$(".seg", root).forEach(syncSeg);
+    updateSaveState();
   }
-  function openSheet(id, focusField) { closePop(); state.sheet = id; state.sheetFocus = focusField || null; state.sheetConfirm = false; state.manager = false; state.dialogFresh = true; render(); }
+  function openSheet(id, focusField) { closePop(); state.sheet = id; state.sheetFocus = focusField || null; state.sheetConfirm = false; state.sheetLeave = false; state.manager = false; state.dialogFresh = true; render(); }
   function openManager() { closePop(); state.managerReturn = state.sheet; state.sheet = null; state.manager = true; state.catConfirm = null; state.dialogFresh = true; render(); }
-  function closeDialog() {
+  function closeDialog(force) {
     if (!state.sheet && !state.manager) return;
+    // Ask before throwing away typed changes.
+    if (!force && state.sheet && state.canWrite && Object.keys(sheetChanges()).length) { state.sheetLeave = true; state.sheetConfirm = false; render(); return; }
+    state.sheetLeave = false;
     if (state.manager && state.managerReturn && find(state.managerReturn)) { const back = state.managerReturn; state.managerReturn = null; openSheet(back); return; }
     const backSel = state.sheet ? `[data-act="open-sheet"][data-id="${CSS.escape(state.sheet)}"]` : "#filter-cat";
     state.sheet = null; state.manager = false; state.managerReturn = null; state.catConfirm = null; state.sheetConfirm = false;
@@ -1393,19 +1401,40 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     const clean = String(text || "").trim().slice(0, 140); if (!clean) return false;
     return updateItem(item.id, { checklist: { [taskId()]: { text: clean, done: false, order: Date.now(), who: null, doneBy: null } } });
   }
-  async function saveField(el) {
+  /* typed changes in the details panel wait for Save */
+  function sheetFieldValue(el, item) {
+    const f = el.dataset.field, v = el.value;
+    if (f === "title") return v.replace(/\s+/g, " ").trim().slice(0, 200);
+    if (f === "plannedFor") return validISO(v) ? v : null;
+    if (f === "doneOn") return validISO(v) ? v : (item.doneOn || todayISO());
+    return v.trim();
+  }
+  function sheetChanges() {
+    const item = find(state.sheet), patch = {};
+    if (!item) return patch;
+    $$("#dialog-root [data-field]").forEach((el) => {
+      const v = sheetFieldValue(el, item);
+      if ((item[el.dataset.field] ?? "") !== (v ?? "")) patch[el.dataset.field] = v;
+    });
+    return patch;
+  }
+  function updateSaveState() {
+    const btn = $("#sheet-save"); if (!btn) return;
+    const dirty = Object.keys(sheetChanges()).length > 0;
+    btn.disabled = !dirty;
+    const hint = $("#save-hint"); if (hint) hint.hidden = !dirty;
+  }
+  async function saveSheet(closeAfter) {
     const item = find(state.sheet); if (!item || !state.canWrite) return;
-    const f = el.dataset.field;
-    let v = el.value;
-    if (f === "title") {
-      v = v.replace(/\s+/g, " ").trim().slice(0, 200);
-      if (!v) { el.value = item.title; grow(el); toast("An activity needs a name."); return; }
-    } else if (f === "plannedFor") v = validISO(v) ? v : null;
-    else if (f === "doneOn") v = validISO(v) ? v : (item.doneOn || todayISO());
-    else v = v.trim();
-    if ((item[f] ?? "") === (v ?? "")) return;
-    el.defaultValue = v ?? "";
-    await updateItem(item.id, { [f]: v });
+    const patch = sheetChanges();
+    if ("title" in patch && !patch.title) { toast("An activity needs a name."); return; }
+    if (!Object.keys(patch).length) { if (closeAfter) closeDialog(true); return; }
+    if (await updateItem(item.id, patch)) {
+      $$("#dialog-root [data-field]").forEach((el) => { if (el.dataset.field in patch) el.defaultValue = el.value; });
+      toast("Saved");
+      if (closeAfter) closeDialog(true);
+      else { state.sheetLeave = false; render(); }
+    }
   }
   async function saveCatName(input) {
     const id = input.dataset.catName, k = catById(id); if (!k || !state.canWrite) return;
@@ -1483,14 +1512,16 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
         if (b.dataset.v === "weekend") { const day = dt.getDay(); dt.setDate(dt.getDate() + (day === 0 ? 0 : 6 - day)); input.value = iso(dt); }
         else if (b.dataset.v === "month") { dt.setMonth(dt.getMonth() + 1); input.value = iso(dt); }
         else input.value = "";
-        await saveField(input); break;
+        updateSaveState(); break;
       }
+      case "sheet-save": saveSheet(b.dataset.close === "1"); break;
+      case "sheet-discard": closeDialog(true); break;
       case "sheet-delete": state.sheetConfirm = true; render(); break;
       case "sheet-delete-cancel": state.sheetConfirm = false; render(); break;
       case "sheet-delete-confirm": {
         if (!item) break;
         const { id: _drop, ...data } = item;
-        closeDialog();
+        closeDialog(true);
         if (state.suggestion === id) state.suggestion = null;
         if (await remove("activities", id)) toast(`Deleted “${item.title}”`, () => setDoc("activities", id, data));
         break;
@@ -1550,6 +1581,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       if (state.pop) { ev.preventDefault(); closePop(true); }
       else if (state.catConfirm) { state.catConfirm = null; render(); }
       else if (state.sheetConfirm) { state.sheetConfirm = false; render(); }
+      else if (state.sheetLeave) { state.sheetLeave = false; render(); }
       else if (state.sheet || state.manager) closeDialog();
       else if (state.paste) { state.paste = null; render(); }
       return;
@@ -1561,6 +1593,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       else if (ev.key === "Tab") closePop();
       return;
     }
+    if ((ev.metaKey || ev.ctrlKey) && (ev.key === "s" || ev.key === "S") && state.sheet) { ev.preventDefault(); saveSheet(false); return; }
     const typing = t.matches && t.matches("input, textarea, select, [contenteditable]");
     if (!typing && !ev.metaKey && !ev.ctrlKey && !ev.altKey && (ev.key === "n" || ev.key === "N") && !state.sheet && !state.manager && !$("#add-area").hidden) {
       ev.preventDefault(); $("#new-title").focus(); return;
@@ -1568,11 +1601,15 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     if (ev.key !== "Enter" || !t.matches) return;
     if (t.matches("[data-key^='task:']")) { ev.preventDefault(); const btn = t.parentElement.querySelector("[data-act='task-add']"); if (btn) btn.click(); }
     else if (t.id === "cat-new") { ev.preventDefault(); const btn = $("[data-act='cat-add']"); if (btn) btn.click(); }
-    else if (t.matches("[data-cat-name], .title-input, input.fp")) { ev.preventDefault(); t.blur(); }
+    else if (t.matches("[data-cat-name]")) { ev.preventDefault(); t.blur(); }
+    else if (t.matches("#dialog-root .title-input, #dialog-root input.fp")) { ev.preventDefault(); saveSheet(false); }
   });
-  document.addEventListener("change", (ev) => { if (ev.target.matches && ev.target.matches("#dialog-root [data-field]")) saveField(ev.target); });
+  document.addEventListener("change", (ev) => { if (ev.target.matches && ev.target.matches("#dialog-root [data-field]")) updateSaveState(); });
   document.addEventListener("focusout", (ev) => { if (ev.target.matches && ev.target.matches("[data-cat-name]")) saveCatName(ev.target); });
-  document.addEventListener("input", (ev) => { if (ev.target.classList && ev.target.classList.contains("autogrow")) grow(ev.target); });
+  document.addEventListener("input", (ev) => {
+    if (ev.target.classList && ev.target.classList.contains("autogrow")) grow(ev.target);
+    if (ev.target.matches && ev.target.matches("#dialog-root [data-field]")) updateSaveState();
+  });
   document.addEventListener("scroll", () => placePop(), true);
   addEventListener("resize", () => { placePop(); $$(".seg").forEach(syncSeg); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { $$(".seg").forEach(syncSeg); redrawAll(); });
