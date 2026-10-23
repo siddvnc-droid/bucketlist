@@ -226,6 +226,11 @@ h1 em { font-style: italic; color: var(--ink-2); }
 .doc-idle h2 { font-size: clamp(36px, 7vw, 52px); }
 .doc-idle h2 em { font-style: italic; }
 .doc-idle p { margin: 0; color: var(--doc-ink-2); }
+.doc-title-btn { all: unset; cursor: pointer; text-decoration: underline; text-decoration-color: transparent; text-decoration-thickness: 1px; text-underline-offset: 7px; transition: text-decoration-color .2s; }
+.doc-title-btn:hover { text-decoration-color: color-mix(in srgb, var(--doc-ink) 35%, transparent); }
+.doc-title-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; border-radius: 6px; }
+.fp.flash { animation: flash 1.4s ease; }
+@keyframes flash { 0%, 40% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 45%, transparent); border-color: var(--gold); } 100% { box-shadow: 0 0 0 3px transparent; } }
 
 /* the stub: tear-off section holding the checklist */
 .stub { position: relative; background: var(--surface); color: var(--ink); padding: 22px 26px 24px; border-top: 1.5px dashed var(--doc-line); }
@@ -356,6 +361,16 @@ h1 em { font-style: italic; color: var(--ink-2); }
 .stamps { list-style: none; margin: 0; padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(208px, 1fr)); gap: 4px; }
 .stamp-card { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; text-align: left; border: 0; background: none; border-radius: 14px; padding: 20px 18px 18px; color: inherit; transition: background .15s; }
 .stamp-card:hover { background: var(--surface-2); }
+.stamps > li { position: relative; }
+.sc-undo {
+  position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; display: grid; place-items: center; padding: 0;
+  border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); box-shadow: var(--shadow-1);
+  opacity: 0; transform: translateY(-2px); transition: opacity .15s, transform .2s var(--ease), background .15s, color .15s;
+}
+.sc-undo svg { width: 15px; height: 15px; }
+.stamps > li:hover .sc-undo, .sc-undo:focus-visible { opacity: 1; transform: none; }
+.sc-undo:hover { background: var(--surface-2); color: var(--ink); }
+@media (hover: none) { .sc-undo { opacity: 1; transform: none; } }
 .stamp-card .stamp { margin-bottom: 12px; }
 .sc-title { font-size: 15px; font-weight: 500; line-height: 1.35; overflow-wrap: anywhere; }
 .sc-memory { font-family: var(--font-display); font-style: italic; font-size: 17px; line-height: 1.3; color: var(--ink-2); overflow-wrap: anywhere; }
@@ -395,6 +410,7 @@ h1 em { font-style: italic; color: var(--ink-2); }
 .sheet-foot { border-top: 1px solid var(--line); padding: 12px 16px 12px 26px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--muted); min-height: 57px; }
 .sheet-foot .who { display: inline-flex; align-items: center; gap: 8px; }
 .foot-confirm { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-left: auto; color: var(--ink-2); }
+.foot-actions { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; margin-left: auto; }
 .dlg-title { font-family: var(--font-display); font-weight: 400; font-size: 30px; line-height: 1; margin: 0 0 6px; }
 .dlg-sub { margin: 0; color: var(--muted); font-size: 13.5px; }
 .title-input {
@@ -557,6 +573,7 @@ input[type="date"].fp { width: auto; min-width: 160px; font-family: var(--font-m
     dice: `<svg viewBox="0 0 16 16" ${S}><rect x="2.5" y="2.5" width="11" height="11" rx="3"/><circle cx="5.8" cy="5.8" r=".6" fill="currentColor"/><circle cx="10.2" cy="10.2" r=".6" fill="currentColor"/><circle cx="8" cy="8" r=".6" fill="currentColor"/></svg>`,
     gear: `<svg viewBox="0 0 16 16" ${S}><path d="M2.5 4.5h7M12.5 4.5h1M2.5 11.5h1M6.5 11.5h7"/><circle cx="11" cy="4.5" r="1.5"/><circle cx="5" cy="11.5" r="1.5"/></svg>`,
     info: `<svg viewBox="0 0 16 16" ${S}><circle cx="8" cy="8" r="6.25"/><path d="M8 7.2V11M8 5v.01"/></svg>`,
+    undo: `<svg viewBox="0 0 16 16" ${S}><path d="M5.5 3.5l-3 3 3 3"/><path d="M2.5 6.5h7a3.5 3.5 0 010 7H7"/></svg>`,
   };
   const CB_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle class="ring" cx="12" cy="12" r="10.25"/><path class="tick" d="M7.6 12.4l3 2.9 5.9-6.2"/></svg>';
 
@@ -863,19 +880,20 @@ input[type="date"].fp { width: auto; min-width: 160px; font-family: var(--font-m
             ${dated ? `<div class="doc-date"><span class="dd-day">${d.getDate()}</span><span class="dd-mon">${MON[d.getMonth()]}${d.getFullYear() !== new Date().getFullYear() ? ` ’${String(d.getFullYear()).slice(2)}` : ""}</span><span class="dd-dow">${esc(d.toLocaleDateString(undefined, { weekday: "short" }))}</span></div>`
                     : `<div class="doc-date tbd"><span class="dd-day">tbd</span><span class="dd-dow">Date</span></div>`}
             <div class="doc-main">
-              <h2>${esc(next.title)}</h2>
+              <h2><button type="button" class="doc-title-btn" data-act="open-sheet" data-id="${esc(next.id)}">${esc(next.title)}</button></h2>
               ${next.planNote ? `<p class="lede">${esc(next.planNote)}</p>` : ""}
               <dl class="fields">
                 <div><dt>Departs</dt><dd><span>${dated ? esc(fmtDate(next.plannedFor, { day: true })) : "To be decided"}</span></dd></div>
                 ${dated ? `<div><dt>Countdown</dt><dd class="${late ? "late" : "time"}"><span>${countdown(next.plannedFor)}</span></dd></div>` : ""}
                 ${cat ? `<div><dt>Category</dt><dd><i class="dot" style="--dot:${catVar(cat)}"></i><span>${esc(cat.name)}</span></dd></div>` : ""}
-                ${tasks.length ? `<div><dt>Prepared</dt><dd><span>${td} of ${tasks.length} steps</span></dd></div>` : ""}
+                ${tasks.length ? `<div><dt>Prepared</dt><dd><span>${td} of ${plural(tasks.length, "step", "steps")}</span></dd></div>` : ""}
               </dl>
             </div>
           </div>
           ${(w && !stamped) || more ? `<div class="doc-actions">
             ${w && !stamped ? `<button type="button" class="btn primary" data-act="hero-done" data-id="${esc(next.id)}">${ICON.check} We did it</button>
-            <button type="button" class="btn" data-act="open-sheet" data-id="${esc(next.id)}">${dated ? "Details" : "Pick a date"}</button>` : ""}
+            <button type="button" class="btn" data-act="reschedule" data-id="${esc(next.id)}">${ICON.cal} ${dated ? "Reschedule" : "Pick a date"}</button>
+            <button type="button" class="btn ghost" data-act="cancel-plan" data-id="${esc(next.id)}">Cancel plan</button>` : ""}
             ${more ? `<button type="button" class="btn ghost" data-act="tab" data-v="planned">${plural(more, "more plan", "more plans")}</button>` : ""}
           </div>` : ""}
           <div class="mrz" aria-hidden="true">${mrzLines("BL " + next.title, `${pad(no)} ${dated ? `${pad(d.getDate())}${MON[d.getMonth()]}${String(d.getFullYear()).slice(2)}` : "TBD"} ${cat ? cat.name : ""}`)}</div>
@@ -964,7 +982,7 @@ input[type="date"].fp { width: auto; min-width: 160px; font-family: var(--font-m
       <span class="sc-title">${esc(item.title)}</span>
       ${item.memory ? `<span class="sc-memory">“${esc(item.memory)}”</span>` : ""}
       <span class="sc-meta">${who}${validISO(item.doneOn) ? esc(fmtDate(item.doneOn, { year: true })) : ""}</span>
-    </button></li>`;
+    </button>${state.canWrite ? `<button type="button" class="sc-undo" data-act="unstamp" data-id="${esc(item.id)}" title="Remove stamp" aria-label="Remove stamp from ${esc(item.title)}">${ICON.undo}</button>` : ""}</li>`;
   }
   function renderList(c) {
     const el = $("#list");
@@ -1032,9 +1050,11 @@ input[type="date"].fp { width: auto; min-width: 160px; font-family: var(--font-m
         <dd><textarea class="fp autogrow" rows="1" maxlength="1000" data-key="s:notes" data-field="notes" placeholder="Ideas, links, costs…" aria-label="Notes" ${ro}>${esc(item.notes || "")}</textarea></dd>
       </dl>
       ${st === "planned" || tasks.length ? `<section class="sheet-cl">${checklistHTML(item, "sheet")}</section>` : ""}`;
+    const reverse = st === "planned" ? `<button type="button" class="btn sm ghost" data-act="cancel-plan" data-id="${id}">${ICON.x} Cancel plan</button>`
+      : st === "done" ? `<button type="button" class="btn sm ghost" data-act="unstamp" data-id="${id}">${ICON.undo} Remove stamp</button>` : "";
     const foot = `${who}${w ? (state.sheetConfirm
       ? `<span class="foot-confirm">Delete for both of you?<button type="button" class="btn sm ghost" data-act="sheet-delete-cancel">Cancel</button><button type="button" class="btn sm danger" data-act="sheet-delete-confirm" data-id="${id}">Delete</button></span>`
-      : `<button type="button" class="btn sm ghost danger-text" data-act="sheet-delete">${ICON.trash} Delete</button>`) : ""}`;
+      : `<span class="foot-actions">${reverse}<button type="button" class="btn sm ghost danger-text" data-act="sheet-delete">${ICON.trash} Delete</button></span>`) : ""}`;
     return { head, body, foot, status: st };
   }
   function managerParts(c) {
@@ -1080,7 +1100,11 @@ input[type="date"].fp { width: auto; min-width: 160px; font-family: var(--font-m
       sheet = $(".sheet", root);
       const fresh = state.dialogFresh; state.dialogFresh = false;
       requestAnimationFrame(() => scrim.classList.add("open"));
-      if (fresh) sheet.focus({ preventScroll: true });
+      if (fresh) {
+        const f = state.sheetFocus && $(`[data-field="${state.sheetFocus}"]`, sheet);
+        if (f) { f.focus({ preventScroll: true }); f.classList.add("flash"); } else sheet.focus({ preventScroll: true });
+        state.sheetFocus = null;
+      }
     } else {
       if (kind === "sheet") $$(".sheet-head [data-act='set-status']", sheet).forEach((b) => b.setAttribute("aria-checked", String(b.dataset.v === parts.status)));
       const body = $(".sheet-body", sheet), top = body.scrollTop;
@@ -1090,7 +1114,7 @@ input[type="date"].fp { width: auto; min-width: 160px; font-family: var(--font-m
     $$(".autogrow", root).forEach(grow);
     $$(".seg", root).forEach(syncSeg);
   }
-  function openSheet(id) { closePop(); state.sheet = id; state.sheetConfirm = false; state.manager = false; state.dialogFresh = true; render(); }
+  function openSheet(id, focusField) { closePop(); state.sheet = id; state.sheetFocus = focusField || null; state.sheetConfirm = false; state.manager = false; state.dialogFresh = true; render(); }
   function openManager() { closePop(); state.managerReturn = state.sheet; state.sheet = null; state.manager = true; state.catConfirm = null; state.dialogFresh = true; render(); }
   function closeDialog() {
     if (!state.sheet && !state.manager) return;
@@ -1282,7 +1306,12 @@ input[type="date"].fp { width: auto; min-width: 160px; font-family: var(--font-m
   async function uncomplete(item) {
     const prev = { status: "done", doneOn: item.doneOn ?? null, doneAt: item.doneAt ?? null, doneBy: item.doneBy ?? null };
     const back = validISO(item.plannedFor) ? "planned" : "todo";
-    if (await updateItem(item.id, { status: back, doneOn: null, doneAt: null, doneBy: null })) toast(`Moved back to ${back === "planned" ? "Planned" : "To do"}`, () => updateItem(item.id, prev));
+    if (await updateItem(item.id, { status: back, doneOn: null, doneAt: null, doneBy: null })) toast(`Stamp removed. “${item.title}” is back in ${back === "planned" ? "Planned" : "To do"}`, () => updateItem(item.id, prev));
+  }
+  // Cancelling a plan clears its date but keeps the plan notes and checklist for when you reschedule.
+  async function cancelPlan(item) {
+    const prev = { status: statusOf(item), plannedFor: item.plannedFor ?? null };
+    if (await updateItem(item.id, { status: "todo", plannedFor: null })) toast(`Plan cancelled. “${item.title}” is back in To do`, () => updateItem(item.id, prev));
   }
   async function addTask(item, text) {
     const clean = String(text || "").trim().slice(0, 140); if (!clean) return false;
@@ -1348,6 +1377,9 @@ input[type="date"].fp { width: auto; min-width: 160px; font-family: var(--font-m
       case "close-dialog": closeDialog(); break;
       case "complete": if (item) complete(item, state.filter === "all" ? null : statusOf(item)); break;
       case "uncomplete": if (item) { state.linger.delete(id); uncomplete(item); } break;
+      case "unstamp": if (item && statusOf(item) === "done") uncomplete(item); break;
+      case "cancel-plan": if (item && statusOf(item) === "planned") cancelPlan(item); break;
+      case "reschedule": if (item) openSheet(id, "plannedFor"); break;
       case "hero-done": {
         if (!item) break;
         state.heroStamp = id; state.heroT0 = Date.now();

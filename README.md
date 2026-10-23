@@ -6,6 +6,7 @@ A shared bucket list for two people, styled like a passport.
 - **Add activities**: type in the add box (press <kbd>N</kbd> from anywhere) and choose a category. Paste a list with one activity per line to add them all at once.
 - **Tick things off**: tap the circle on any row. It animates, moves to your Stamps page, and the message at the bottom lets you undo.
 - **Stamps**: every completed activity becomes an ink stamp in its category's color, with the date and the line you wrote to remember it by.
+- **Reschedule or undo**: on the Next up card, "Reschedule" opens the date and "Cancel plan" moves the activity back to To do (its plan notes and checklist are kept). Each stamp has an undo button to remove it if you ticked something off by mistake; the activity goes back to Planned if it had a date, otherwise To do. The same "Cancel plan" and "Remove stamp" buttons are at the bottom of every activity's details, and each one can be undone from the message that appears.
 - **Details**: tap any activity to open its details. Change its status (Someday, Planned or Done), name, category, date, plan, notes, memory and checklist. Changes save on their own.
 - **Planning checklist**: planned activities have steps you can tick off or claim with "I'll do it", plus quick-add suggestions.
 - **Categories**: a shared list you pick from. Use "Manage categories…" in any category menu to add, rename, recolor or delete them. Filter the list by category from the toolbar.
