@@ -3,7 +3,7 @@
 A shared bucket list for two people, styled like a passport.
 
 - **Next up**: your soonest planned activity is shown as a travel document, with the date, a countdown and a "Before we go" checklist. If nothing is planned, "Pick one for us" suggests a random activity (from the selected category, if you've filtered by one).
-- **Add activities**: type in the add box (press <kbd>N</kbd> from anywhere) and choose a category. Paste a list with one activity per line to add them all at once. Every new activity sets off a short snowfall, for whoever has the page open (it's skipped for people who turn on reduced motion on their device).
+- **Add activities**: type in the add box (press <kbd>N</kbd> from anywhere) and choose a category. Paste a list with one activity per line to add them all at once. Every new activity sets off a short celebration for whoever has the page open: snowfall on the Winter list, confetti on the 2027 list. It's skipped for people who turn on reduced motion on their device.
 - **Plan from the list**: every To do row has a **Plan** button on its right. It moves the activity to Planned and opens its planning view with the calendar showing.
 - **Swipe to delete**: swipe a row left (or drag it with the mouse, or two-finger swipe on a trackpad) to reveal **Delete**; swipe all the way to delete straight away. Every delete can be undone.
 - **Calendar**: dates are picked from a month calendar styled after Apple Calendar, and the Next up card shows the date like Apple's Calendar icon.
@@ -38,11 +38,11 @@ Each category is one document in the `categories` collection: `{ name, color, or
 
 ## Copies for other lists
 
-Each published copy is a separate page with its own link, its own list and its own sharing. Copies are built from `bucketlist.html` by `make_copies.py`, which only changes the page title and heading:
+Each published copy is a separate page with its own link, its own list and its own sharing. Copies are built from `bucketlist.html` by `make_copies.py`, which only changes the page title, the heading and the celebration played when an activity is added (`DEFAULT_EFFECT`, either `snow` or `confetti`):
 
-| Copy | File |
-| --- | --- |
-| 2027 Bucket List | [`copies/2027-bucket-list.html`](copies/2027-bucket-list.html) |
+| Copy | File | Celebration |
+| --- | --- | --- |
+| 2027 Bucket List | [`copies/2027-bucket-list.html`](copies/2027-bucket-list.html) | Confetti |
 
 To add a copy, add a line to `COPIES` in `make_copies.py`. After changing `bucketlist.html`, run `python3 make_copies.py` and republish each copy so they all stay on the same version of the app.
 
@@ -52,6 +52,6 @@ The same app can also run on Firebase (project `winter-bucket-list`), with sign-
 
 - `web/` is the site that gets published. Build it with `python3 build_web.py`. It wraps `bucketlist.html` and adds `firebase/firebase-shim.js`, which handles sign-in and connects the app to Firestore.
 - Each list has its own link: `https://winter-bucket-list.web.app/#<list id>`. People sign in with Google or a phone number, and only the emails and phone numbers added under **People** can open the list. The first person to open a new list becomes its first member. The rules are in `firestore.rules`.
-- Each list's link is private, so it isn't written here. The site names each list using `LISTS` in `firebase/firebase-shim.js`, which is keyed by a SHA-256 hash of the link id (first 16 hex characters) so the links can't be read from the site's code. The first person to open a new list's link becomes its first member, so open a new list yourself before sharing it.
+- Each list's link is private, so it isn't written here. The site names each list and picks its celebration (`snow` or `confetti`) using `LISTS` in `firebase/firebase-shim.js`, which is keyed by a SHA-256 hash of the link id (first 16 hex characters) so the links can't be read from the site's code. The first person to open a new list's link becomes its first member, so open a new list yourself before sharing it.
 - `firebase/exports/` holds each list as saved from claude.ai. Import one from **People → Bring over a list**.
 - To publish: `npm install -g firebase-tools`, `firebase login`, then `firebase deploy` from this folder.

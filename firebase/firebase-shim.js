@@ -20,10 +20,11 @@
   const SDK = "https://www.gstatic.com/firebasejs/10.14.1";
   // Lists hosted on this site, keyed by a SHA-256 hash of the link id (first 16 hex
   // characters) so the private links can't be read from this public file.
-  // Value: the word shown in italics before "Bucket List".
+  // Value: the word shown in italics before "Bucket List", and the celebration played
+  // when an activity is added ("snow" or "confetti").
   const LISTS = {
-    "229b0612c15bde32": "Winter",
-    "85a6421012a78716": "2027",
+    "229b0612c15bde32": { word: "Winter", effect: "snow" },
+    "85a6421012a78716": { word: "2027", effect: "confetti" },
   };
 
   const match = location.hash.slice(1).match(/^[A-Za-z0-9_-]{20,64}$/);
@@ -37,7 +38,9 @@
       if (listId) {
         const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(listId));
         const hex = [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 16);
-        listWord = LISTS[hex] || "Our";
+        const entry = LISTS[hex];
+        listWord = entry ? entry.word : "Our";
+        if (entry && entry.effect) document.documentElement.dataset.effect = entry.effect;
       }
     } catch {}
     LIST_NAME = `${listWord} Bucket List`;
