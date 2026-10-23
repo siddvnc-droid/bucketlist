@@ -1379,7 +1379,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   function closePop(returnFocus) {
     if (!state.pop) return;
     const anchor = state.pop.anchor;
-    state.pop = null;
+    state.pop = null; state.pendingAdd = null;
     const pop = $("#pop"); pop.classList.remove("in"); pop.hidden = true; pop.innerHTML = "";
     syncAnchors();
     if (returnFocus) { const a = document.querySelector(`[data-pop-anchor="${CSS.escape(anchor)}"]`); if (a) a.focus({ preventScroll: true }); }
@@ -1437,8 +1437,6 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     const c = compute();
     if (state.catFilter && state.catFilter !== "none" && state.catsLoaded && !catById(state.catFilter)) { state.catFilter = ""; safeSet("bucketlist.cat", ""); }
     if (state.composerCat && state.catsLoaded && !catById(state.composerCat)) state.composerCat = "";
-    // Every new activity gets a category: default to the first one.
-    if (!state.composerCat && state.catsLoaded) state.composerCat = (sortedCats()[0] || {}).id || "";
     const loading = state.mode === "loading";
 
     // masthead
@@ -1460,7 +1458,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
 
     // composer + paste
     $("#add-area").hidden = !state.canWrite || loading || state.mode === "unavailable";
-    $("#composer-cat").innerHTML = catLabel(catById(state.composerCat), "Category") + ICON.chev;
+    $("#composer-cat").innerHTML = catLabel(catById(state.composerCat), "Select Category") + ICON.chev;
     renderPaste();
 
     // toolbar
@@ -1495,6 +1493,13 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   }
 
   /* ---------- actions ---------- */
+  // New activities need a category (unless the list has none yet).
+  function needsCategory() { return !catById(state.composerCat) && sortedCats().length > 0; }
+  function askForCategory(kind) {
+    openPop("composer-cat", "composer-cat");
+    state.pendingAdd = kind;
+    toast("Pick a category to add it.");
+  }
   function baseItem(title, categoryId, i = 0) {
     return { title, categoryId: categoryId || null, category: "", notes: "", status: "todo", plannedFor: null, planNote: "", doneOn: null, doneAt: null, memory: "", createdAt: Date.now() + i, addedBy: state.me || null, doneBy: null };
   }
@@ -1594,8 +1599,15 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
         break;
       case "opt": {
         const p = state.pop, v = b.dataset.v; if (!p) break;
+        const pending = state.pendingAdd;
         closePop(true);
-        if (p.kind === "composer-cat") { state.composerCat = v; render(); $("#new-title").focus(); }
+        if (p.kind === "composer-cat") {
+          state.composerCat = v; render();
+          // Picked because Add was pressed without a category: finish adding.
+          if (pending === "single") { const f = $("#composer"); f.requestSubmit ? f.requestSubmit() : f.dispatchEvent(new Event("submit", { cancelable: true })); }
+          else if (pending === "paste") { const btn = $('[data-act="paste-add"]'); if (btn) btn.click(); }
+          else $("#new-title").focus();
+        }
         else if (p.kind === "filter-cat") { state.catFilter = v; safeSet("bucketlist.cat", v); state.suggestion = null; render(); }
         else if (p.kind === "sheet-cat") { const it = find(state.sheet); if (it) await updateItem(it.id, { categoryId: v || null, category: "" }); }
         break;
@@ -1682,9 +1694,11 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       }
       case "paste-cancel": state.paste = null; render(); $("#new-title").focus(); break;
       case "paste-add": {
-        const lines = state.paste || []; state.paste = null; render();
+        if (needsCategory()) { askForCategory("paste"); break; }
+        const lines = state.paste || [], cat = state.composerCat;
+        state.paste = null; state.composerCat = ""; render();
         let ok = 0;
-        for (let i = 0; i < lines.length; i++) { if (await add("activities", baseItem(lines[i], state.composerCat, i))) ok++; else break; }
+        for (let i = 0; i < lines.length; i++) { if (await add("activities", baseItem(lines[i], cat, i))) ok++; else break; }
         if (ok) { toast(`Added ${plural(ok, "activity", "activities")}`); if (state.filter !== "all") { state.filter = "todo"; safeSet("bucketlist.filter", "todo"); render(); } }
         break;
       }
@@ -1773,9 +1787,12 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     ev.preventDefault();
     const inp = $("#new-title"), title = inp.value.replace(/\s+/g, " ").trim();
     if (!title) { inp.focus(); return; }
+    if (needsCategory()) { askForCategory("single"); return; }
     inp.value = "";
     if (await add("activities", baseItem(title.slice(0, 200), state.composerCat))) {
-      if (state.filter === "planned" || state.filter === "done") { state.filter = "todo"; safeSet("bucketlist.filter", "todo"); render(); }
+      state.composerCat = "";
+      if (state.filter === "planned" || state.filter === "done") { state.filter = "todo"; safeSet("bucketlist.filter", "todo"); }
+      render();
     } else inp.value = title;
     inp.focus();
   });
