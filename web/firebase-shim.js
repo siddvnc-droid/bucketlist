@@ -18,20 +18,31 @@
     appId: "1:781041733321:web:b3274b5d737d191b530718",
   };
   const SDK = "https://www.gstatic.com/firebasejs/10.14.1";
-  // Lists hosted on this site: link id -> the word shown in italics before "Bucket List".
+  // Lists hosted on this site, keyed by a SHA-256 hash of the link id (first 16 hex
+  // characters) so the private links can't be read from this public file.
+  // Value: the word shown in italics before "Bucket List".
   const LISTS = {
-    eXYoNdIfxfjsKmzVwQ7MlRxl: "Winter",
-    Bo9EBg5gL996V7s9SiRR76jr: "2027",
+    "229b0612c15bde32": "Winter",
+    "85a6421012a78716": "2027",
   };
 
   const match = location.hash.slice(1).match(/^[A-Za-z0-9_-]{20,64}$/);
   const listId = match ? match[0] : null;
   addEventListener("hashchange", () => location.reload());
-  const listWord = (listId && LISTS[listId]) || "Our";
-  const LIST_NAME = `${listWord} Bucket List`;
-  document.title = LIST_NAME;
+  let listWord = "Our", LIST_NAME = "Our Bucket List";
   // The page heading says "Winter" by default; show this list's own name.
   const nameHeading = () => { const em = document.querySelector("h1 em"); if (em) em.textContent = listWord; document.title = LIST_NAME; };
+  const nameReady = (async () => {
+    try {
+      if (listId) {
+        const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(listId));
+        const hex = [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 16);
+        listWord = LISTS[hex] || "Our";
+      }
+    } catch {}
+    LIST_NAME = `${listWord} Bucket List`;
+    nameHeading();
+  })();
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", nameHeading); else nameHeading();
 
   let resolveDb, resolveUser;
@@ -56,7 +67,7 @@
     }
     return out;
   }
-  const CODES = { unavailable: "unavailable", "deadline-exceeded": "unavailable", "resource-exhausted": "quota_exceeded", "permission-denied": "invalid_argument", "not-found": "invalid_argument" };
+  const CODES = { unavailable: "unavailable", "deadline-exceeded": "unavailable", "resource-exhausted": "quota_exceeded", "permission-denied": "invalid_argument", "not-found": "not_found" };
   const wrap = (p) => p.catch((e) => { throw { code: CODES[e && e.code] || "unknown", message: String((e && e.message) || e) }; });
   const myEmail = () => (S.user.email || "").toLowerCase();
   const myPhone = () => S.user.phoneNumber || "";
@@ -135,7 +146,7 @@
       S.auth = S.F.getAuth(app);
       S.db = S.F.getFirestore(app);
       S.listRef = S.F.doc(S.db, "lists", listId);
-      S.F.getRedirectResult(S.auth).catch((e) => setMsg(friendly(e), true));
+      await nameReady;
       S.F.onAuthStateChanged(S.auth, onUser);
     } catch (e) {
       console.error("Could not connect to Firebase", e);
@@ -148,13 +159,24 @@
     if (!user) { showGate("signin"); return; }
     S.user = user;
     const { F } = S;
-    try {
-      const snap = await F.getDoc(S.listRef);
-      if (!snap.exists()) {
+    // Only a refusal from the rules means "not on this list"; anything else is a connection problem.
+    const failed = (e) => showGate(e && e.code === "permission-denied" ? "denied" : "offline");
+    let snap;
+    try { snap = await F.getDoc(S.listRef); } catch (e) { failed(e); return; }
+    if (!snap.exists()) {
+      try {
         await F.setDoc(S.listRef, { emails: myEmail() ? [myEmail()] : [], phones: myPhone() ? [myPhone()] : [], createdBy: user.uid, createdAt: Date.now() });
-      } else if (!isMember(snap.data())) { showGate("denied"); return; }
-    } catch (e) { showGate("denied"); return; }
-    try { await F.setDoc(F.doc(S.db, "lists", listId, "people", user.uid), { name: user.displayName || "", photo: user.photoURL || "", email: myEmail(), phone: myPhone() }, { merge: true }); } catch {}
+      } catch (e) {
+        // Someone else may have created the list a moment ago: look again.
+        try {
+          const again = await F.getDoc(S.listRef);
+          if (!again.exists()) { failed(e); return; }
+          if (!isMember(again.data())) { showGate("denied"); return; }
+        } catch (e2) { failed(e2); return; }
+      }
+    } else if (!isMember(snap.data())) { showGate("denied"); return; }
+    // Saving your name and photo for others can happen in the background.
+    F.setDoc(F.doc(S.db, "lists", listId, "people", user.uid), { name: user.displayName || "", photo: user.photoURL || "", email: myEmail(), phone: myPhone() }, { merge: true }).catch(() => {});
     F.onSnapshot(F.collection(S.db, "lists", listId, "people"), (snap) => { S.people = {}; snap.forEach((d) => (S.people[d.id] = d.data())); renderPeople(); }, () => {});
     F.onSnapshot(S.listRef, (snap) => { if (snap.exists()) { S.members = snap.data(); renderPeople(); } }, () => {});
     S.ready = true;
@@ -206,6 +228,18 @@
     injectCss();
     let g = $("fb-gate");
     if (!g) { g = document.createElement("div"); g.id = "fb-gate"; document.body.appendChild(g); }
+    if (kind === "offline") {
+      g.innerHTML = `<div class="fb-card" role="dialog" aria-labelledby="fb-title">
+        <span class="label">${esc(LIST_NAME)}</span>
+        <h2 id="fb-title">Couldn't open your list</h2>
+        <p>Check your connection, then try again.</p>
+        <button type="button" class="btn primary fb-wide" id="fb-retry">Try again</button>
+        <button type="button" class="btn ghost fb-wide" id="fb-switch">Use a different account</button>
+      </div>`;
+      $("fb-retry").onclick = () => location.reload();
+      $("fb-switch").onclick = () => S.F.signOut(S.auth).then(() => location.reload());
+      return;
+    }
     if (kind === "denied") {
       const who = S.user.email || S.user.phoneNumber || "this account";
       g.innerHTML = `<div class="fb-card" role="dialog" aria-labelledby="fb-title">
@@ -239,7 +273,8 @@
       const provider = new F.GoogleAuthProvider();
       try { await F.signInWithPopup(S.auth, provider); }
       catch (e) {
-        if (e && (e.code === "auth/popup-blocked" || e.code === "auth/operation-not-supported-in-this-environment")) F.signInWithRedirect(S.auth, provider);
+        // A redirect fallback can loop on Safari (the sign-in page lives on a different domain), so explain instead.
+        if (e && (e.code === "auth/popup-blocked" || e.code === "auth/operation-not-supported-in-this-environment")) setMsg("Your browser blocked the Google sign-in window. Allow pop-ups for this site and try again, or open the link in Safari or Chrome.", true);
         else setMsg(friendly(e), true);
       }
     };
@@ -362,17 +397,23 @@
       const file = ev.target.files && ev.target.files[0]; if (!file) return;
       try {
         const data = JSON.parse(await file.text());
-        const batch = S.F.writeBatch(S.db);
-        let n = 0, k = 0;
+        const rows = [];
+        let n = 0, k = 0, skipped = 0;
         for (const coll of ["categories", "activities"]) {
           for (const row of data[coll] || []) {
-            if (!row || typeof row.id !== "string" || !/^[A-Za-z0-9_-]{1,100}$/.test(row.id) || !row.data || typeof row.data !== "object") continue;
-            batch.set(S.F.doc(S.db, "lists", listId, coll, row.id), row.data);
+            const ok = row && typeof row.id === "string" && /^[A-Za-z0-9_-]{1,100}$/.test(row.id) && row.data && typeof row.data === "object" && !Array.isArray(row.data) && Object.keys(row.data).length <= 40;
+            if (!ok) { skipped++; continue; }
+            rows.push([coll, row]);
             coll === "activities" ? n++ : k++;
           }
         }
-        await batch.commit();
-        msg(`Imported ${n} ${n === 1 ? "activity" : "activities"} and ${k} ${k === 1 ? "category" : "categories"}.`);
+        // Firestore takes at most 500 writes per batch.
+        for (let i = 0; i < rows.length; i += 400) {
+          const batch = S.F.writeBatch(S.db);
+          rows.slice(i, i + 400).forEach(([coll, row]) => batch.set(S.F.doc(S.db, "lists", listId, coll, row.id), row.data));
+          await batch.commit();
+        }
+        msg(`Imported ${n} ${n === 1 ? "activity" : "activities"} and ${k} ${k === 1 ? "category" : "categories"}.${skipped ? ` Skipped ${skipped} that didn't look right.` : ""}`);
       } catch (e) { msg("That file couldn't be imported. Pick the .json list file.", true); }
       ev.target.value = "";
     };

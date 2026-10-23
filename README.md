@@ -52,8 +52,6 @@ The same app can also run on Firebase (project `winter-bucket-list`), with sign-
 
 - `web/` is the site that gets published. Build it with `python3 build_web.py`. It wraps `bucketlist.html` and adds `firebase/firebase-shim.js`, which handles sign-in and connects the app to Firestore.
 - Each list has its own link: `https://winter-bucket-list.web.app/#<list id>`. People sign in with Google or a phone number, and only the emails and phone numbers added under **People** can open the list. The first person to open a new list becomes its first member. The rules are in `firestore.rules`.
-- Lists on the site (the name shown comes from `LISTS` in `firebase/firebase-shim.js`):
-  - Winter Bucket List: `https://winter-bucket-list.web.app/#eXYoNdIfxfjsKmzVwQ7MlRxl`
-  - 2027 Bucket List: `https://winter-bucket-list.web.app/#Bo9EBg5gL996V7s9SiRR76jr`
+- Each list's link is private, so it isn't written here. The site names each list using `LISTS` in `firebase/firebase-shim.js`, which is keyed by a SHA-256 hash of the link id (first 16 hex characters) so the links can't be read from the site's code. The first person to open a new list's link becomes its first member, so open a new list yourself before sharing it.
 - `firebase/exports/` holds each list as saved from claude.ai. Import one from **People → Bring over a list**.
 - To publish: `npm install -g firebase-tools`, `firebase login`, then `firebase deploy` from this folder.

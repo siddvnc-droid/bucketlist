@@ -780,8 +780,14 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
         try { await fn(); return true; } catch {}
         toast("Couldn't save just now. Check your connection and try again.");
       } else if (code === "invalid_argument") {
-        state.canWrite = false; render();
-        toast("You can view this list but not change it. Ask the owner to share it with you as an Editor.");
+        // Either this person can't edit, or what they saved was just changed or deleted by someone else.
+        const can = userNs ? await userNs.can("data.write") : null;
+        if (can === false) {
+          state.canWrite = false; render();
+          toast("You can view this list but not change it. Ask the owner to share it with you as an Editor.");
+        } else toast("Couldn't save that. Someone may have just changed or deleted it.");
+      } else if (code === "not_found") {
+        toast("That was just deleted, so the change wasn't saved.");
       } else if (code === "quota_exceeded") {
         toast("The list is full. Delete a few old activities to make room.");
       } else {
@@ -1024,7 +1030,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     const tasks = tasksOf(item), done = tasks.filter((t) => t.done).length;
     if (!w && !tasks.length) return "";
     const have = new Set(tasks.map((t) => t.text.trim().toLowerCase()));
-    const ideas = STEP_IDEAS.filter((s) => !have.has(s.toLowerCase()) && !(s === "Pick a date" && validISO(item.plannedFor)));
+    const ideas = STEP_IDEAS.filter((s) => !have.has(s.toLowerCase()));
     const steps = tasks.map((t) => {
       const tid = esc(t.id);
       let claim = "<span></span>";
@@ -1316,7 +1322,6 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     }
     $$(".autogrow", root).forEach(grow);
     $$(".seg", root).forEach(syncSeg);
-    updateSaveState();
   }
   function openSheet(id, focusField) {
     closePop(); closeSwipe();
@@ -1542,13 +1547,14 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     const f = el.dataset.field, v = el.value;
     if (f === "title") return v.replace(/\s+/g, " ").trim().slice(0, 200);
     if (f === "plannedFor") return validISO(v) ? v : null;
-    if (f === "doneOn") return validISO(v) ? v : (item.doneOn || todayISO());
+    if (f === "doneOn") return validISO(v) ? v : (item.doneOn || null);
     return v.trim();
   }
+  const FIELD_SEL = "#dialog-root input[data-field], #dialog-root textarea[data-field]";
   function sheetChanges() {
     const item = find(state.sheet), patch = {};
     if (!item) return patch;
-    $$("#dialog-root input[data-field], #dialog-root textarea[data-field]").forEach((el) => {
+    $$(FIELD_SEL).forEach((el) => {
       const v = sheetFieldValue(el, item);
       if ((item[el.dataset.field] ?? "") !== (v ?? "")) patch[el.dataset.field] = v;
     });
@@ -1566,7 +1572,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     if ("title" in patch && !patch.title) { toast("An activity needs a name."); return; }
     if (!Object.keys(patch).length) { if (closeAfter) closeDialog(true); return; }
     if (await updateItem(item.id, patch)) {
-      $$("#dialog-root input[data-field], #dialog-root textarea[data-field]").forEach((el) => { if (el.dataset.field in patch) el.defaultValue = el.value; });
+      $$(FIELD_SEL).forEach((el) => { if (el.dataset.field in patch) el.defaultValue = el.value; });
       toast("Saved");
       if (closeAfter) closeDialog(true);
       else { state.sheetLeave = false; render(); }
@@ -1648,8 +1654,11 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
         const it = find(state.sheet), v = b.dataset.v; if (!it || statusOf(it) === v) break;
         state.cal.open = null;
         const seg = b.closest(".seg"); $$("button", seg).forEach((x) => x.setAttribute("aria-checked", String(x === b))); syncSeg(seg);
-        if (v === "done") { state.fresh.set(it.id, Date.now()); setTimeout(() => state.fresh.delete(it.id), 2000); await updateItem(it.id, { status: "done", doneOn: it.doneOn || todayISO(), doneAt: Date.now(), doneBy: state.me || null }); }
-        else await updateItem(it.id, statusOf(it) === "done" ? { status: v, doneOn: null, doneAt: null, doneBy: null } : { status: v });
+        // Keep anything typed but not yet saved (a date, plan notes) by saving it with the status.
+        const edits = sheetChanges();
+        if ("title" in edits && !edits.title) delete edits.title;
+        if (v === "done") { state.fresh.set(it.id, Date.now()); setTimeout(() => state.fresh.delete(it.id), 2000); await updateItem(it.id, { ...edits, status: "done", doneOn: edits.doneOn || it.doneOn || todayISO(), doneAt: Date.now(), doneBy: state.me || null }); }
+        else await updateItem(it.id, { ...edits, ...(statusOf(it) === "done" ? { status: v, doneOn: null, doneAt: null, doneBy: null } : { status: v }) });
         break;
       }
       case "quick-date": {
