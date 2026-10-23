@@ -8,7 +8,7 @@
 // Each list lives at lists/<list id>, where the id is the part of the link
 // after "#". The list document holds the emails allowed to open it; the
 // first person to sign in becomes its first member. People sign in with
-// Google, Apple, or an email and password.
+// Google or an email and password.
 (function () {
   const firebaseConfig = {
     apiKey: "AIzaSyB95TZl4D0Q66VL2-It5QlkAdTi4J02pzA",
@@ -89,7 +89,7 @@
   function friendly(e) {
     const c = (e && e.code) || "";
     if (e) console.warn("Sign-in error", e);
-    const noMatch = "That email and password don't match. Try again or use Forgot password. New here? Tap Create account instead. If you signed in with Google or Apple before, use that button.";
+    const noMatch = "That email and password don't match. Try again or use Forgot password. New here? Tap Create account instead. If you signed in with Google before, use Continue with Google.";
     return ({
       "auth/invalid-email": "That email doesn't look right.",
       "auth/missing-email": "Enter your email first.",
@@ -204,7 +204,6 @@
 
   /* ---------- sign-in screen ---------- */
   const G_ICON = '<svg viewBox="0 0 18 18" width="18" height="18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.05l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>';
-  const APPLE_ICON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg>';
   const EMAIL_HINT = "New here? Enter your email, choose a password and tap Create account.";
   function injectCss() {
     if ($("fb-css")) return;
@@ -272,7 +271,6 @@
         <span class="label">${esc(LIST_NAME)}</span>
         <h2 id="fb-title">You're not on this list yet</h2>
         <p>You're signed in as <b>${esc(who)}</b>. Ask the person who sent you the link to add you under People, then reload this page.</p>
-        ${/@privaterelay\.appleid\.com$/i.test(who) ? "<p>You chose Hide My Email with Apple, so that's the address to send them.</p>" : ""}
         <button type="button" class="btn fb-wide" id="fb-switch">Use a different account</button>
       </div>`;
       $("fb-switch").onclick = () => S.F.signOut(S.auth).then(() => location.reload());
@@ -304,7 +302,6 @@
       <h2 id="fb-title">Sign in to open your list</h2>
       <p>Only people added to this list can see it.</p>
       <button type="button" class="btn fb-wide fb-social" id="fb-google">${G_ICON} Continue with Google</button>
-      <button type="button" class="btn fb-wide fb-social" id="fb-apple">${APPLE_ICON} Continue with Apple</button>
       <div class="fb-or">or</div>
       <form class="fb-stack" id="fb-email-form" autocomplete="on" novalidate>
         <input class="fb-input" id="fb-email" type="email" autocomplete="email" inputmode="email" placeholder="Email" aria-label="Email">
@@ -328,11 +325,6 @@
       }
     };
     $("fb-google").onclick = () => popup(new F.GoogleAuthProvider(), "Google");
-    $("fb-apple").onclick = () => {
-      const provider = new F.OAuthProvider("apple.com");
-      provider.addScope("email"); provider.addScope("name");
-      popup(provider, "Apple");
-    };
 
     const readEmail = () => {
       const email = $("fb-email").value.trim(), pass = $("fb-pass").value;
