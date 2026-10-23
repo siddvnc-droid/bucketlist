@@ -1,0 +1,29 @@
+{
+  "activities": [],
+  "categories": [
+    {
+      "id": "day-activity",
+      "data": {
+        "color": 6,
+        "name": "Day Activity",
+        "order": 7
+      }
+    },
+    {
+      "id": "food-drinks",
+      "data": {
+        "color": 3,
+        "name": "Food & Drinks",
+        "order": 2
+      }
+    },
+    {
+      "id": "night-activity",
+      "data": {
+        "color": 2,
+        "name": "Night Activity",
+        "order": 8
+      }
+    }
+  ]
+}

@@ -18,11 +18,21 @@
     appId: "1:781041733321:web:b3274b5d737d191b530718",
   };
   const SDK = "https://www.gstatic.com/firebasejs/10.14.1";
-  const LIST_NAME = "Winter Bucket List";
+  // Lists hosted on this site: link id -> the word shown in italics before "Bucket List".
+  const LISTS = {
+    eXYoNdIfxfjsKmzVwQ7MlRxl: "Winter",
+    Bo9EBg5gL996V7s9SiRR76jr: "2027",
+  };
 
   const match = location.hash.slice(1).match(/^[A-Za-z0-9_-]{20,64}$/);
   const listId = match ? match[0] : null;
   addEventListener("hashchange", () => location.reload());
+  const listWord = (listId && LISTS[listId]) || "Our";
+  const LIST_NAME = `${listWord} Bucket List`;
+  document.title = LIST_NAME;
+  // The page heading says "Winter" by default; show this list's own name.
+  const nameHeading = () => { const em = document.querySelector("h1 em"); if (em) em.textContent = listWord; document.title = LIST_NAME; };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", nameHeading); else nameHeading();
 
   let resolveDb, resolveUser;
   const dbReady = new Promise((r) => (resolveDb = r));
