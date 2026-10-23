@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Geist:wght@400;500;600&family=Geist+Mono:wght@500;600&display=swap">
 <style>
-/* Layout: one 720px column — header with progress ring, a "next up" card with a calendar tile, then one panel holding add bar, filter and list. Amber is the single accent; green only means done. */
+/* Layout: one 720px column — header with progress ring, a "next up" card with a calendar tile and its planning checklist, then one panel holding add bar, filters, category manager and list. Amber is the single accent; green only means done; --c1..--c8 are category dots. */
 :root {
   --bg: #F5F6F8;
   --surface: #FFFFFF;
@@ -25,7 +25,7 @@
   --danger-soft: #FCEAE7;
   --on-danger: #FFFFFF;
   --focus: #3B6FE0;
-  --c1: #3B6FE0; --c2: #8B4FD8; --c3: #D9541A; --c4: #0D9A72; --c5: #D6407A; --c6: #6B7380;
+  --c1: #3B6FE0; --c2: #8B4FD8; --c3: #D9541A; --c4: #0D9A72; --c5: #D6407A; --c6: #6E8F1A; --c7: #0E8FB0; --c8: #6B7380;
   --shadow: 0 1px 2px rgb(16 24 40 / .05), 0 1px 3px rgb(16 24 40 / .07);
   --shadow-pop: 0 10px 30px rgb(16 24 40 / .14), 0 2px 6px rgb(16 24 40 / .08);
   --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
@@ -37,7 +37,7 @@
     --bg: #0D1117; --surface: #151B23; --surface-2: #1C232D; --ink: #E8ECF1; --ink-2: #C2C9D2; --muted: #8C96A3;
     --line: #262E39; --line-strong: #364050; --accent: #F2B13A; --accent-soft: #33270F; --accent-ink: #F5C86E; --on-accent: #2A1B00;
     --done: #3FC48A; --done-soft: #12291E; --on-done: #05200F; --danger: #FF7B6B; --danger-soft: #3A1A16; --on-danger: #2A0A06;
-    --focus: #7EA2FF; --c1: #7EA2FF; --c2: #B88CF5; --c3: #FF8A57; --c4: #3CCB9E; --c5: #F27CA8; --c6: #8C96A3;
+    --focus: #7EA2FF; --c1: #7EA2FF; --c2: #B88CF5; --c3: #FF8A57; --c4: #3CCB9E; --c5: #F27CA8; --c6: #A9C94A; --c7: #4FC6E6; --c8: #8C96A3;
     --shadow: 0 1px 2px rgb(0 0 0 / .4); --shadow-pop: 0 12px 32px rgb(0 0 0 / .5); color-scheme: dark;
   }
 }
@@ -45,7 +45,7 @@
   --bg: #0D1117; --surface: #151B23; --surface-2: #1C232D; --ink: #E8ECF1; --ink-2: #C2C9D2; --muted: #8C96A3;
   --line: #262E39; --line-strong: #364050; --accent: #F2B13A; --accent-soft: #33270F; --accent-ink: #F5C86E; --on-accent: #2A1B00;
   --done: #3FC48A; --done-soft: #12291E; --on-done: #05200F; --danger: #FF7B6B; --danger-soft: #3A1A16; --on-danger: #2A0A06;
-  --focus: #7EA2FF; --c1: #7EA2FF; --c2: #B88CF5; --c3: #FF8A57; --c4: #3CCB9E; --c5: #F27CA8; --c6: #8C96A3;
+  --focus: #7EA2FF; --c1: #7EA2FF; --c2: #B88CF5; --c3: #FF8A57; --c4: #3CCB9E; --c5: #F27CA8; --c6: #A9C94A; --c7: #4FC6E6; --c8: #8C96A3;
   --shadow: 0 1px 2px rgb(0 0 0 / .4); --shadow-pop: 0 12px 32px rgb(0 0 0 / .5); color-scheme: dark;
 }
 
@@ -59,7 +59,7 @@ body {
   padding-block: 40px 72px;
 }
 .app { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
-button, input, textarea { font: inherit; color: inherit; }
+button, input, textarea, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 svg { flex: none; }
@@ -79,6 +79,7 @@ h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.75re
 /* ---------- shared surfaces ---------- */
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
 .eyebrow { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.hint { font-size: 0.82rem; color: var(--muted); }
 
 .notice { display: flex; gap: 10px; align-items: flex-start; font-size: 0.875rem; color: var(--ink-2); background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; }
 .notice svg { width: 16px; height: 16px; margin-top: 2px; color: var(--muted); }
@@ -91,6 +92,7 @@ h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.75re
 }
 .btn:hover { background: var(--surface-2); }
 .btn svg { width: 15px; height: 15px; }
+.btn.sm { height: 32px; padding: 0 12px; }
 .btn.primary { background: var(--ink); border-color: var(--ink); color: var(--surface); }
 .btn.primary:hover { background: var(--ink-2); border-color: var(--ink-2); }
 .btn.success { background: var(--done); border-color: var(--done); color: var(--on-done); }
@@ -99,19 +101,39 @@ h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.75re
 .btn.ghost { border-color: transparent; background: transparent; color: var(--ink-2); }
 .btn.ghost:hover { background: var(--surface-2); }
 .btn:disabled { opacity: .45; cursor: default; }
-.icon-btn { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; border: 0; background: transparent; color: var(--muted); }
-.icon-btn:hover, .icon-btn[aria-expanded="true"] { background: var(--surface-2); color: var(--ink); }
+.icon-btn { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; border: 0; background: transparent; color: var(--muted); flex: none; }
+.icon-btn:hover, .icon-btn[aria-expanded="true"], .icon-btn[aria-pressed="true"] { background: var(--surface-2); color: var(--ink); }
 .icon-btn svg { width: 18px; height: 18px; }
+.icon-btn.sm { width: 28px; height: 28px; }
+.icon-btn.sm svg { width: 15px; height: 15px; }
+.icon-btn.danger:hover { color: var(--danger); background: var(--danger-soft); }
 .text-btn { border: 0; background: none; padding: 0; color: var(--ink-2); font-weight: 500; font-size: 0.85rem; text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
 .text-btn:hover { color: var(--ink); text-decoration-color: currentColor; }
+
+/* ---------- form fields ---------- */
+.field {
+  width: 100%; height: 38px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line-strong);
+  background: var(--surface); min-width: 0; transition: border-color .12s, box-shadow .12s;
+}
+.field.sm { height: 32px; font-size: 0.875rem; padding: 0 10px; }
+.field::placeholder { color: var(--muted); }
+.field:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 20%, transparent); }
+select.field { appearance: none; -webkit-appearance: none; padding-right: 34px; cursor: pointer; text-overflow: ellipsis; }
+.select-wrap { position: relative; min-width: 0; }
+.select-wrap > svg { position: absolute; right: 11px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--muted); pointer-events: none; }
+.select-wrap .dot { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 8px; height: 8px; border-radius: 50%; background: var(--dot, transparent); pointer-events: none; }
+.select-wrap select.field { padding-right: 34px; }
+.select-wrap.has-dot select { padding-left: 28px; }
+.editor .select-wrap { display: block; }
+textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: vertical; line-height: 1.55; }
 
 /* ---------- next up ---------- */
 .next { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 20px; padding: 20px; align-items: start; }
 .cal { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; text-align: center; background: var(--surface); }
 .cal-mon { background: var(--accent); color: var(--on-accent); font-size: 0.7rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; padding: 4px 0; }
-.cal-day { font-family: var(--font-display); font-weight: 700; font-size: 2rem; line-height: 1; padding: 10px 0 4px; font-variant-numeric: tabular-nums; }
+.cal-day { font-family: var(--font-display); font-weight: 700; font-size: 2rem; line-height: 1; padding: 10px 0 4px; font-variant-numeric: tabular-nums; display: grid; place-items: center; }
 .cal-dow { font-size: 0.72rem; color: var(--muted); padding-bottom: 8px; }
-.cal.tbd .cal-day { font-size: 1.1rem; padding: 16px 0 10px; color: var(--muted); }
+.cal.tbd .cal-day { font-size: 1.1rem; padding: 16px 0 12px; color: var(--muted); }
 .next-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .next-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .next h2 { font-family: var(--font-display); font-weight: 600; font-size: clamp(1.35rem, 4vw, 1.65rem); line-height: 1.15; letter-spacing: -0.015em; margin: 0; text-wrap: balance; overflow-wrap: anywhere; }
@@ -125,33 +147,71 @@ h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.75re
 .next.empty .row { display: flex; align-items: center; justify-content: space-between; gap: 12px 16px; flex-wrap: wrap; }
 .next.empty p { color: var(--muted); }
 .next .editor { grid-column: 1 / -1; margin: 4px 0 0; }
+.next-cl { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-top: 16px; }
+
+/* ---------- planning checklist ---------- */
+.checklist { display: flex; flex-direction: column; gap: 10px; }
+.cl-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cl-count { font-size: 0.8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.cl-bar { flex: 0 1 120px; height: 4px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.cl-bar i { display: block; height: 100%; background: var(--done); border-radius: inherit; transition: width .3s ease; }
+.tasks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.task { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto auto; align-items: center; gap: 4px 10px; padding: 5px 4px 5px 2px; border-radius: 8px; min-height: 36px; }
+.task:hover { background: var(--surface-2); }
+.tcheck { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--line-strong); background: var(--surface); display: grid; place-items: center; color: transparent; padding: 0; transition: all .12s; }
+.tcheck:hover { border-color: var(--done); color: var(--done); }
+.tcheck svg { width: 11px; height: 11px; }
+.tcheck[disabled] { cursor: default; }
+.task.done .tcheck { background: var(--done); border-color: var(--done); color: var(--on-done); }
+.ttext { font-size: 0.92rem; overflow-wrap: anywhere; line-height: 1.4; }
+.task.done .ttext { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line-strong); }
+.claim { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; font-size: 0.78rem; font-weight: 500; color: var(--muted); height: 26px; padding: 0 8px; border-radius: 6px; white-space: nowrap; }
+.claim:hover { background: var(--surface); color: var(--ink); }
+.claim.on { padding: 0 4px; }
+.claim .av { width: 20px; height: 20px; }
+.task .claim:not(.on), .task .tdel { opacity: 0; transition: opacity .12s; }
+.task:hover .claim, .task:focus-within .claim, .task:hover .tdel, .task:focus-within .tdel { opacity: 1; }
+@media (hover: none) { .task .claim:not(.on), .task .tdel { opacity: 1; } }
+.task-add { display: flex; gap: 8px; }
+.task-add .field { flex: 1 1 auto; }
+.suggest { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chip { border: 1px dashed var(--line-strong); background: transparent; border-radius: 999px; height: 28px; padding: 0 11px; font-size: 0.8rem; color: var(--ink-2); }
+.chip:hover { border-style: solid; background: var(--surface-2); color: var(--ink); }
 
 /* ---------- panel: add + filter + list ---------- */
-.panel { overflow: visible; }
 .add { padding: 16px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
 .add-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .input-wrap { position: relative; flex: 3 1 260px; min-width: 0; }
 .input-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--muted); pointer-events: none; }
-.field {
-  width: 100%; height: 38px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line-strong);
-  background: var(--surface); min-width: 0; transition: border-color .12s, box-shadow .12s;
-}
-.field::placeholder { color: var(--muted); }
-.field:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 20%, transparent); }
 .input-wrap .field { padding-left: 36px; }
-#new-cat { flex: 1 1 140px; width: auto; }
+#new-cat-wrap { flex: 1 1 170px; }
 .add-row .btn { height: 38px; }
-textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: vertical; line-height: 1.55; }
 .add-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; min-height: 22px; }
-.hint { font-size: 0.82rem; color: var(--muted); }
 
-.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
 .seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--surface-2); flex-wrap: wrap; }
 .seg button { border: 0; background: transparent; height: 30px; padding: 0 12px; border-radius: 7px; font-size: 0.85rem; font-weight: 500; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
 .seg button:hover { color: var(--ink); }
 .seg button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
 .seg .n { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tools { display: flex; align-items: center; gap: 6px; min-width: 0; }
+#cat-filter-wrap { width: 190px; }
 
+/* category manager */
+.cat-manager { padding: 16px; border-bottom: 1px solid var(--line); background: var(--surface-2); display: flex; flex-direction: column; gap: 12px; }
+.cm-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.cm-head strong { display: block; font-weight: 600; }
+.cm-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 6px 16px; }
+.cm-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto auto; gap: 6px; align-items: center; }
+.dot-btn { width: 28px; height: 28px; border-radius: 8px; border: 0; background: transparent; display: grid; place-items: center; padding: 0; }
+.dot-btn::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--dot); }
+.dot-btn:hover { background: var(--surface); }
+.dot-btn[disabled] { cursor: default; background: transparent; }
+.cm-count { font-size: 0.78rem; color: var(--muted); min-width: 2.2em; text-align: right; font-variant-numeric: tabular-nums; }
+.cm-confirm { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 0.85rem; color: var(--ink-2); padding: 4px 0 6px 34px; }
+.cm-add { display: flex; gap: 8px; max-width: 420px; }
+
+/* list */
 .list { list-style: none; margin: 0; padding: 0; }
 .item {
   position: relative; display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 2px 14px; align-items: start;
@@ -175,10 +235,14 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
 .memory { color: var(--ink-2); font-size: 0.875rem; overflow-wrap: anywhere; white-space: pre-wrap; padding-left: 10px; border-left: 2px solid var(--done-soft); }
 .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 0.8rem; color: var(--muted); }
 .cat { display: inline-flex; align-items: center; gap: 6px; }
-.cat i { width: 8px; height: 8px; border-radius: 50%; background: var(--dot, var(--c6)); }
+.cat i { width: 8px; height: 8px; border-radius: 50%; background: var(--dot, var(--c8)); }
 .when { display: inline-flex; align-items: center; gap: 5px; color: var(--accent-ink); font-weight: 500; font-variant-numeric: tabular-nums; }
 .when svg { width: 13px; height: 13px; }
 .when.late { color: var(--danger); }
+.cl-chip { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--line); background: var(--surface); border-radius: 6px; height: 22px; padding: 0 7px; font-size: 0.78rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.cl-chip svg { width: 12px; height: 12px; }
+.cl-chip:hover, .cl-chip[aria-expanded="true"] { border-color: var(--line-strong); color: var(--ink); }
+.cl-chip.complete { color: var(--done); }
 .av { width: 18px; height: 18px; border-radius: 50%; object-fit: cover; background: var(--line); }
 .side { display: flex; align-items: center; gap: 6px; }
 .quick { opacity: 0; transition: opacity .12s; height: 30px; padding: 0 10px; }
@@ -191,11 +255,12 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
 }
 .stamp.fresh { animation: thunk .45s cubic-bezier(.2, 1.6, .4, 1) both; }
 @keyframes thunk { from { transform: rotate(-16deg) scale(1.8); opacity: 0; } to { transform: rotate(-4deg) scale(1); opacity: 1; } }
+.item-cl { grid-column: 2 / -1; margin-top: 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
 
 /* row menu */
 .menu-wrap { position: relative; }
 .menu {
-  position: absolute; right: 0; top: calc(100% + 4px); z-index: 15; min-width: 176px; padding: 4px;
+  position: absolute; right: 0; top: calc(100% + 4px); z-index: 15; min-width: 184px; padding: 4px;
   background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow-pop);
   display: flex; flex-direction: column;
 }
@@ -231,12 +296,18 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
   body { padding-block: 24px 64px; }
   .next { grid-template-columns: 64px minmax(0, 1fr); gap: 14px; padding: 16px; }
   .next .actions .btn { flex: 1 1 auto; justify-content: center; }
-  .item { grid-template-columns: 24px minmax(0, 1fr) auto; padding: 14px 8px 14px 14px; gap: 2px 12px; }
+  .item { padding: 14px 8px 14px 14px; gap: 2px 12px; }
+  .item-cl { grid-column: 1 / -1; }
   .stamp { display: none; }
-  .add-row .btn { flex: 1 1 100%; justify-content: center; }
+  .input-wrap { flex: 1 1 100%; }
+  #new-cat-wrap { flex: 1 1 0; }
+  .add-row .btn { flex: 0 0 auto; }
   .toolbar { padding: 10px 12px; }
   .seg { width: 100%; }
   .seg button { flex: 1 1 0; justify-content: center; padding: 0 6px; }
+  .tools { width: 100%; }
+  #cat-filter-wrap { flex: 1 1 auto; width: auto; }
+  .cat-manager { padding: 14px 12px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
@@ -266,7 +337,11 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>
           <input id="new-title" class="field" placeholder="Add an activity, e.g. See the northern lights" aria-label="Activity" maxlength="200">
         </div>
-        <input id="new-cat" class="field" placeholder="Category" aria-label="Category (optional)" list="cats" maxlength="40">
+        <div class="select-wrap has-dot" id="new-cat-wrap">
+          <i class="dot" id="new-cat-dot"></i>
+          <select id="new-cat" class="field" aria-label="Category"><option value="">No category</option></select>
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
         <button class="btn primary" type="submit">Add</button>
       </div>
       <div id="bulk-row" hidden>
@@ -277,11 +352,21 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
         <span class="hint" id="bulk-hint" hidden></span>
         <button type="button" class="btn primary" id="bulk-add" hidden>Add all</button>
       </div>
-      <datalist id="cats"></datalist>
     </form>
     <div class="toolbar">
-      <div class="seg" role="tablist" id="tabs" aria-label="Filter activities"></div>
+      <div class="seg" role="tablist" id="tabs" aria-label="Filter by status"></div>
+      <div class="tools">
+        <div class="select-wrap has-dot" id="cat-filter-wrap">
+          <i class="dot" id="cat-filter-dot"></i>
+          <select id="cat-filter" class="field sm" aria-label="Filter by category"><option value="">All categories</option></select>
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <button type="button" class="icon-btn" id="manage-btn" data-act="manage" aria-pressed="false" aria-label="Manage categories" title="Manage categories">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.6V4a1 1 0 011-1h6.6a1 1 0 01.7.3l5.4 5.4a1 1 0 010 1.4l-6.6 6.6a1 1 0 01-1.4 0L3.3 11.3a1 1 0 01-.3-.7z"/><circle cx="7" cy="7" r="1.3"/></svg>
+        </button>
+      </div>
     </div>
+    <div id="cats-panel"></div>
     <ul class="list" id="list"></ul>
     <div id="list-empty" class="empty-state" hidden></div>
   </section>
@@ -291,11 +376,16 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
 <script>
 (() => {
   const $ = (s) => document.querySelector(s);
-  const LOCAL_KEY = "bucketlist.items.v1";
+  const LKEYS = { activities: "bucketlist.items.v1", categories: "bucketlist.categories.v1" };
+  // Starter categories for the browser-only copy. The shared list keeps its categories in the database.
+  const LOCAL_STARTER_CATS = [["Travel", 1], ["Food and Drinks", 3], ["Outdoors", 4], ["Adventure", 2], ["Culture & Events", 5], ["Learn Something", 7], ["Just for Fun", 6]];
+  const STEP_IDEAS = ["Pick a date", "Set a budget", "Book tickets", "Book a place to stay", "Book time off", "Pack"];
+  const COLORS = 8;
   const ICON = {
     check: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg>',
     dots: '<svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><circle cx="4.5" cy="10" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="15.5" cy="10" r="1.6"/></svg>',
     cal: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="3.5" width="11" height="10" rx="2"/><path d="M2.5 7h11M5.5 2v3M10.5 2v3"/></svg>',
+    list: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5l1.2 1.2L6 3.5M2.5 10.5l1.2 1.2L6 9.5M8.5 4.8h5M8.5 10.8h5"/></svg>',
     edit: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.5 2.5l3 3L6 13H3v-3z"/></svg>',
     trash: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5h11M6 4.5V3h4v1.5M4 4.5l.7 9h6.6l.7-9"/></svg>',
     undo: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3L2 6l3 3"/><path d="M2 6h7.5a4 4 0 010 8H6"/></svg>',
@@ -307,17 +397,23 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
   };
 
   const state = {
-    mode: "loading",       // loading | db | local | unavailable
+    mode: "loading",        // loading | db | local | unavailable
     items: [],
+    cats: [],
+    catsLoaded: false,
     canWrite: true,
     me: null,
     filter: safeGet("bucketlist.filter") || "todo",
-    editor: null,           // { id, kind: plan|done|edit|delete, where: hero|list }
-    menu: null,             // id of the row whose menu is open
-    suggestion: null,       // id picked by "Pick one for us"
-    fresh: new Set(),       // ids just marked done (stamp animation)
+    catFilter: safeGet("bucketlist.cat") || "",   // "" all, "none" uncategorized, or a category id
+    editor: null,            // { id, kind: plan|done|edit|delete, where: hero|list }
+    menu: null,              // id of the row whose menu is open
+    expanded: new Set(),     // planned rows with their checklist open
+    managing: false,         // category manager open
+    catConfirm: null,        // category id awaiting delete confirmation
+    suggestion: null,        // id picked by "Pick one for us"
+    fresh: new Set(),        // ids just marked done (stamp animation)
   };
-  let col = null, userNs = null;
+  let dbNs = null, userNs = null;
   const profiles = {};
 
   /* ---------- helpers ---------- */
@@ -340,7 +436,6 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
     if (n === -1) return "Yesterday";
     return n > 0 ? `In ${n} days` : `${-n} days ago`;
   }
-  function catColor(c) { let h = 0; for (const ch of c.toLowerCase()) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return `var(--c${(h % 6) + 1})`; }
   function toast(msg) {
     const t = $("#toast"); t.textContent = msg; t.hidden = false;
     clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 4200);
@@ -353,11 +448,57 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
     return ap ? -1 : bp ? 1 : byCreated(a, b);
   }
   function byDone(a, b) { return String(b.doneOn || "").localeCompare(String(a.doneOn || "")) || (b.doneAt || 0) - (a.doneAt || 0); }
-
-  /* ---------- storage: shared db when available, this device otherwise ---------- */
-  function readLocal() { try { return JSON.parse(localStorage.getItem(LOCAL_KEY)) || []; } catch { return []; } }
-  function writeLocal(list) { try { localStorage.setItem(LOCAL_KEY, JSON.stringify(list)); } catch {} state.items = list; render(); }
   function newId() { return (crypto.randomUUID && crypto.randomUUID()) || Date.now().toString(36) + Math.random().toString(36).slice(2); }
+  function taskId() { return "t" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+  /* ---------- categories ---------- */
+  function sortedCats() {
+    return state.cats.filter((c) => c && typeof c.name === "string" && c.name.trim())
+      .sort((a, b) => (a.order || 0) - (b.order || 0) || a.name.localeCompare(b.name));
+  }
+  function colorIndex(c) { const n = Number(c && c.color); return n >= 1 && n <= COLORS ? Math.round(n) : COLORS; }
+  function hashColor(name) { let h = 0; for (const ch of name.toLowerCase()) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return (h % COLORS) + 1; }
+  function catVar(c) { return `var(--c${c.legacy ? hashColor(c.name) : colorIndex(c)})`; }
+  function catByName(name) { const n = name.trim().toLowerCase(); return state.cats.find((c) => c && typeof c.name === "string" && c.name.trim().toLowerCase() === n); }
+  // Activities point at a category by id. Older ones may still carry a plain name.
+  function resolveCat(item) {
+    if (item.categoryId) { const c = state.cats.find((x) => x && x.id === item.categoryId); if (c && typeof c.name === "string") return c; }
+    if (typeof item.category === "string" && item.category.trim()) return catByName(item.category) || { id: null, name: item.category.trim(), legacy: true };
+    return null;
+  }
+  function matchesCat(item) {
+    if (!state.catFilter) return true;
+    const c = resolveCat(item);
+    return state.catFilter === "none" ? !c : !!c && c.id === state.catFilter;
+  }
+
+  /* ---------- checklist ---------- */
+  function tasksOf(item) {
+    const cl = item.checklist;
+    if (!cl || typeof cl !== "object" || Array.isArray(cl)) return [];
+    return Object.entries(cl)
+      .filter(([, t]) => t && typeof t === "object" && typeof t.text === "string" && t.text.trim())
+      .map(([id, t]) => ({ ...t, id }))
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
+  }
+
+  /* ---------- storage: shared db when available, this browser otherwise ---------- */
+  function listOf(coll) { return coll === "activities" ? state.items : state.cats; }
+  function readLocal(coll) { try { const v = JSON.parse(localStorage.getItem(LKEYS[coll])); return Array.isArray(v) ? v : null; } catch { return null; } }
+  function writeLocal(coll, list, quiet) {
+    try { localStorage.setItem(LKEYS[coll], JSON.stringify(list)); } catch {}
+    if (coll === "activities") state.items = list; else state.cats = list;
+    if (!quiet) render();
+  }
+  // Same rule as the shared store: nested objects merge, everything else replaces.
+  function merge(a, b) {
+    const out = { ...a };
+    for (const [k, v] of Object.entries(b)) {
+      const cur = out[k];
+      out[k] = v && typeof v === "object" && !Array.isArray(v) && cur && typeof cur === "object" && !Array.isArray(cur) ? merge(cur, v) : v;
+    }
+    return out;
+  }
 
   async function guarded(fn) {
     if (!state.canWrite) { toast("You can view this list but not change it."); return false; }
@@ -379,31 +520,31 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
       return false;
     }
   }
-  function addItem(data) {
+  function add(coll, data) {
     return guarded(async () => {
-      if (col) await col.add(data);
-      else writeLocal([...readLocal(), { id: newId(), ...data }]);
+      if (dbNs) await dbNs.collection(coll).add(data);
+      else writeLocal(coll, [...listOf(coll), { id: newId(), ...data }]);
     });
   }
-  function updateItem(id, patch) {
+  function update(coll, id, patch) {
     return guarded(async () => {
-      if (col) await col.doc(id).update(patch);
-      else writeLocal(readLocal().map((x) => (x.id === id ? { ...x, ...patch } : x)));
+      if (dbNs) await dbNs.collection(coll).doc(id).update(patch);
+      else writeLocal(coll, listOf(coll).map((x) => (x.id === id ? merge(x, patch) : x)));
     });
   }
-  function removeItem(id) {
+  function remove(coll, id) {
     return guarded(async () => {
-      if (col) await col.doc(id).delete();
-      else writeLocal(readLocal().filter((x) => x.id !== id));
+      if (dbNs) await dbNs.collection(coll).doc(id).delete();
+      else writeLocal(coll, listOf(coll).filter((x) => x.id !== id));
     });
   }
 
   /* ---------- people ---------- */
-  function avatar(uid, verb) {
+  function avatar(uid, fmt) {
     if (!uid || !userNs) return "";
     const p = profiles[uid];
-    const label = p && p.name ? `${verb} by ${p.name}` : "";
-    return `<img class="av" data-uid="${esc(uid)}" data-verb="${esc(verb)}" alt="${esc(label)}" title="${esc(label)}"${p ? ` src="${esc(p.avatarUrl)}"` : ""}>`;
+    const label = p && p.name ? fmt.replace("{name}", p.name) : "";
+    return `<img class="av" data-uid="${esc(uid)}" data-fmt="${esc(fmt)}" alt="${esc(label)}" title="${esc(label)}"${p ? ` src="${esc(p.avatarUrl)}"` : ""}>`;
   }
   async function fillAvatars() {
     if (!userNs) return;
@@ -414,12 +555,16 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
     for (const img of document.querySelectorAll("img.av[data-uid]")) {
       const p = ps[img.dataset.uid]; if (!p) continue;
       img.src = p.avatarUrl;
-      const label = p.name ? `${img.dataset.verb} by ${p.name}` : "";
+      const label = p.name ? img.dataset.fmt.replace("{name}", p.name) : "";
       img.alt = label; img.title = label;
     }
   }
 
   /* ---------- rendering ---------- */
+  function catOptions(selectedId, noneLabel) {
+    return `<option value="">${esc(noneLabel)}</option>` + sortedCats().map((c) => `<option value="${esc(c.id)}"${c.id === selectedId ? " selected" : ""}>${esc(c.name)}</option>`).join("");
+  }
+
   function editorHTML(item, kind) {
     const id = esc(item.id);
     const cancel = `<button type="button" class="btn ghost" data-act="cancel">Cancel</button>`;
@@ -442,16 +587,22 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
         <div class="btns">${cancel}<button type="button" class="btn success" data-act="save-done" data-id="${id}">${ICON.check} Mark as done</button></div>
       </div>`;
     }
-    if (kind === "edit") return `
+    if (kind === "edit") {
+      const c = resolveCat(item);
+      return `
       <div class="editor" data-editor="${id}">
         <div class="grid">
           <label>Activity<input class="field" name="title" maxlength="200" value="${esc(item.title)}"></label>
-          <label>Category<input class="field" name="category" maxlength="40" list="cats" value="${esc(item.category || "")}"></label>
+          <label>Category
+            <span class="select-wrap"><select class="field" name="categoryId">${catOptions(c && c.id, "No category")}</select>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></span>
+          </label>
         </div>
         <label>Notes<input class="field" name="notes" maxlength="500" placeholder="Ideas, links, costs…" value="${esc(item.notes || "")}"></label>
         ${item.status === "done" ? `<label>How was it?<input class="field" name="memory" maxlength="300" value="${esc(item.memory || "")}"></label>` : ""}
         <div class="btns">${cancel}<button type="button" class="btn primary" data-act="save-edit" data-id="${id}">Save changes</button></div>
       </div>`;
+    }
     if (kind === "delete") return `
       <div class="editor" data-editor="${id}">
         <p>Delete “${esc(item.title)}”? It disappears for both of you.</p>
@@ -462,6 +613,48 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
   function editorFor(item, where) {
     const e = state.editor;
     return e && e.id === item.id && e.where === where ? editorHTML(item, e.kind) : "";
+  }
+
+  function taskHTML(item, t) {
+    const w = state.canWrite, id = esc(item.id), tid = esc(t.id);
+    let claim = "";
+    if (userNs && state.me) {
+      if (t.who) {
+        const mine = t.who === state.me;
+        const av = avatar(t.who, mine ? "You're on it" : "{name} is on it");
+        claim = w ? `<button type="button" class="claim on" data-act="task-claim" data-id="${id}" data-task="${tid}" aria-label="${mine ? "Unassign yourself" : "Take this step over"}">${av}</button>` : `<span class="claim on">${av}</span>`;
+      } else if (w) {
+        claim = `<button type="button" class="claim" data-act="task-claim" data-id="${id}" data-task="${tid}">I'll do it</button>`;
+      }
+    }
+    return `
+      <li class="task${t.done ? " done" : ""}">
+        <button type="button" class="tcheck" ${w ? "" : "disabled"} data-act="task-toggle" data-id="${id}" data-task="${tid}" aria-pressed="${!!t.done}" aria-label="${t.done ? "Mark step not done" : "Mark step done"}: ${esc(t.text)}">${ICON.check}</button>
+        <span class="ttext">${esc(t.text)}</span>
+        ${claim || "<span></span>"}
+        ${w ? `<button type="button" class="icon-btn sm danger tdel" data-act="task-del" data-id="${id}" data-task="${tid}" aria-label="Remove step: ${esc(t.text)}">${ICON.x}</button>` : "<span></span>"}
+      </li>`;
+  }
+
+  function checklistHTML(item, where) {
+    const w = state.canWrite, id = esc(item.id);
+    const tasks = tasksOf(item), done = tasks.filter((t) => t.done).length;
+    const have = new Set(tasks.map((t) => t.text.trim().toLowerCase()));
+    const ideas = STEP_IDEAS.filter((s) => !have.has(s.toLowerCase()) && !(s === "Pick a date" && validISO(item.plannedFor)));
+    if (!w && !tasks.length) return "";
+    return `
+      <div class="checklist">
+        <div class="cl-head">
+          <span class="eyebrow">Planning checklist</span>
+          ${tasks.length ? `<span class="cl-count">${done} of ${tasks.length} done</span><span class="cl-bar" aria-hidden="true"><i style="width:${Math.round((done / tasks.length) * 100)}%"></i></span>` : ""}
+        </div>
+        ${tasks.length ? `<ul class="tasks">${tasks.map((t) => taskHTML(item, t)).join("")}</ul>` : ""}
+        ${w ? `<div class="task-add">
+          <input class="field sm" data-key="task:${where}:${id}" maxlength="140" placeholder="${tasks.length ? "Add another step" : "Add a step, e.g. Book flights"}" aria-label="Add a step to ${esc(item.title)}">
+          <button type="button" class="btn sm" data-act="task-add" data-id="${id}" data-where="${where}">Add</button>
+        </div>` : ""}
+        ${w && tasks.length < 3 && ideas.length ? `<div class="suggest"><span class="hint">Quick add:</span>${ideas.slice(0, 5).map((s) => `<button type="button" class="chip" data-act="task-suggest" data-id="${id}" data-text="${esc(s)}">+ ${esc(s)}</button>`).join("")}</div>` : ""}
+      </div>`;
   }
 
   function calTile(iso) {
@@ -480,6 +673,7 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
       const dated = validISO(next.plannedFor);
       const late = dated && daysUntil(next.plannedFor) < 0;
       const more = planned.length - 1;
+      const cl = checklistHTML(next, "hero");
       el.innerHTML = `
         <div class="card next">
           ${calTile(next.plannedFor)}
@@ -496,16 +690,18 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
             ${more > 0 ? `<button type="button" class="text-btn" data-act="filter" data-filter="planned" style="align-self:flex-start;margin-top:6px">${more} more planned</button>` : ""}
           </div>
           ${editorFor(next, "hero")}
+          ${cl ? `<div class="next-cl">${cl}</div>` : ""}
         </div>`;
       return;
     }
     const sug = state.suggestion && todo.find((x) => x.id === state.suggestion);
     if (sug) {
+      const fc = state.catFilter && state.catFilter !== "none" ? state.cats.find((c) => c.id === state.catFilter) : null;
       el.innerHTML = `
         <div class="card next">
-          <div class="cal tbd"><div class="cal-mon">Pick</div><div class="cal-day" style="color:var(--accent-ink)">${ICON.dice.replace('<svg ', '<svg style="width:26px;height:26px" ')}</div></div>
+          <div class="cal tbd"><div class="cal-mon">Pick</div><div class="cal-day" style="color:var(--accent-ink)">${ICON.dice.replace("<svg ", '<svg style="width:26px;height:26px" ')}</div></div>
           <div class="next-body">
-            <div class="next-head"><span class="eyebrow">How about this one?</span><span class="pill">Random pick of ${todo.length}</span></div>
+            <div class="next-head"><span class="eyebrow">How about this one?</span><span class="pill">Random pick of ${todo.length}${fc ? ` in ${esc(fc.name)}` : ""}</span></div>
             <h2>${esc(sug.title)}</h2>
             ${sug.notes ? `<p>${esc(sug.notes)}</p>` : ""}
             ${w ? `<div class="actions">
@@ -520,11 +716,12 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
     }
     let title, msg, icon = ICON.flag, action = "";
     if (!total) { title = "Start your list"; msg = "Add the things you want to do together below. Your next adventure will show up here."; }
-    else if (!todo.length) { title = "All done!"; msg = "You've ticked off everything on the list. Time to dream up more."; icon = ICON.trophy; }
+    else if (!state.items.some((x) => x.status !== "done" && x.status !== "planned")) { title = "All done!"; msg = "You've ticked off everything on the list. Time to dream up more."; icon = ICON.trophy; }
+    else if (!todo.length) { title = "Nothing planned yet"; msg = "Nothing left to do in this category. Show all categories to pick from everything."; }
     else {
       title = "Nothing planned yet";
       msg = `${todo.length} ${todo.length === 1 ? "activity is" : "activities are"} waiting for a date.`;
-      if (w) action = `<button type="button" class="btn primary" data-act="pick">${ICON.dice.replace('<svg ', '<svg style="width:16px;height:16px" ')} Pick one for us</button>`;
+      if (w) action = `<button type="button" class="btn primary" data-act="pick">${ICON.dice.replace("<svg ", '<svg style="width:16px;height:16px" ')} Pick one for us</button>`;
     }
     el.innerHTML = `<div class="card next empty"><div class="empty-icon">${icon}</div><div class="row"><div class="next-body"><strong>${title}</strong><p>${msg}</p></div>${action}</div></div>`;
   }
@@ -537,6 +734,7 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
       : [
           b("open", ICON.check, "Mark as done", 'data-kind="done" data-where="list"'),
           b("open", ICON.cal, planned ? "Change date" : "Plan it", 'data-kind="plan" data-where="list"'),
+          planned ? b("toggle-cl", ICON.list, state.expanded.has(item.id) ? "Hide checklist" : "Show checklist") : "",
           planned ? b("unplan", ICON.x, "Unplan") : "",
           b("open", ICON.edit, "Edit", 'data-kind="edit" data-where="list"'),
         ];
@@ -546,15 +744,19 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
   function itemHTML(item) {
     const w = state.canWrite, id = esc(item.id), done = item.status === "done", planned = item.status === "planned";
     const meta = [];
-    if (item.category) meta.push(`<span class="cat" style="--dot:${catColor(item.category)}"><i></i>${esc(item.category)}</span>`);
+    const c = resolveCat(item);
+    if (c) meta.push(`<span class="cat" style="--dot:${catVar(c)}"><i></i>${esc(c.name)}</span>`);
     if (planned) {
       const late = validISO(item.plannedFor) && daysUntil(item.plannedFor) < 0;
       meta.push(`<span class="when${late ? " late" : ""}">${ICON.cal}${validISO(item.plannedFor) ? `${esc(fmtDate(item.plannedFor, true))} · ${countdown(item.plannedFor)}` : "Planned · date TBD"}</span>`);
+      const tasks = tasksOf(item), td = tasks.filter((t) => t.done).length, open = state.expanded.has(item.id);
+      if (tasks.length || w) meta.push(`<button type="button" class="cl-chip${tasks.length && td === tasks.length ? " complete" : ""}" data-act="toggle-cl" data-id="${id}" aria-expanded="${open}">${ICON.list}${tasks.length ? `${td}/${tasks.length} steps` : "Add checklist"}</button>`);
     }
     if (done && validISO(item.doneOn)) meta.push(`<span>Done ${esc(fmtDate(item.doneOn))}</span>`);
-    const who = done ? avatar(item.doneBy || item.addedBy, "Ticked off") : avatar(item.addedBy, "Added");
+    const who = done ? avatar(item.doneBy || item.addedBy, "Ticked off by {name}") : avatar(item.addedBy, "Added by {name}");
     if (who) meta.push(who);
     const menuOpen = state.menu === item.id;
+    const cl = planned && state.expanded.has(item.id) ? checklistHTML(item, "list") : "";
     return `
       <li class="item${done ? " done" : ""}">
         <button type="button" class="check" ${w ? "" : "disabled"} data-act="${done ? "undo" : "open"}" data-kind="done" data-where="list" data-id="${id}" aria-label="${done ? "Mark as not done" : "Mark as done"}: ${esc(item.title)}">${ICON.check}</button>
@@ -573,19 +775,73 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
           </div>` : ""}
         </div>
         ${editorFor(item, "list")}
+        ${cl ? `<div class="item-cl">${cl}</div>` : ""}
       </li>`;
   }
 
+  function renderManager(cats, counts) {
+    const el = $("#cats-panel");
+    if (!state.managing) { el.innerHTML = ""; return; }
+    const w = state.canWrite;
+    const rows = cats.map((c) => {
+      const id = esc(c.id), n = counts[c.id] || 0;
+      const confirm = state.catConfirm === c.id ? `
+        <div class="cm-confirm">
+          <span>Delete “${esc(c.name)}”?${n ? ` ${n} ${n === 1 ? "activity" : "activities"} will have no category.` : ""}</span>
+          <button type="button" class="btn sm ghost" data-act="cat-keep">Keep</button>
+          <button type="button" class="btn sm danger" data-act="cat-confirm-del" data-cat="${id}">Delete</button>
+        </div>` : "";
+      return `
+        <li class="cm-row">
+          <button type="button" class="dot-btn" style="--dot:${catVar(c)}" ${w ? "" : "disabled"} data-act="cat-color" data-cat="${id}" aria-label="Change color of ${esc(c.name)}" title="Change color"></button>
+          <input class="field sm" data-key="cat:${id}" data-cat-name="${id}" value="${esc(c.name)}" maxlength="40" aria-label="Category name" ${w ? "" : "readonly"}>
+          <span class="cm-count" title="Activities in this category">${n}</span>
+          ${w ? `<button type="button" class="icon-btn sm danger" data-act="cat-del" data-cat="${id}" aria-label="Delete ${esc(c.name)}">${ICON.trash}</button>` : "<span></span>"}
+          ${confirm}
+        </li>`;
+    }).join("");
+    el.innerHTML = `
+      <div class="cat-manager">
+        <div class="cm-head">
+          <div><strong>Categories</strong><span class="hint">Shared by both of you. Click a dot to change its color, or edit a name to rename it.</span></div>
+          <button type="button" class="icon-btn sm" data-act="manage" aria-label="Close categories">${ICON.x}</button>
+        </div>
+        ${cats.length ? `<ul class="cm-list">${rows}</ul>` : `<span class="hint">No categories yet. Add your first one below.</span>`}
+        ${w ? `<div class="cm-add">
+          <input class="field sm" data-key="cat:new" id="cat-new" maxlength="40" placeholder="New category, e.g. Road Trips" aria-label="New category name">
+          <button type="button" class="btn sm primary" data-act="cat-add">Add category</button>
+        </div>` : ""}
+      </div>`;
+  }
+
+  // Rebuild a <select> only when its options change, so an open picker isn't disturbed.
+  function syncSelect(sel, html, value) {
+    if (sel.dataset.sig !== html) { sel.innerHTML = html; sel.dataset.sig = html; }
+    sel.value = [...sel.options].some((o) => o.value === value) ? value : "";
+  }
+  function syncDot(dot, wrap, catId) {
+    const c = catId && catId !== "none" ? state.cats.find((x) => x.id === catId) : null;
+    dot.style.setProperty("--dot", c ? catVar(c) : "transparent");
+    wrap.classList.toggle("has-dot", !!c);
+  }
+
+  function keyOf(i) {
+    if (i.dataset.key) return i.dataset.key;
+    const ed = i.closest("[data-editor]");
+    return ed ? ed.dataset.editor + "|" + i.name : null;
+  }
   function captureDrafts() {
     const drafts = {};
-    document.querySelectorAll("[data-editor] input").forEach((i) => { drafts[i.closest("[data-editor]").dataset.editor + "|" + i.name] = i.value; });
+    document.querySelectorAll("#next input, #next select, #list input, #list select, #cats-panel input").forEach((i) => {
+      const k = keyOf(i); if (!k) return;
+      if (i.tagName === "SELECT" || i.value !== i.defaultValue) drafts[k] = i.value;
+    });
     const a = document.activeElement;
-    const focus = a && a.closest && a.closest("[data-editor]") ? a.closest("[data-editor]").dataset.editor + "|" + a.name : null;
-    return { drafts, focus };
+    return { drafts, focus: a && a.matches && a.matches("input, select") ? keyOf(a) : null };
   }
   function restoreDrafts({ drafts, focus }) {
-    document.querySelectorAll("[data-editor] input").forEach((i) => {
-      const k = i.closest("[data-editor]").dataset.editor + "|" + i.name;
+    document.querySelectorAll("#next input, #next select, #list input, #list select, #cats-panel input").forEach((i) => {
+      const k = keyOf(i); if (!k) return;
       if (k in drafts) i.value = drafts[k];
       if (k === focus) i.focus();
     });
@@ -594,18 +850,26 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
   function render() {
     const saved = captureDrafts();
     const items = state.items.filter((x) => x && typeof x.title === "string");
-    const todo = items.filter((x) => x.status !== "done" && x.status !== "planned").sort(byCreated);
-    const planned = items.filter((x) => x.status === "planned").sort(byPlanned);
-    const done = items.filter((x) => x.status === "done").sort(byDone);
+    const cats = sortedCats();
+    if (state.catFilter && state.catFilter !== "none" && state.catsLoaded && !cats.some((c) => c.id === state.catFilter)) { state.catFilter = ""; safeSet("bucketlist.cat", ""); }
+    const all = {
+      todo: items.filter((x) => x.status !== "done" && x.status !== "planned"),
+      planned: items.filter((x) => x.status === "planned"),
+      done: items.filter((x) => x.status === "done"),
+    };
+    const fil = (arr) => arr.filter(matchesCat);
+    const todo = fil(all.todo).sort(byCreated);
+    const planned = fil(all.planned).sort(byPlanned);
+    const done = fil(all.done).sort(byDone);
     const total = items.length;
     if (state.menu && !items.some((x) => x.id === state.menu)) state.menu = null;
 
-    const pct = total ? Math.round((done.length / total) * 100) : 0;
+    const pct = total ? Math.round((all.done.length / total) * 100) : 0;
     $("#ring-fill").setAttribute("stroke-dashoffset", (157.08 * (1 - pct / 100)).toFixed(2));
     $("#ring-pct").textContent = pct + "%";
-    $("#ring").setAttribute("aria-label", `${done.length} of ${total} done`);
+    $("#ring").setAttribute("aria-label", `${all.done.length} of ${total} done`);
     $("#summary").innerHTML = state.mode === "loading" ? "Loading…"
-      : total ? `<b>${done.length}</b> of <b>${total}</b> done · <b>${planned.length}</b> planned · <b>${todo.length}</b> to go`
+      : total ? `<b>${all.done.length}</b> of <b>${total}</b> done · <b>${all.planned.length}</b> planned · <b>${all.todo.length}</b> to go`
       : "Things we want to do together";
 
     const notice = $("#notice");
@@ -616,11 +880,24 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
     notice.innerHTML = n ? `${ICON.info}<span>${esc(n)}</span>` : ""; notice.hidden = !n;
 
     $("#add").hidden = !state.canWrite || state.mode === "unavailable" || state.mode === "loading";
-    $("#cats").innerHTML = [...new Set(items.map((x) => (x.category || "").trim()).filter(Boolean))].sort().map((c) => `<option value="${esc(c)}">`).join("");
 
-    renderNext(todo, planned, total);
+    // Category pickers
+    const counts = {};
+    for (const it of items) { const c = resolveCat(it); if (c && c.id) counts[c.id] = (counts[c.id] || 0) + 1; }
+    const uncategorized = items.filter((it) => !resolveCat(it)).length;
+    const newCat = $("#new-cat");
+    syncSelect(newCat, catOptions(null, "No category"), newCat.value);
+    syncDot($("#new-cat-dot"), $("#new-cat-wrap"), newCat.value);
+    const filterHTML = `<option value="">All categories</option>` + cats.map((c) => `<option value="${esc(c.id)}">${esc(c.name)} (${counts[c.id] || 0})</option>`).join("") + `<option value="none">No category (${uncategorized})</option>`;
+    syncSelect($("#cat-filter"), filterHTML, state.catFilter);
+    syncDot($("#cat-filter-dot"), $("#cat-filter-wrap"), state.catFilter);
+    $("#manage-btn").setAttribute("aria-pressed", String(state.managing));
+    $("#manage-btn").hidden = state.mode === "loading" || state.mode === "unavailable";
+    renderManager(cats, counts);
 
-    const tabs = [["todo", "To do", todo.length], ["planned", "Planned", planned.length], ["done", "Done", done.length], ["all", "All", total]];
+    renderNext(todo, all.planned.slice().sort(byPlanned), total);
+
+    const tabs = [["todo", "To do", todo.length], ["planned", "Planned", planned.length], ["done", "Done", done.length], ["all", "All", todo.length + planned.length + done.length]];
     $("#tabs").innerHTML = tabs.map(([k, label, c]) => `<button type="button" role="tab" data-act="filter" data-filter="${k}" aria-selected="${state.filter === k}">${label}<span class="n">${c}</span></button>`).join("");
 
     const shown = state.filter === "todo" ? todo : state.filter === "planned" ? planned : state.filter === "done" ? done : [...planned, ...todo, ...done];
@@ -632,6 +909,10 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
     let e = "";
     if (state.mode !== "loading" && !shown.length) {
       if (!total) e = `<strong>Your list is empty</strong><span>Add activities one at a time above, or paste your whole list in one go.</span>`;
+      else if (state.catFilter) {
+        const name = state.catFilter === "none" ? "without a category" : `in ${esc((cats.find((c) => c.id === state.catFilter) || {}).name || "this category")}`;
+        e = `<strong>Nothing here ${name}</strong><span>Try another tab, or <button type="button" class="text-btn" data-act="clear-cat">show all categories</button>.</span>`;
+      }
       else if (state.filter === "todo") e = `<strong>Nothing left to do</strong><span>Everything is planned or done.</span>`;
       else if (state.filter === "planned") e = `<strong>Nothing planned</strong><span>Open the ⋯ menu on any activity and choose “Plan it”.</span>`;
       else if (state.filter === "done") e = `<strong>Nothing ticked off yet</strong><span>Mark your first activity as done and it shows up here.</span>`;
@@ -646,13 +927,30 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
   function find(id) { return state.items.find((x) => x.id === id); }
   function editorValues(id) {
     const box = document.querySelector(`[data-editor="${CSS.escape(id)}"]`);
-    const v = {}; if (box) box.querySelectorAll("input").forEach((i) => (v[i.name] = i.value.trim()));
+    const v = {}; if (box) box.querySelectorAll("input, select").forEach((i) => (v[i.name] = i.value.trim()));
     return v;
   }
   function openEditor(id, kind, where) {
     state.editor = { id, kind, where }; state.menu = null; render();
     const box = document.querySelector(`[data-editor="${CSS.escape(id)}"]`);
-    const first = box && box.querySelector("input, button"); if (first) first.focus();
+    const first = box && box.querySelector("input, select, button"); if (first) first.focus();
+  }
+  function focusKey(key) { const i = document.querySelector(`[data-key="${CSS.escape(key)}"]`); if (i) i.focus(); }
+
+  async function addTask(item, text, where) {
+    const clean = text.trim().slice(0, 140); if (!clean) return false;
+    const tid = taskId();
+    return update("activities", item.id, { checklist: { [tid]: { text: clean, done: false, order: Date.now(), who: null, doneBy: null } } });
+  }
+  async function saveCatName(input) {
+    const id = input.dataset.catName, c = state.cats.find((x) => x.id === id); if (!c) return;
+    const name = input.value.trim().slice(0, 40);
+    if (name === c.name) return;
+    if (!name) { input.value = c.name; toast("A category needs a name."); return; }
+    const clash = catByName(name);
+    if (clash && clash.id !== id) { input.value = c.name; toast(`There's already a category called “${clash.name}”.`); return; }
+    input.defaultValue = name;
+    await update("categories", id, { name });
   }
 
   document.addEventListener("click", async (ev) => {
@@ -661,6 +959,7 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
     if (!b) return;
     ev.preventDefault();
     const act = b.dataset.act, id = b.dataset.id, item = id && find(id);
+    const tid = b.dataset.task, task = item && tid ? tasksOf(item).find((t) => t.id === tid) : null;
     switch (act) {
       case "menu": {
         state.menu = state.menu === id ? null : id; render();
@@ -668,10 +967,11 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
         break;
       }
       case "filter": state.filter = b.dataset.filter; safeSet("bucketlist.filter", state.filter); state.editor = null; render(); break;
+      case "clear-cat": state.catFilter = ""; safeSet("bucketlist.cat", ""); render(); break;
       case "open": if (item) openEditor(id, b.dataset.kind, b.dataset.where); break;
       case "cancel": state.editor = null; render(); break;
       case "pick": {
-        const todo = state.items.filter((x) => x.status !== "done" && x.status !== "planned");
+        const todo = state.items.filter((x) => x.status !== "done" && x.status !== "planned" && matchesCat(x));
         const pool = todo.length > 1 ? todo.filter((x) => x.id !== state.suggestion) : todo;
         state.suggestion = pool.length ? pool[Math.floor(Math.random() * pool.length)].id : null;
         state.editor = null; render(); break;
@@ -681,14 +981,14 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
         const v = editorValues(id);
         const date = validISO(v.date) ? v.date : null;
         state.editor = null; state.suggestion = null;
-        if (await updateItem(id, { status: "planned", plannedFor: date, planNote: v.planNote || "" })) toast(date ? `Planned for ${fmtDate(date, true)}.` : "Added to your plans.");
+        if (await updateItem(id, { status: "planned", plannedFor: date, planNote: v.planNote || "" })) toast(date ? `Planned for ${fmtDate(date, true)}. Add steps to its checklist.` : "Added to your plans.");
         render(); break;
       }
-      case "unplan": state.editor = null; state.menu = null; await updateItem(id, { status: "todo", plannedFor: null, planNote: "" }); render(); break;
+      case "unplan": state.editor = null; state.menu = null; state.expanded.delete(id); await updateItem(id, { status: "todo", plannedFor: null, planNote: "" }); render(); break;
       case "save-done": {
         const v = editorValues(id);
         const date = validISO(v.date) ? v.date : todayISO();
-        state.editor = null; state.fresh.add(id);
+        state.editor = null; state.fresh.add(id); state.expanded.delete(id);
         if (await updateItem(id, { status: "done", doneOn: date, doneAt: Date.now(), memory: v.memory || "", doneBy: state.me || null })) toast(`Ticked off: ${item ? item.title : "activity"}.`);
         render(); setTimeout(() => state.fresh.delete(id), 1500); break;
       }
@@ -696,26 +996,91 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
       case "save-edit": {
         const v = editorValues(id);
         if (!v.title) { toast("Give the activity a name first."); break; }
-        const patch = { title: v.title, category: v.category || "", notes: v.notes || "" };
+        const patch = { title: v.title, categoryId: v.categoryId || null, category: "", notes: v.notes || "" };
         if ("memory" in v) patch.memory = v.memory;
         state.editor = null; await updateItem(id, patch); render(); break;
       }
-      case "confirm-delete": state.editor = null; if (state.suggestion === id) state.suggestion = null; await removeItem(id); render(); break;
+      case "confirm-delete": state.editor = null; if (state.suggestion === id) state.suggestion = null; await remove("activities", id); render(); break;
+
+      /* checklist */
+      case "toggle-cl": state.menu = null; if (state.expanded.has(id)) state.expanded.delete(id); else state.expanded.add(id); render();
+        if (state.expanded.has(id) && item && !tasksOf(item).length) focusKey(`task:list:${id}`);
+        break;
+      case "task-add": {
+        if (!item) break;
+        const key = `task:${b.dataset.where}:${id}`;
+        const input = document.querySelector(`[data-key="${CSS.escape(key)}"]`);
+        const text = input ? input.value.trim() : "";
+        if (!text) { if (input) input.focus(); break; }
+        input.value = ""; input.defaultValue = "";
+        if (!(await addTask(item, text))) { render(); const i = document.querySelector(`[data-key="${CSS.escape(key)}"]`); if (i) i.value = text; }
+        focusKey(key); break;
+      }
+      case "task-suggest": if (item) await addTask(item, b.dataset.text); break;
+      case "task-toggle": if (task) await updateItem(id, { checklist: { [tid]: { done: !task.done, doneBy: !task.done ? state.me || null : null } } }); break;
+      case "task-claim": if (task && state.me) await updateItem(id, { checklist: { [tid]: { who: task.who === state.me ? null : state.me } } }); break;
+      case "task-del": if (task) await updateItem(id, { checklist: { [tid]: null } }); break;
+
+      /* categories */
+      case "manage": state.managing = !state.managing; state.catConfirm = null; render(); if (state.managing) focusKey("cat:new"); break;
+      case "cat-add": {
+        const input = $("#cat-new"); const name = input ? input.value.trim().slice(0, 40) : "";
+        if (!name) { if (input) input.focus(); break; }
+        const clash = catByName(name);
+        if (clash) { toast(`There's already a category called “${clash.name}”.`); break; }
+        const used = new Set(state.cats.map(colorIndex));
+        let color = 1; while (used.has(color) && color < COLORS) color++;
+        if (used.has(color)) color = (state.cats.length % COLORS) + 1;
+        const order = state.cats.reduce((m, c) => Math.max(m, Number(c.order) || 0), 0) + 1;
+        input.value = ""; input.defaultValue = "";
+        if (await add("categories", { name, color, order })) toast(`Added “${name}”.`); else { render(); const i = $("#cat-new"); if (i) i.value = name; }
+        focusKey("cat:new"); break;
+      }
+      case "cat-color": {
+        const c = state.cats.find((x) => x.id === b.dataset.cat); if (!c) break;
+        await update("categories", c.id, { color: (colorIndex(c) % COLORS) + 1 }); break;
+      }
+      case "cat-del": state.catConfirm = b.dataset.cat; render(); break;
+      case "cat-keep": state.catConfirm = null; render(); break;
+      case "cat-confirm-del": {
+        const cid = b.dataset.cat; state.catConfirm = null;
+        if (state.catFilter === cid) { state.catFilter = ""; safeSet("bucketlist.cat", ""); }
+        await remove("categories", cid); render(); break;
+      }
     }
   });
+  function updateItem(id, patch) { return update("activities", id, patch); }
+
   document.addEventListener("keydown", (ev) => {
+    const t = ev.target;
     if (ev.key === "Escape") {
-      if (state.menu) { const id = state.menu; state.menu = null; render(); const t = document.querySelector(`[data-act="menu"][data-id="${CSS.escape(id)}"]`); if (t) t.focus(); }
+      if (state.menu) { const id = state.menu; state.menu = null; render(); const m = document.querySelector(`[data-act="menu"][data-id="${CSS.escape(id)}"]`); if (m) m.focus(); }
       else if (state.editor) { state.editor = null; render(); }
+      else if (state.catConfirm) { state.catConfirm = null; render(); }
+      return;
     }
-    if (ev.key === "Enter" && ev.target.matches("[data-editor] input")) {
+    if (ev.key !== "Enter" || !t.matches || !t.matches("input")) return;
+    if (t.matches("[data-editor] input")) {
       ev.preventDefault();
-      const save = ev.target.closest("[data-editor]").querySelector("[data-act^='save'], [data-act='confirm-delete']"); if (save) save.click();
+      const save = t.closest("[data-editor]").querySelector("[data-act^='save'], [data-act='confirm-delete']"); if (save) save.click();
+    } else if (t.matches("[data-key^='task:']")) {
+      ev.preventDefault(); const btn = t.parentElement.querySelector("[data-act='task-add']"); if (btn) btn.click();
+    } else if (t.id === "cat-new") {
+      ev.preventDefault(); const btn = document.querySelector("[data-act='cat-add']"); if (btn) btn.click();
+    } else if (t.matches("[data-cat-name]")) {
+      ev.preventDefault(); t.blur();
     }
+  });
+  document.addEventListener("focusout", (ev) => { if (ev.target.matches && ev.target.matches("[data-cat-name]")) saveCatName(ev.target); });
+
+  $("#new-cat").addEventListener("change", () => syncDot($("#new-cat-dot"), $("#new-cat-wrap"), $("#new-cat").value));
+  $("#cat-filter").addEventListener("change", (ev) => {
+    state.catFilter = ev.target.value; safeSet("bucketlist.cat", state.catFilter);
+    state.suggestion = null; state.editor = null; render();
   });
 
-  function baseItem(title, category, i = 0) {
-    return { title, category, notes: "", status: "todo", plannedFor: null, planNote: "", doneOn: null, doneAt: null, memory: "", createdAt: Date.now() + i, addedBy: state.me || null, doneBy: null };
+  function baseItem(title, categoryId, i = 0) {
+    return { title, categoryId: categoryId || null, category: "", notes: "", status: "todo", plannedFor: null, planNote: "", doneOn: null, doneAt: null, memory: "", createdAt: Date.now() + i, addedBy: state.me || null, doneBy: null };
   }
   $("#add").addEventListener("submit", async (ev) => {
     ev.preventDefault();
@@ -723,7 +1088,7 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
     const t = $("#new-title"), c = $("#new-cat");
     const title = t.value.trim(); if (!title) { t.focus(); return; }
     t.value = "";
-    if (await addItem(baseItem(title.slice(0, 200), c.value.trim().slice(0, 40)))) {
+    if (await add("activities", baseItem(title.slice(0, 200), c.value))) {
       if (state.filter !== "todo" && state.filter !== "all") { state.filter = "todo"; safeSet("bucketlist.filter", "todo"); render(); }
     } else t.value = title;
     t.focus();
@@ -742,22 +1107,35 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
     const lines = bulkLines(); if (!lines.length) return;
     const btn = $("#bulk-add"); btn.disabled = true; btn.textContent = "Adding…";
     let ok = 0;
-    for (let i = 0; i < lines.length; i++) { if (await addItem(baseItem(lines[i], "", i))) ok++; else break; }
+    for (let i = 0; i < lines.length; i++) { if (await add("activities", baseItem(lines[i], "", i))) ok++; else break; }
     btn.textContent = "Add all";
     if (ok) { $("#bulk-text").value = ""; toast(`Added ${ok} ${ok === 1 ? "activity" : "activities"}.`); setBulk(false); state.filter = "todo"; render(); }
     updateBulkHint();
   });
 
   /* ---------- boot ---------- */
-  function startLocal() { state.mode = "local"; state.items = readLocal(); render(); }
+  function startLocal() {
+    state.mode = "local";
+    let cats = readLocal("categories");
+    if (!cats) cats = LOCAL_STARTER_CATS.map(([name, color], i) => ({ id: newId(), name, color, order: i + 1 }));
+    let items = readLocal("activities") || [];
+    // Move older free-text categories onto the category list.
+    items = items.map((it) => {
+      if (it.categoryId || !it.category || !String(it.category).trim()) return it;
+      const name = String(it.category).trim();
+      let c = cats.find((x) => x.name.toLowerCase() === name.toLowerCase());
+      if (!c) { c = { id: newId(), name, color: (cats.length % COLORS) + 1, order: cats.length + 1 }; cats.push(c); }
+      return { ...it, categoryId: c.id, category: "" };
+    });
+    state.catsLoaded = true;
+    writeLocal("categories", cats, true);
+    writeLocal("activities", items, true);
+    render();
+  }
 
-  function subscribe(retried) {
-    col.onSnapshot((snap) => {
-      state.items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      if (state.mode === "loading") state.mode = "db";
-      render();
-    }, (err) => {
-      if (err && err.code === "unavailable" && !retried) { setTimeout(() => subscribe(true), 2000); return; }
+  function subscribe(coll, onData, retried) {
+    dbNs.collection(coll).onSnapshot((snap) => onData(snap.docs.map((d) => ({ id: d.id, ...d.data() }))), (err) => {
+      if (err && err.code === "unavailable" && !retried) { setTimeout(() => subscribe(coll, onData, true), 2000); return; }
       if (err && err.code === "revoked") { state.canWrite = false; render(); return; }
       toast("Lost the connection to your shared list. Reload the page to reconnect.");
     });
@@ -773,8 +1151,13 @@ textarea.field { height: auto; min-height: 132px; padding: 10px 12px; resize: ve
       state.me = await user.id();
       if ((await user.can("data.write")) === false) state.canWrite = false;
     }
-    col = db.collection("activities");
-    subscribe(false);
+    dbNs = db;
+    subscribe("categories", (list) => { state.cats = list; state.catsLoaded = true; render(); });
+    subscribe("activities", (list) => {
+      state.items = list;
+      if (state.mode === "loading") state.mode = "db";
+      render();
+    });
   }
   boot();
 })();
