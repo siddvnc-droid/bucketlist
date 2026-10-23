@@ -1,0 +1,1653 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<style>body { margin: 0; }</style>
+<script src="firebase-shim.js"></script>
+</head>
+<body>
+<title>Winter Bucket List</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Martian+Mono:wght@400;500&display=swap">
+<style>
+/* Concept: a passport. "Next up" is a travel document on security paper (guilloche + MRZ lines); completed activities become ink stamps.
+   Layout: one 760px column — masthead with a three-part gauge, the document, a composer, a status/category toolbar, then the list (or a page of stamps). */
+:root {
+  --bg: #EFF0ED;
+  --surface: #FFFFFF;
+  --surface-2: #F6F7F4;
+  --surface-3: #E7E9E5;
+  --ink: #0F1311;
+  --ink-2: #3B423E;
+  --muted: #79807B;
+  --faint: #A9AEAA;
+  --line: #E1E3DF;
+  --line-2: #D0D3CE;
+  --primary: #15233F;          /* passport navy */
+  --on-primary: #F4F6FA;
+  --gold: #8F6E28;             /* foil, used for time */
+  --done: #1D6A4D;
+  --on-done: #FFFFFF;
+  --danger: #B3261E;
+  --danger-soft: #FAE9E7;
+  --focus: #2F5BD3;
+  --doc: #E7ECEE;              /* security paper */
+  --doc-ink: #14213B;
+  --doc-ink-2: #3E4A60;
+  --doc-muted: #6A7487;
+  --doc-line: #CCD5DA;
+  --guill: rgba(21, 35, 63, 0.085);
+  --guill-2: rgba(21, 35, 63, 0.11);
+  --stamp-blend: multiply;
+  --scrim: rgba(12, 16, 14, 0.34);
+  --toast-bg: #121614;
+  --toast-ink: #F2F4F1;
+  --toast-act: #E2C27A;
+  --snow: rgba(112, 142, 184, 0.72);
+  --k1: #2E56B8; --k2: #6D45B0; --k3: #B2552B; --k4: #1E7B5A; --k5: #AE3D69; --k6: #667F1E; --k7: #17809A; --k8: #5F6873;
+  --shadow-1: 0 1px 2px rgba(15, 19, 17, .05), 0 1px 1px rgba(15, 19, 17, .03);
+  --shadow-2: 0 14px 34px -10px rgba(15, 19, 17, .22), 0 4px 10px -4px rgba(15, 19, 17, .08);
+  --shadow-3: 0 30px 80px -20px rgba(15, 19, 17, .35), 0 10px 24px -10px rgba(15, 19, 17, .15);
+  --doc-shadow: 0 24px 48px -32px rgba(15, 25, 50, .35);
+  --font-display: "Instrument Serif", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --font-ui: "Instrument Sans", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Martian Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A0C0F; --surface: #12151A; --surface-2: #171B21; --surface-3: #1E232A; --ink: #ECEEF0; --ink-2: #C3C8CE; --muted: #8B929B; --faint: #5D646D;
+    --line: #22272E; --line-2: #2E343C; --primary: #E8EBF1; --on-primary: #10141C; --gold: #DDBB72;
+    --done: #5CC89B; --on-done: #05140D; --danger: #FF8A80; --danger-soft: #331715; --focus: #8EAEFF;
+    --doc: #101A2B; --doc-ink: #EEE8D9; --doc-ink-2: #C9C3B3; --doc-muted: #8D93A1; --doc-line: #243149;
+    --guill: rgba(221, 187, 114, 0.085); --guill-2: rgba(221, 187, 114, 0.12); --stamp-blend: normal; --scrim: rgba(0, 0, 0, .6);
+    --toast-bg: #ECEEF0; --toast-ink: #111418; --toast-act: #8F6E28; --snow: rgba(255, 255, 255, 0.9);
+    --k1: #86A6F5; --k2: #B99CF0; --k3: #F09A6E; --k4: #62CFA2; --k5: #F08DB4; --k6: #B9D162; --k7: #62CBE3; --k8: #9AA3AE;
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, .5); --shadow-2: 0 16px 40px -10px rgba(0, 0, 0, .7); --shadow-3: 0 30px 80px -20px rgba(0, 0, 0, .8);
+    --doc-shadow: 0 24px 48px -28px rgba(0, 0, 0, .8);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A0C0F; --surface: #12151A; --surface-2: #171B21; --surface-3: #1E232A; --ink: #ECEEF0; --ink-2: #C3C8CE; --muted: #8B929B; --faint: #5D646D;
+  --line: #22272E; --line-2: #2E343C; --primary: #E8EBF1; --on-primary: #10141C; --gold: #DDBB72;
+  --done: #5CC89B; --on-done: #05140D; --danger: #FF8A80; --danger-soft: #331715; --focus: #8EAEFF;
+  --doc: #101A2B; --doc-ink: #EEE8D9; --doc-ink-2: #C9C3B3; --doc-muted: #8D93A1; --doc-line: #243149;
+  --guill: rgba(221, 187, 114, 0.085); --guill-2: rgba(221, 187, 114, 0.12); --stamp-blend: normal; --scrim: rgba(0, 0, 0, .6);
+  --toast-bg: #ECEEF0; --toast-ink: #111418; --toast-act: #8F6E28; --snow: rgba(255, 255, 255, 0.9);
+  --k1: #86A6F5; --k2: #B99CF0; --k3: #F09A6E; --k4: #62CFA2; --k5: #F08DB4; --k6: #B9D162; --k7: #62CBE3; --k8: #9AA3AE;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, .5); --shadow-2: 0 16px 40px -10px rgba(0, 0, 0, .7); --shadow-3: 0 30px 80px -20px rgba(0, 0, 0, .8);
+  --doc-shadow: 0 24px 48px -28px rgba(0, 0, 0, .8);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg); color: var(--ink);
+  font: 400 15px/1.5 var(--font-ui); letter-spacing: -0.003em;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 56px 112px;
+}
+button, input, textarea, select { font: inherit; color: inherit; letter-spacing: inherit; }
+button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
+svg { flex: none; }
+.app { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+.label { font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+
+/* ---------- masthead ---------- */
+.masthead { display: flex; flex-direction: column; gap: 14px; }
+.mh-top { display: flex; justify-content: space-between; gap: 12px; }
+h1 {
+  font-family: var(--font-display); font-weight: 400; font-size: clamp(46px, 10vw, 72px);
+  line-height: .92; letter-spacing: -0.02em; margin: 0; text-wrap: balance;
+}
+h1 em { font-style: italic; color: var(--ink-2); }
+.gauge { display: flex; gap: 3px; height: 6px; margin-top: 8px; }
+.gauge i { display: block; border-radius: 3px; min-width: 6px; flex-basis: 0; transition: flex-grow .7s var(--ease); }
+.gauge .g-done { background: var(--done); }
+.gauge .g-plan { background: var(--gold); }
+.gauge .g-todo { background: var(--line-2); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 13px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend i { width: 7px; height: 7px; border-radius: 50%; }
+.legend b { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+.notice { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; color: var(--ink-2); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; box-shadow: var(--shadow-1); }
+.notice svg { width: 16px; height: 16px; margin-top: 2px; color: var(--muted); }
+
+/* ---------- buttons ---------- */
+.btn {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: 38px; padding: 0 16px;
+  border-radius: 11px; border: 1px solid var(--line-2); background: var(--surface); color: var(--ink);
+  font-weight: 500; font-size: 14px; white-space: nowrap; box-shadow: var(--shadow-1);
+  transition: background .15s, border-color .15s, transform .12s var(--ease), box-shadow .15s;
+}
+.btn:hover { background: var(--surface-2); }
+.btn:active { transform: scale(.97); }
+.btn svg { width: 16px; height: 16px; }
+.btn.sm { height: 32px; padding: 0 12px; border-radius: 9px; font-size: 13px; }
+.btn.primary { background: var(--primary); border-color: var(--primary); color: var(--on-primary); box-shadow: 0 1px 0 rgba(255,255,255,.08) inset, var(--shadow-1); }
+.btn.primary:hover { background: color-mix(in srgb, var(--primary) 88%, var(--surface)); }
+.btn.danger { background: var(--danger); border-color: var(--danger); color: var(--surface); }
+.btn.ghost { background: transparent; border-color: transparent; box-shadow: none; color: var(--ink-2); }
+.btn.ghost:hover { background: var(--surface-3); color: var(--ink); }
+.btn.danger-text { color: var(--danger); }
+.btn.danger-text:hover { background: var(--danger-soft); color: var(--danger); }
+.btn:disabled { opacity: .45; cursor: default; transform: none; }
+.icon-btn { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; border: 0; background: transparent; color: var(--muted); flex: none; transition: background .15s, color .15s; }
+.icon-btn:hover { background: var(--surface-3); color: var(--ink); }
+.icon-btn svg { width: 18px; height: 18px; }
+.icon-btn.sm { width: 28px; height: 28px; border-radius: 8px; }
+.icon-btn.sm svg { width: 15px; height: 15px; }
+.icon-btn.danger:hover { color: var(--danger); background: var(--danger-soft); }
+.kbd { font-family: var(--font-mono); font-size: 10px; color: var(--faint); border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 5px; padding: 1px 6px; line-height: 1.5; }
+
+/* picker trigger (custom dropdown) */
+.picker {
+  display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 10px 0 12px; border-radius: 10px;
+  border: 1px solid var(--line-2); background: var(--surface); color: var(--ink); font-size: 13.5px; font-weight: 500;
+  max-width: 100%; min-width: 0; transition: background .15s, border-color .15s; box-shadow: var(--shadow-1);
+}
+.picker:hover { background: var(--surface-2); }
+.picker[aria-expanded="true"] { border-color: var(--ink-2); }
+.picker .pl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.picker .pl.placeholder { color: var(--muted); font-weight: 400; }
+.picker svg { width: 14px; height: 14px; color: var(--muted); margin-left: auto; }
+.picker[disabled] { cursor: default; box-shadow: none; }
+.picker.bare { border-color: transparent; box-shadow: none; background: transparent; padding-left: 8px; margin-left: -8px; }
+.picker.bare:hover, .picker.bare[aria-expanded="true"] { background: var(--surface-2); border-color: transparent; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dot, transparent); flex: none; }
+.dot.hollow { background: transparent; box-shadow: inset 0 0 0 1.5px var(--line-2); }
+
+/* popover */
+#pop {
+  position: fixed; z-index: 60; min-width: 232px; max-width: min(320px, calc(100vw - 24px)); max-height: min(380px, 60vh); overflow: auto;
+  padding: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow-2);
+  opacity: 0; transform: translateY(-4px) scale(.98); transform-origin: top left; transition: opacity .14s ease, transform .18s var(--ease);
+}
+#pop.in { opacity: 1; transform: none; }
+.opt {
+  display: flex; align-items: center; gap: 10px; width: 100%; height: 36px; padding: 0 10px; border: 0; border-radius: 9px;
+  background: none; text-align: left; font-size: 14px; color: var(--ink);
+}
+.opt:hover, .opt:focus-visible { background: var(--surface-2); outline: none; }
+.opt .ol { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.opt .oc { font-family: var(--font-mono); font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.opt svg { width: 15px; height: 15px; color: var(--ink); }
+.opt.quiet { color: var(--ink-2); }
+.opt.quiet svg { color: var(--muted); }
+.pop-sep { height: 1px; background: var(--line); margin: 6px 4px; }
+.pop-head { padding: 8px 10px 6px; }
+.swatches { display: grid; grid-template-columns: repeat(4, 36px); gap: 6px; padding: 6px; }
+.swatch-opt { width: 36px; height: 36px; border-radius: 10px; border: 0; background: transparent; display: grid; place-items: center; }
+.swatch-opt::before { content: ""; width: 18px; height: 18px; border-radius: 50%; background: var(--dot); transition: transform .15s var(--ease); }
+.swatch-opt:hover, .swatch-opt:focus-visible { background: var(--surface-2); }
+.swatch-opt:hover::before { transform: scale(1.12); }
+.swatch-opt[aria-selected="true"]::before { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--dot); }
+
+/* ---------- the document (next up) ---------- */
+.doc {
+  position: relative; isolation: isolate; overflow: hidden; border-radius: 20px; background: var(--doc); color: var(--doc-ink);
+  border: 1px solid var(--doc-line); box-shadow: var(--shadow-1), var(--doc-shadow);
+}
+.doc canvas.guill { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.doc-top { display: flex; justify-content: space-between; gap: 12px; padding: 20px 26px 0; }
+.doc-top .label { color: var(--doc-muted); }
+.doc-top .label b { color: var(--doc-ink); font-weight: 500; }
+.doc-grid { display: grid; grid-template-columns: 118px minmax(0, 1fr); gap: 26px; padding: 18px 26px 4px; align-items: start; }
+.doc-date {
+  border: 1px solid var(--doc-line); border-radius: 14px; text-align: center; padding: 16px 0 14px;
+  background: color-mix(in srgb, var(--doc) 55%, var(--surface)); display: flex; flex-direction: column; gap: 6px;
+}
+.dd-day { font-family: var(--font-display); font-size: 60px; line-height: .82; letter-spacing: -0.03em; }
+.dd-mon { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: .24em; padding-left: .24em; }
+.dd-dow { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .16em; color: var(--doc-muted); text-transform: uppercase; }
+.doc-date.tbd .dd-day { font-size: 34px; line-height: 1; color: var(--doc-muted); font-style: italic; }
+.doc-main { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.doc h2 {
+  font-family: var(--font-display); font-weight: 400; font-size: clamp(32px, 6vw, 46px); line-height: 1; letter-spacing: -0.015em;
+  margin: 0; text-wrap: balance; overflow-wrap: anywhere;
+}
+.doc p.lede { margin: 0; color: var(--doc-ink-2); font-size: 15px; overflow-wrap: anywhere; }
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 14px 22px; margin: 8px 0 0; }
+.fields div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.fields dt { font-family: var(--font-mono); font-size: 9.5px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--doc-muted); }
+.fields dd { margin: 0; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 7px; min-width: 0; }
+.fields dd span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fields dd.time { color: var(--gold); }
+.fields dd.late { color: var(--danger); }
+.doc-actions { display: flex; flex-wrap: wrap; gap: 8px; padding: 18px 26px 0; }
+.doc .btn:not(.primary):not(.ghost) { background: color-mix(in srgb, var(--surface) 70%, transparent); border-color: var(--doc-line); color: var(--doc-ink); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.doc .btn.ghost { color: var(--doc-ink-2); }
+.doc .btn.ghost:hover { background: color-mix(in srgb, var(--doc-ink) 8%, transparent); color: var(--doc-ink); }
+.mrz {
+  font-family: var(--font-mono); font-size: 12px; line-height: 1.75; letter-spacing: .2em; color: var(--doc-muted);
+  white-space: pre; overflow: hidden; padding: 22px 26px 18px; user-select: none; opacity: .85;
+}
+.doc-idle { padding: 18px 26px 0; display: flex; flex-direction: column; gap: 10px; max-width: 580px; }
+.doc-idle h2 { font-size: clamp(36px, 7vw, 52px); }
+.doc-idle h2 em { font-style: italic; }
+.doc-idle p { margin: 0; color: var(--doc-ink-2); }
+.doc-title-btn { all: unset; cursor: pointer; text-decoration: underline; text-decoration-color: transparent; text-decoration-thickness: 1px; text-underline-offset: 7px; transition: text-decoration-color .2s; }
+.doc-title-btn:hover { text-decoration-color: color-mix(in srgb, var(--doc-ink) 35%, transparent); }
+.doc-title-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; border-radius: 6px; }
+.fp.flash { animation: flash 1.4s ease; }
+@keyframes flash { 0%, 40% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 45%, transparent); border-color: var(--gold); } 100% { box-shadow: 0 0 0 3px transparent; } }
+
+/* the stub: tear-off section holding the checklist */
+.stub { position: relative; background: var(--surface); color: var(--ink); padding: 22px 26px 24px; border-top: 1.5px dashed var(--doc-line); }
+.stub::before, .stub::after { content: ""; position: absolute; top: -11px; width: 20px; height: 20px; border-radius: 50%; background: var(--bg); border: 1px solid var(--doc-line); }
+.stub::before { left: -11px; } .stub::after { right: -11px; }
+.hero-stamp { position: absolute; right: 30px; top: 52px; z-index: 3; pointer-events: none; }
+
+/* ---------- checklist ---------- */
+.cl { display: flex; flex-direction: column; gap: 12px; }
+.cl-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.cl-title { font-family: var(--font-display); font-size: 22px; line-height: 1; letter-spacing: -0.01em; }
+.cl-prog { display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.cl-bar { width: 84px; height: 4px; border-radius: 4px; background: var(--surface-3); overflow: hidden; }
+.cl-bar i { display: block; height: 100%; background: var(--done); border-radius: inherit; transition: width .5s var(--ease); }
+.steps { list-style: none; margin: 0 -8px; padding: 0; display: flex; flex-direction: column; }
+.step { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto auto; align-items: center; gap: 4px 12px; min-height: 40px; padding: 4px 6px 4px 8px; border-radius: 10px; transition: background .12s; }
+.step:hover { background: var(--surface-2); }
+.sbox { width: 20px; height: 20px; padding: 0; border-radius: 6px; border: 1.5px solid var(--line-2); background: var(--surface); display: grid; place-items: center; color: transparent; transition: background .15s, border-color .15s, color .15s; }
+.sbox svg { width: 12px; height: 12px; }
+.sbox:hover { border-color: var(--done); color: color-mix(in srgb, var(--done) 55%, transparent); }
+.sbox[disabled] { cursor: default; }
+.step.done .sbox { background: var(--done); border-color: var(--done); color: var(--on-done); }
+.stext { font-size: 14.5px; overflow-wrap: anywhere; line-height: 1.4; transition: color .2s; }
+.step.done .stext { color: var(--faint); text-decoration: line-through; text-decoration-thickness: 1px; }
+.claim { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 9px; border: 0; border-radius: 7px; background: none; font-size: 12px; font-weight: 500; color: var(--muted); white-space: nowrap; }
+.claim:hover { background: var(--surface-3); color: var(--ink); }
+.claim.on { padding: 0 3px; }
+.claim .av { width: 22px; height: 22px; }
+.step .claim:not(.on), .step .sdel { opacity: 0; transition: opacity .12s; }
+.step:hover .claim, .step:focus-within .claim, .step:hover .sdel, .step:focus-within .sdel { opacity: 1; }
+@media (hover: none) { .step .claim:not(.on), .step .sdel { opacity: 1; } }
+.step-add { display: flex; align-items: center; gap: 10px; border: 1px dashed var(--line-2); border-radius: 11px; padding: 0 5px 0 12px; height: 42px; transition: border-color .15s, background .15s; }
+.step-add:focus-within { border-style: solid; border-color: var(--ink-2); background: var(--surface); }
+.step-add > svg { width: 15px; height: 15px; color: var(--muted); }
+.step-add input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; height: 100%; font-size: 14px; }
+.step-add input::placeholder { color: var(--faint); }
+.ideas { display: flex; flex-wrap: wrap; gap: 6px; }
+.idea { height: 28px; padding: 0 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); font-size: 12.5px; color: var(--ink-2); transition: background .15s, border-color .15s; }
+.idea:hover { background: var(--surface); border-color: var(--line-2); color: var(--ink); }
+
+/* ---------- composer ---------- */
+.composer {
+  display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+  padding: 7px 7px 7px 16px; box-shadow: var(--shadow-1); transition: border-color .15s, box-shadow .2s;
+}
+.composer:focus-within { border-color: var(--line-2); box-shadow: 0 0 0 4px color-mix(in srgb, var(--focus) 12%, transparent), var(--shadow-1); }
+.composer > svg { width: 18px; height: 18px; color: var(--muted); }
+.composer input { flex: 1 1 auto; min-width: 0; height: 40px; border: 0; outline: none; background: transparent; font-size: 16px; }
+.composer input::placeholder { color: var(--faint); }
+.composer .picker { flex: 0 1 auto; max-width: 180px; }
+.composer:focus-within .kbd { display: none; }
+@media (hover: none) { .kbd { display: none; } }
+.paste { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; box-shadow: var(--shadow-1); display: flex; flex-direction: column; gap: 10px; margin-top: -16px; }
+.paste-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.paste-head strong { font-family: var(--font-display); font-weight: 400; font-size: 22px; }
+.paste-head span { font-size: 13px; color: var(--muted); }
+.paste ol { margin: 0; padding-left: 22px; color: var(--ink-2); font-size: 14px; display: grid; gap: 2px; }
+.paste ol li::marker { font-family: var(--font-mono); font-size: 11px; color: var(--faint); }
+.paste .more { list-style: none; margin-left: -22px; color: var(--muted); }
+.paste-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ---------- toolbar ---------- */
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: -12px; scroll-margin-top: 16px; }
+.seg { position: relative; display: inline-flex; padding: 3px; border-radius: 12px; background: var(--surface-3); }
+.seg-ind { position: absolute; left: 0; top: 3px; bottom: 3px; width: 0; border-radius: 9px; background: var(--surface); box-shadow: var(--shadow-1), 0 0 0 1px color-mix(in srgb, var(--line) 60%, transparent); transition: transform .38s var(--ease), width .38s var(--ease); }
+.seg.no-anim .seg-ind { transition: none; }
+.seg button { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: 32px; padding: 0 14px; border: 0; background: none; border-radius: 9px; font-size: 13.5px; font-weight: 500; color: var(--muted); transition: color .2s; white-space: nowrap; }
+.seg button:hover { color: var(--ink); }
+.seg button[aria-selected="true"], .seg button[aria-checked="true"] { color: var(--ink); }
+.seg button[disabled] { cursor: default; }
+.seg .n { font-family: var(--font-mono); font-size: 10.5px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.seg button[aria-selected="true"] .n { color: var(--muted); }
+
+/* ---------- list ---------- */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow-1); }
+.rows { list-style: none; margin: 0; padding: 6px 0; }
+.row { position: relative; display: flex; align-items: flex-start; gap: 4px; padding: 0 10px 0 16px; }
+.row + .row::before { content: ""; position: absolute; top: 0; left: 60px; right: 18px; height: 1px; background: var(--line); transition: opacity .12s; }
+.row:hover + .row::before, .row:hover::before { opacity: 0; }
+.cb { flex: none; width: 34px; height: 34px; margin-top: 8px; display: grid; place-items: center; border: 0; padding: 0; background: none; border-radius: 50%; color: var(--line-2); }
+.cb svg { width: 23px; height: 23px; overflow: visible; }
+.cb .ring { fill: transparent; stroke: currentColor; stroke-width: 1.5; transition: fill .2s, stroke .2s; }
+.cb .tick { fill: none; stroke: var(--done); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 14; stroke-dashoffset: 14; transition: stroke-dashoffset .25s var(--ease), stroke .2s; }
+.cb:hover { color: var(--done); }
+.cb:hover .tick { stroke-dashoffset: 0; stroke: color-mix(in srgb, var(--done) 55%, transparent); }
+.cb.on { color: var(--done); }
+.cb.on .ring { fill: var(--done); }
+.cb.on .tick { stroke: var(--on-done); stroke-dashoffset: 0; }
+.cb.pop { animation: cbPop .45s cubic-bezier(.2, 1.6, .4, 1) var(--t, 0ms) both; }
+.cb.pop .tick { animation: tickDraw .3s var(--ease) calc(var(--t, 0ms) + 90ms) both; }
+.cb[disabled] { cursor: default; }
+@keyframes cbPop { 0% { transform: scale(.82); } 55% { transform: scale(1.14); } 100% { transform: scale(1); } }
+@keyframes tickDraw { from { stroke-dashoffset: 14; } to { stroke-dashoffset: 0; } }
+.row-open {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 14px; text-align: left; border: 0; background: none;
+  padding: 14px 8px 14px 6px; border-radius: 12px; color: inherit; transition: background .12s;
+}
+.row:hover .row-open { background: var(--surface-2); }
+.row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.row-title { font-size: 15.5px; font-weight: 500; line-height: 1.35; overflow-wrap: anywhere; transition: color .3s; }
+.row.is-done .row-title { color: var(--muted); }
+.row-meta { display: flex; align-items: center; gap: 5px 14px; flex-wrap: wrap; font-size: 13px; color: var(--muted); min-width: 0; }
+.row-meta > span { display: inline-flex; align-items: center; gap: 7px; min-width: 0; }
+.row-meta .note { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 36ch; display: block; }
+.row-meta svg { width: 13px; height: 13px; }
+.row-end { flex: none; display: flex; align-items: center; gap: 12px; color: var(--faint); }
+.row-end > svg { width: 16px; height: 16px; opacity: 0; transform: translateX(-4px); transition: opacity .15s, transform .2s var(--ease); }
+.row:hover .row-end > svg { opacity: 1; transform: none; }
+.when { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.when b { font-size: 11.5px; font-weight: 500; letter-spacing: .1em; color: var(--ink); }
+.when span { font-size: 10.5px; color: var(--gold); letter-spacing: .02em; }
+.when.late span { color: var(--danger); }
+.when.tbd b { color: var(--muted); }
+.av { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; background: var(--surface-3); flex: none; }
+.row.leaving { overflow: hidden; animation: rowOut .42s cubic-bezier(.4, 0, .2, 1) calc(var(--t, 0ms) + 640ms) both; }
+@keyframes rowOut { from { max-height: 180px; opacity: 1; } to { max-height: 0; opacity: 0; } }
+.mini-stamp { font-family: var(--font-mono); font-size: 9.5px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-c, var(--done)); border: 1.5px solid currentColor; border-radius: 4px; padding: 3px 6px; transform: rotate(-4deg); white-space: nowrap; mix-blend-mode: var(--stamp-blend); }
+
+.empty { padding: 56px 24px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.empty strong { font-family: var(--font-display); font-weight: 400; font-size: 26px; line-height: 1.1; }
+.empty span { color: var(--muted); font-size: 14px; max-width: 42ch; }
+.link { border: 0; background: none; padding: 0; color: var(--ink); font-weight: 500; text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; }
+.link:hover { text-decoration-color: currentColor; }
+.sk { display: block; border-radius: 6px; background: linear-gradient(90deg, var(--surface-3), var(--surface-2), var(--surface-3)); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+/* ---------- stamps (done page) ---------- */
+.stamps { list-style: none; margin: 0; padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(208px, 1fr)); gap: 4px; }
+.stamp-card { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; text-align: left; border: 0; background: none; border-radius: 14px; padding: 20px 18px 18px; color: inherit; transition: background .15s; }
+.stamp-card:hover { background: var(--surface-2); }
+.stamps > li { position: relative; }
+.sc-undo {
+  position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; display: grid; place-items: center; padding: 0;
+  border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); box-shadow: var(--shadow-1);
+  opacity: 0; transform: translateY(-2px); transition: opacity .15s, transform .2s var(--ease), background .15s, color .15s;
+}
+.sc-undo svg { width: 15px; height: 15px; }
+.stamps > li:hover .sc-undo, .sc-undo:focus-visible { opacity: 1; transform: none; }
+.sc-undo:hover { background: var(--surface-2); color: var(--ink); }
+@media (hover: none) { .sc-undo { opacity: 1; transform: none; } }
+.stamp-card .stamp { margin-bottom: 12px; }
+.sc-title { font-size: 15px; font-weight: 500; line-height: 1.35; overflow-wrap: anywhere; }
+.sc-memory { font-family: var(--font-display); font-style: italic; font-size: 17px; line-height: 1.3; color: var(--ink-2); overflow-wrap: anywhere; }
+.sc-meta { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); margin-top: auto; padding-top: 4px; }
+.stamp {
+  --ink: var(--done); position: relative; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  color: var(--ink); font-family: var(--font-mono); text-transform: uppercase; line-height: 1.2;
+  border: 2px solid currentColor; outline: 1px solid currentColor; outline-offset: -6px;
+  transform: rotate(var(--rot, -6deg)); filter: url(#ink); mix-blend-mode: var(--stamp-blend); opacity: .9;
+}
+.stamp.circle { width: 104px; height: 104px; border-radius: 50%; padding: 14px; }
+.stamp.oval { width: 128px; height: 82px; border-radius: 50%; padding: 10px 18px; outline-offset: -5px; }
+.stamp.rect { min-width: 118px; height: 74px; border-radius: 7px; padding: 8px 14px; outline-offset: -5px; }
+.stamp .s1 { font-size: 7.5px; letter-spacing: .18em; max-width: 86px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stamp .s2 { font-size: 13px; font-weight: 500; letter-spacing: .06em; margin: 4px 0 3px; white-space: nowrap; }
+.stamp .s3 { font-size: 7.5px; letter-spacing: .32em; padding-left: .32em; }
+.stamp.big { width: 140px; height: 140px; padding: 18px; outline-offset: -8px; border-width: 2.5px; }
+.stamp.big .s1 { font-size: 9px; max-width: 110px; } .stamp.big .s2 { font-size: 17px; } .stamp.big .s3 { font-size: 9px; }
+.stamp.fresh { animation: thunk .55s cubic-bezier(.2, 1.5, .4, 1) var(--t, 0ms) both; }
+@keyframes thunk { from { transform: rotate(calc(var(--rot, -6deg) - 16deg)) scale(1.9); opacity: 0; } to { transform: rotate(var(--rot, -6deg)) scale(1); opacity: .9; } }
+
+/* ---------- dialog / sheet ---------- */
+.scrim { position: fixed; inset: 0; z-index: 40; background: var(--scrim); backdrop-filter: blur(4px) saturate(1.1); -webkit-backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 24px; opacity: 0; transition: opacity .22s ease; }
+.scrim.open { opacity: 1; }
+.sheet {
+  width: min(600px, 100%); max-height: min(88vh, 900px); display: flex; flex-direction: column; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow-3); outline: none;
+  transform: translateY(14px) scale(.98); transition: transform .32s var(--ease);
+}
+.scrim.open .sheet { transform: none; }
+.sheet.narrow { width: min(520px, 100%); }
+.grab { display: none; }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 16px 6px 26px; }
+.sheet-head.tall { align-items: flex-start; padding-top: 22px; }
+.sheet-head .seg button { height: 30px; padding: 0 12px; font-size: 13px; }
+.sheet-body { overflow: auto; overscroll-behavior: contain; padding: 14px 26px 26px; display: flex; flex-direction: column; gap: 22px; }
+.sheet-foot { border-top: 1px solid var(--line); padding: 12px 16px 12px 26px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--muted); min-height: 57px; }
+.sheet-foot .who { display: inline-flex; align-items: center; gap: 8px; }
+.foot-confirm { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-left: auto; color: var(--ink-2); }
+.foot-actions { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; margin-left: auto; }
+.dlg-title { font-family: var(--font-display); font-weight: 400; font-size: 30px; line-height: 1; margin: 0 0 6px; }
+.dlg-sub { margin: 0; color: var(--muted); font-size: 13.5px; }
+.title-input {
+  display: block; width: calc(100% + 16px); margin: 0 -8px; padding: 4px 8px; border: 0; border-radius: 10px; background: transparent; resize: none; overflow: hidden;
+  font-family: var(--font-display); font-size: clamp(30px, 6vw, 38px); line-height: 1.08; letter-spacing: -0.015em; color: var(--ink); transition: background .15s;
+}
+.title-input:hover:not([readonly]), .title-input:focus { outline: none; background: var(--surface-2); }
+.props { display: grid; grid-template-columns: 108px minmax(0, 1fr); gap: 16px 18px; margin: 0; align-items: center; }
+.props dt { font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.props dt.top { align-self: start; padding-top: 9px; }
+.props dd { margin: 0; min-width: 0; }
+.fp {
+  display: block; width: calc(100% + 16px); margin: 0 -8px; padding: 6px 8px; border: 1px solid transparent; border-radius: 9px;
+  background: transparent; font-size: 14.5px; color: var(--ink); transition: background .15s, border-color .15s, box-shadow .15s; min-height: 34px;
+}
+.fp::placeholder { color: var(--faint); }
+.fp:hover:not([readonly]) { background: var(--surface-2); }
+.fp:focus { outline: none; background: var(--surface); border-color: var(--line-2); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 14%, transparent); }
+textarea.fp { resize: none; overflow: hidden; line-height: 1.5; }
+input[type="date"].fp { width: auto; min-width: 160px; font-family: var(--font-mono); font-size: 13px; letter-spacing: .02em; }
+.date-row { display: flex; align-items: center; gap: 6px 10px; flex-wrap: wrap; }
+.date-row .fp { margin-right: 0; }
+.qd { height: 28px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); font-size: 12.5px; color: var(--ink-2); }
+.qd:hover { border-color: var(--line-2); background: var(--surface); color: var(--ink); }
+.sheet-cl { border-top: 1px solid var(--line); padding-top: 20px; }
+
+/* category manager */
+.mgr { list-style: none; margin: 0 -8px; padding: 0; display: flex; flex-direction: column; }
+.mgr-row { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto 28px; align-items: center; gap: 6px 10px; padding: 4px 8px; border-radius: 12px; }
+.mgr-row:hover { background: var(--surface-2); }
+.mgr-row .fp:hover:not([readonly]) { background: var(--surface); }
+.swatch { width: 34px; height: 34px; border-radius: 10px; border: 0; background: transparent; display: grid; place-items: center; padding: 0; }
+.swatch::before { content: ""; width: 14px; height: 14px; border-radius: 50%; background: var(--dot); box-shadow: 0 0 0 3px color-mix(in srgb, var(--dot) 18%, transparent); }
+.swatch:hover { background: var(--surface); }
+.swatch[disabled] { cursor: default; background: transparent; }
+.mgr-count { font-family: var(--font-mono); font-size: 10.5px; color: var(--faint); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.mgr-confirm { grid-column: 2 / -1; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); padding: 2px 0 8px; }
+
+/* toast */
+.toast {
+  position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 70; display: flex; align-items: center; gap: 16px;
+  background: var(--toast-bg); color: var(--toast-ink); padding: 11px 12px 11px 18px; border-radius: 14px; font-size: 14px; box-shadow: var(--shadow-2);
+  max-width: min(92vw, 520px); transform: translate(-50%, 16px); opacity: 0; transition: transform .3s var(--ease), opacity .2s ease;
+}
+.toast.show { transform: translate(-50%, 0); opacity: 1; }
+.toast span { min-width: 0; }
+.toast button { border: 0; background: none; color: var(--toast-act); font-weight: 600; font-size: 13.5px; padding: 4px 8px; border-radius: 8px; }
+.toast button:hover { background: color-mix(in srgb, var(--toast-ink) 10%, transparent); }
+
+/* snowfall when something new is added */
+canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 65; }
+
+@media (max-width: 600px) {
+  body { padding-block: 28px 96px; }
+  .app { gap: 24px; }
+  .doc-top { padding: 18px 18px 0; }
+  .doc-grid { grid-template-columns: 82px minmax(0, 1fr); gap: 16px; padding: 16px 18px 4px; }
+  .dd-day { font-size: 44px; } .doc-date { padding: 12px 0 10px; }
+  .doc-date.tbd .dd-day { font-size: 26px; }
+  .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; }
+  .doc-actions { padding: 16px 18px 0; }
+  .doc-actions .btn { flex: 1 1 auto; }
+  .doc-idle { padding: 14px 18px 0; }
+  .mrz { padding: 18px 18px 14px; font-size: 10px; letter-spacing: .14em; }
+  .stub { padding: 20px 18px 20px; }
+  .hero-stamp { right: 14px; top: 44px; }
+  .stamp.big { width: 112px; height: 112px; }
+  .composer { padding-left: 12px; }
+  .composer > svg { display: none; }
+  .composer .picker { max-width: 118px; }
+  .composer .picker .pl.placeholder { display: none; }
+  .toolbar { flex-direction: column; align-items: stretch; }
+  .toolbar .seg { width: 100%; }
+  .toolbar .seg button { flex: 1 1 0; padding: 0 6px; }
+  .toolbar .picker { align-self: flex-start; }
+  .row { padding: 0 6px 0 8px; }
+  .row + .row::before { left: 52px; right: 12px; }
+  .row-meta .note { max-width: 100%; }
+  .stamps { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 6px; }
+  .stamp-card { padding: 16px 12px 14px; }
+  .stamp.circle { width: 92px; height: 92px; }
+  .scrim { align-items: flex-end; padding: 0; }
+  .sheet { width: 100%; max-height: 92vh; border-radius: 22px 22px 0 0; border-bottom: 0; transform: translateY(100%); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .sheet.narrow { width: 100%; }
+  .grab { display: block; width: 38px; height: 4px; border-radius: 4px; background: var(--line-2); margin: 8px auto 0; flex: none; }
+  .sheet-head { padding: 10px 12px 4px 18px; }
+  .sheet-body { padding: 12px 18px 22px; }
+  .sheet-foot { padding: 10px 12px 10px 18px; }
+  .props { grid-template-columns: 84px minmax(0, 1fr); gap: 14px 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-delay: 0ms !important; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <filter id="ink" x="-10%" y="-10%" width="120%" height="120%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="1.6" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
+<div class="app" id="app">
+  <header class="masthead">
+    <div class="mh-top"><span class="label" id="since"></span><span class="label" id="pct"></span></div>
+    <h1><em>Winter</em> Bucket List</h1>
+    <div class="gauge" aria-hidden="true"><i class="g-done" id="g-done"></i><i class="g-plan" id="g-plan"></i><i class="g-todo" id="g-todo"></i></div>
+    <div class="legend" id="legend"></div>
+  </header>
+
+  <div id="notice" class="notice" hidden></div>
+
+  <section id="next" aria-label="Next up"></section>
+
+  <section aria-label="Add an activity" id="add-area" hidden>
+    <form class="composer" id="composer" autocomplete="off">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>
+      <input id="new-title" maxlength="200" placeholder="Add something to do together…" aria-label="New activity">
+      <span class="kbd" aria-hidden="true" title="Press N to add">N</span>
+      <button type="button" class="picker" id="composer-cat" data-act="pop" data-kind="composer-cat" data-pop-anchor="composer-cat" aria-haspopup="listbox" aria-expanded="false" aria-label="Category for new activity"></button>
+      <button type="submit" class="btn primary sm">Add</button>
+    </form>
+  </section>
+  <div id="paste" class="paste" hidden></div>
+
+  <div class="toolbar" id="toolbar">
+    <div class="seg no-anim" role="tablist" id="tabs" aria-label="Filter by status">
+      <span class="seg-ind" aria-hidden="true"></span>
+      <button type="button" role="tab" data-act="tab" data-v="todo" aria-selected="true">To do <span class="n" data-n="todo"></span></button>
+      <button type="button" role="tab" data-act="tab" data-v="planned" aria-selected="false">Planned <span class="n" data-n="planned"></span></button>
+      <button type="button" role="tab" data-act="tab" data-v="done" aria-selected="false">Stamps <span class="n" data-n="done"></span></button>
+      <button type="button" role="tab" data-act="tab" data-v="all" aria-selected="false">All <span class="n" data-n="all"></span></button>
+    </div>
+    <button type="button" class="picker" id="filter-cat" data-act="pop" data-kind="filter-cat" data-pop-anchor="filter-cat" aria-haspopup="listbox" aria-expanded="false" aria-label="Filter by category"></button>
+  </div>
+
+  <section id="list" aria-label="Activities"></section>
+</div>
+<div id="dialog-root"></div>
+<div id="pop" hidden></div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const LKEYS = { activities: "bucketlist.items.v1", categories: "bucketlist.categories.v1" };
+  // Starter categories for the browser-only copy. The shared list keeps its categories in the database.
+  const LOCAL_STARTER_CATS = [["Travel", 1], ["Food and Drinks", 3], ["Outdoors", 4], ["Adventure", 2], ["Culture & Events", 5], ["Learn Something", 7], ["Just for Fun", 6]];
+  const STEP_IDEAS = ["Book tickets", "Pick Date", "Make Reservation"];
+  const COLORS = 8;
+  const MON = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+  const S = 'fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
+  const ICON = {
+    check: `<svg viewBox="0 0 16 16" ${S.replace('1.5"', '2.2"')}><path d="M3.5 8.5l3 2.8 6-6.3"/></svg>`,
+    x: `<svg viewBox="0 0 16 16" ${S}><path d="M4 4l8 8M12 4l-8 8"/></svg>`,
+    chev: `<svg viewBox="0 0 16 16" ${S}><path d="M4.5 6.5L8 10l3.5-3.5"/></svg>`,
+    right: `<svg viewBox="0 0 16 16" ${S}><path d="M6.5 4L10.5 8l-4 4"/></svg>`,
+    plus: `<svg viewBox="0 0 16 16" ${S}><path d="M8 3.5v9M3.5 8h9"/></svg>`,
+    trash: `<svg viewBox="0 0 16 16" ${S}><path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 8.5h5.8l.6-8.5"/></svg>`,
+    cal: `<svg viewBox="0 0 16 16" ${S}><rect x="2.5" y="3.5" width="11" height="10" rx="2"/><path d="M2.5 7h11M5.5 2v3M10.5 2v3"/></svg>`,
+    steps: `<svg viewBox="0 0 16 16" ${S}><path d="M2.5 4.5l1.2 1.2L6 3.5M2.5 10.5l1.2 1.2L6 9.5M8.5 4.8h5M8.5 10.8h5"/></svg>`,
+    dice: `<svg viewBox="0 0 16 16" ${S}><rect x="2.5" y="2.5" width="11" height="11" rx="3"/><circle cx="5.8" cy="5.8" r=".6" fill="currentColor"/><circle cx="10.2" cy="10.2" r=".6" fill="currentColor"/><circle cx="8" cy="8" r=".6" fill="currentColor"/></svg>`,
+    gear: `<svg viewBox="0 0 16 16" ${S}><path d="M2.5 4.5h7M12.5 4.5h1M2.5 11.5h1M6.5 11.5h7"/><circle cx="11" cy="4.5" r="1.5"/><circle cx="5" cy="11.5" r="1.5"/></svg>`,
+    info: `<svg viewBox="0 0 16 16" ${S}><circle cx="8" cy="8" r="6.25"/><path d="M8 7.2V11M8 5v.01"/></svg>`,
+    undo: `<svg viewBox="0 0 16 16" ${S}><path d="M5.5 3.5l-3 3 3 3"/><path d="M2.5 6.5h7a3.5 3.5 0 010 7H7"/></svg>`,
+  };
+  const CB_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle class="ring" cx="12" cy="12" r="10.25"/><path class="tick" d="M7.6 12.4l3 2.9 5.9-6.2"/></svg>';
+
+  const state = {
+    mode: "loading",          // loading | db | local | unavailable
+    items: [], cats: [], catsLoaded: false,
+    canWrite: true, me: null,
+    filter: safeGet("bucketlist.filter") || "todo",
+    catFilter: safeGet("bucketlist.cat") || "",     // "" all, "none" uncategorized, or a category id
+    composerCat: "",
+    paste: null,               // lines waiting to be added from a paste
+    sheet: null, sheetConfirm: false,
+    manager: false, managerReturn: null, catConfirm: null,
+    dialogFresh: false,
+    pop: null,                 // { kind, anchor, cat }
+    suggestion: null,
+    linger: new Map(),         // id -> { from, t0 }: just-completed rows that stay a moment before leaving
+    fresh: new Map(),          // id -> t0: just-completed, for the check and stamp animations
+    heroStamp: null, heroT0: 0,
+  };
+  if (!["todo", "planned", "done", "all"].includes(state.filter)) state.filter = "todo";
+  let dbNs = null, userNs = null, toastTimer = null, undoFn = null;
+  const profiles = {};
+
+  /* ---------- helpers ---------- */
+  function safeGet(k) { try { return localStorage.getItem(k); } catch { return null; } }
+  function safeSet(k, v) { try { localStorage.setItem(k, v); } catch {} }
+  function esc(s) { return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+  function pad(n) { return String(n).padStart(2, "0"); }
+  function iso(d) { return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
+  function todayISO() { return iso(new Date()); }
+  function parseISO(s) { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); }
+  function validISO(s) { return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s); }
+  function daysUntil(s) { return Math.round((parseISO(s) - parseISO(todayISO())) / 86400000); }
+  function fmtDate(s, opts = {}) {
+    const d = parseISO(s), sameYear = d.getFullYear() === new Date().getFullYear();
+    return d.toLocaleDateString(undefined, { weekday: opts.day ? "short" : undefined, day: "numeric", month: "short", year: sameYear && !opts.year ? undefined : "numeric" });
+  }
+  function countdown(s) {
+    const n = daysUntil(s);
+    if (n === 0) return "Today";
+    if (n === 1) return "Tomorrow";
+    if (n === -1) return "Yesterday";
+    return n > 0 ? `In ${n} days` : `${-n} days ago`;
+  }
+  function shortCount(s) { const n = daysUntil(s); return n === 0 ? "today" : n === 1 ? "tomorrow" : n > 0 ? `in ${n}d` : `${-n}d ago`; }
+  function stampDate(s) { const d = parseISO(s); return `${pad(d.getDate())} ${MON[d.getMonth()]}`; }
+  function hash(s) { let h = 2166136261; for (const ch of String(s)) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function cleanLine(l) { return l.replace(/^\s*(?:[-*•–—]|\d+[.)]|\[[ xX]?\])\s*/, "").replace(/^\[[ xX]?\]\s*/, "").trim(); }
+  function statusOf(x) { return x.status === "done" ? "done" : x.status === "planned" ? "planned" : "todo"; }
+  function byCreated(a, b) { return (a.createdAt || 0) - (b.createdAt || 0); }
+  function byPlanned(a, b) {
+    const ap = validISO(a.plannedFor), bp = validISO(b.plannedFor);
+    if (ap && bp) return a.plannedFor.localeCompare(b.plannedFor) || byCreated(a, b);
+    return ap ? -1 : bp ? 1 : byCreated(a, b);
+  }
+  function byDone(a, b) { return String(b.doneOn || "").localeCompare(String(a.doneOn || "")) || (b.doneAt || 0) - (a.doneAt || 0); }
+  function newId() { return (crypto.randomUUID && crypto.randomUUID()) || Date.now().toString(36) + Math.random().toString(36).slice(2); }
+  function taskId() { return "t" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function find(id) { return state.items.find((x) => x && x.id === id); }
+  function plural(n, one, many) { return `${n} ${n === 1 ? one : many}`; }
+
+  /* ---------- categories ---------- */
+  function sortedCats() {
+    return state.cats.filter((c) => c && typeof c.name === "string" && c.name.trim())
+      .sort((a, b) => (a.order || 0) - (b.order || 0) || a.name.localeCompare(b.name));
+  }
+  function colorIndex(c) { const n = Number(c && c.color); return n >= 1 && n <= COLORS ? Math.round(n) : COLORS; }
+  function hashColor(name) { return (hash(name.toLowerCase()) % COLORS) + 1; }
+  function catVar(c) { return `var(--k${c.legacy ? hashColor(c.name) : colorIndex(c)})`; }
+  function catById(id) { return id ? state.cats.find((c) => c && c.id === id && typeof c.name === "string") : null; }
+  function catByName(name) { const n = name.trim().toLowerCase(); return state.cats.find((c) => c && typeof c.name === "string" && c.name.trim().toLowerCase() === n); }
+  // Activities point at a category by id. Older ones may still carry a plain name.
+  function resolveCat(item) {
+    if (!item) return null;
+    if (item.categoryId) { const c = catById(item.categoryId); if (c) return c; }
+    if (typeof item.category === "string" && item.category.trim()) return catByName(item.category) || { id: null, name: item.category.trim(), legacy: true };
+    return null;
+  }
+  function matchesCat(item) {
+    if (!state.catFilter) return true;
+    const c = resolveCat(item);
+    return state.catFilter === "none" ? !c : !!c && c.id === state.catFilter;
+  }
+
+  /* ---------- checklist ---------- */
+  function tasksOf(item) {
+    const cl = item.checklist;
+    if (!cl || typeof cl !== "object" || Array.isArray(cl)) return [];
+    return Object.entries(cl)
+      .filter(([, t]) => t && typeof t === "object" && typeof t.text === "string" && t.text.trim())
+      .map(([id, t]) => ({ ...t, id }))
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
+  }
+
+  /* ---------- storage: shared db when available, this browser otherwise ---------- */
+  function listOf(coll) { return coll === "activities" ? state.items : state.cats; }
+  function readLocal(coll) { try { const v = JSON.parse(localStorage.getItem(LKEYS[coll])); return Array.isArray(v) ? v : null; } catch { return null; } }
+  function writeLocal(coll, list, quiet) {
+    try { localStorage.setItem(LKEYS[coll], JSON.stringify(list)); } catch {}
+    if (coll === "activities") { state.items = list; checkNew(list, false); } else state.cats = list;
+    if (!quiet) render();
+  }
+  // Same rule as the shared store: nested objects merge, everything else replaces.
+  function merge(a, b) {
+    const out = { ...a };
+    for (const [k, v] of Object.entries(b)) {
+      const cur = out[k];
+      out[k] = v && typeof v === "object" && !Array.isArray(v) && cur && typeof cur === "object" && !Array.isArray(cur) ? merge(cur, v) : v;
+    }
+    return out;
+  }
+  async function guarded(fn) {
+    if (!state.canWrite) { toast("You can view this list but not change it."); return false; }
+    try { await fn(); return true; }
+    catch (e) {
+      const code = e && e.code;
+      if (code === "unavailable") {
+        await new Promise((r) => setTimeout(r, 400 + Math.random() * 600));
+        try { await fn(); return true; } catch {}
+        toast("Couldn't save just now. Check your connection and try again.");
+      } else if (code === "invalid_argument") {
+        state.canWrite = false; render();
+        toast("You can view this list but not change it. Ask the owner to share it with you as an Editor.");
+      } else if (code === "quota_exceeded") {
+        toast("The list is full. Delete a few old activities to make room.");
+      } else {
+        toast("Couldn't save that change. Try again in a moment.");
+      }
+      return false;
+    }
+  }
+  const add = (coll, data) => guarded(async () => {
+    if (dbNs) await dbNs.collection(coll).add(data);
+    else writeLocal(coll, [...listOf(coll), { id: newId(), ...data }]);
+  });
+  const setDoc = (coll, id, data) => guarded(async () => {
+    if (dbNs) await dbNs.collection(coll).doc(id).set(data);
+    else writeLocal(coll, [...listOf(coll).filter((x) => x.id !== id), { ...data, id }]);
+  });
+  const update = (coll, id, patch) => guarded(async () => {
+    if (dbNs) await dbNs.collection(coll).doc(id).update(patch);
+    else writeLocal(coll, listOf(coll).map((x) => (x.id === id ? merge(x, patch) : x)));
+  });
+  const remove = (coll, id) => guarded(async () => {
+    if (dbNs) await dbNs.collection(coll).doc(id).delete();
+    else writeLocal(coll, listOf(coll).filter((x) => x.id !== id));
+  });
+  const updateItem = (id, patch) => update("activities", id, patch);
+
+  /* ---------- toast ---------- */
+  function toast(msg, undo) {
+    const t = $("#toast");
+    undoFn = undo || null;
+    t.innerHTML = `<span>${esc(msg)}</span>${undo ? '<button type="button" id="toast-undo">Undo</button>' : ""}`;
+    t.hidden = false;
+    requestAnimationFrame(() => t.classList.add("show"));
+    clearTimeout(toastTimer); toastTimer = setTimeout(hideToast, undo ? 6500 : 4000);
+  }
+  function hideToast() {
+    const t = $("#toast"); t.classList.remove("show"); undoFn = null;
+    setTimeout(() => { if (!t.classList.contains("show")) t.hidden = true; }, 260);
+  }
+
+  /* ---------- people ---------- */
+  function avatar(uid, fmt) {
+    if (!uid || !userNs) return "";
+    const p = profiles[uid];
+    const label = p && p.name ? fmt.replace("{name}", p.name) : "";
+    return `<img class="av" data-uid="${esc(uid)}" data-fmt="${esc(fmt)}" alt="${esc(label)}" title="${esc(label)}"${p ? ` src="${esc(p.avatarUrl)}"` : ""}>`;
+  }
+  function personName(uid) { const p = profiles[uid]; return p ? (p.isMe ? "you" : p.name || "someone") : "someone"; }
+  async function fillAvatars() {
+    if (!userNs) return;
+    const ids = [...new Set($$("img.av[data-uid]").map((i) => i.dataset.uid))];
+    if (!ids.length) return;
+    const ps = await userNs.profiles(ids);
+    Object.assign(profiles, ps);
+    for (const img of $$("img.av[data-uid]")) {
+      const p = ps[img.dataset.uid]; if (!p) continue;
+      img.src = p.avatarUrl;
+      const label = p.name ? img.dataset.fmt.replace("{name}", p.name) : "";
+      img.alt = label; img.title = label;
+    }
+    $$("[data-name-for]").forEach((el) => { if (ps[el.dataset.nameFor]) el.textContent = personName(el.dataset.nameFor); });
+  }
+
+  /* ---------- guilloche: the engraved pattern on the document ---------- */
+  const guillRO = typeof ResizeObserver !== "undefined" ? new ResizeObserver((es) => es.forEach((e) => drawGuilloche(e.target))) : null;
+  function drawGuilloche(cv) {
+    const r = cv.getBoundingClientRect(); if (!r.width || !r.height) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const W = Math.round(r.width * dpr), H = Math.round(r.height * dpr);
+    if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+    const ctx = cv.getContext("2d"); if (!ctx) return;
+    ctx.clearRect(0, 0, W, H);
+    const cs = getComputedStyle(cv);
+    ctx.lineWidth = 0.65 * dpr;
+    // flowing bands across the page
+    ctx.strokeStyle = cs.getPropertyValue("--guill").trim() || "rgba(20,30,60,.08)";
+    const n = 30, base = Math.min(H * 0.5, 260 * dpr);
+    for (let i = 0; i < n; i++) {
+      ctx.beginPath();
+      for (let x = 0; x <= W + 6; x += 3 * dpr) {
+        const t = x / W;
+        const y = base + (i - n / 2) * 4.4 * dpr + Math.sin(t * Math.PI * 3.2 + i * 0.21) * 22 * dpr + Math.sin(t * Math.PI * 14 - i * 0.45) * 3 * dpr;
+        if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+    // rosette, top right
+    ctx.strokeStyle = cs.getPropertyValue("--guill-2").trim() || ctx.strokeStyle;
+    const R = Math.min(W * 0.2, 150 * dpr), cx = W - R * 0.9, cy = R * 0.95;
+    for (let k = 0; k < 16; k++) {
+      ctx.beginPath();
+      for (let a = 0; a <= Math.PI * 2 + 0.01; a += 0.008) {
+        const rr = R * (0.66 + 0.2 * Math.sin(14 * a + k * 0.39) + 0.07 * Math.sin(42 * a - k * 0.21));
+        const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr;
+        if (a === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.closePath(); ctx.stroke();
+    }
+    for (let k = 1; k <= 4; k++) { ctx.beginPath(); ctx.arc(cx, cy, R * (0.18 + k * 0.05), 0, Math.PI * 2); ctx.stroke(); }
+  }
+  function redrawAll() { $$("canvas.guill").forEach(drawGuilloche); }
+  try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => requestAnimationFrame(redrawAll)); } catch {}
+  new MutationObserver(() => requestAnimationFrame(redrawAll)).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+  /* ---------- snowfall: plays whenever either of you adds an activity ---------- */
+  const seenIds = new Set();
+  let seenReady = false;
+  // Snow only for ids never seen before, so loading the page or undoing a delete stays quiet.
+  function checkNew(list, fromCache) {
+    let added = 0;
+    for (const x of list) if (x && x.id && !seenIds.has(x.id)) { seenIds.add(x.id); added++; }
+    if (!seenReady) { if (!fromCache) seenReady = true; return; }
+    if (added) letItSnow(Math.min(110 + added * 25, 240));
+  }
+  const snow = { cv: null, ctx: null, flakes: [], raf: 0, last: 0, end: 0, color: "", dpr: 1 };
+  function sizeSnow() {
+    if (!snow.cv) return;
+    snow.dpr = Math.min(2, window.devicePixelRatio || 1);
+    snow.cv.width = Math.round(innerWidth * snow.dpr); snow.cv.height = Math.round(innerHeight * snow.dpr);
+  }
+  function letItSnow(amount) {
+    try { if (matchMedia("(prefers-reduced-motion: reduce)").matches) return; } catch {}
+    if (!snow.cv) {
+      snow.cv = document.createElement("canvas"); snow.cv.className = "snow"; snow.cv.setAttribute("aria-hidden", "true");
+      document.body.appendChild(snow.cv); snow.ctx = snow.cv.getContext("2d");
+      addEventListener("resize", sizeSnow);
+    }
+    if (!snow.ctx) return;
+    sizeSnow();
+    snow.color = getComputedStyle(document.documentElement).getPropertyValue("--snow").trim() || "rgba(255,255,255,.9)";
+    const now = performance.now(), W = innerWidth, H = innerHeight;
+    const n = Math.max(0, Math.min(amount, 320 - snow.flakes.length));
+    for (let i = 0; i < n; i++) {
+      const r = 1.1 + Math.random() ** 2 * 3.4;
+      snow.flakes.push({
+        x: Math.random() * W, y: -30 + Math.random() * H * 0.6, r,
+        vy: 55 + r * 22 + Math.random() * 40, sway: 8 + Math.random() * 26, freq: 0.5 + Math.random() * 1.1, phase: Math.random() * Math.PI * 2,
+        crystal: r > 2.6 && Math.random() < 0.55, rot: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 1.4,
+        born: now + Math.random() * 700,
+      });
+    }
+    snow.end = now + 4200;
+    if (!snow.raf) { snow.last = now; snow.raf = requestAnimationFrame(stepSnow); }
+  }
+  function stepSnow(t) {
+    const ctx = snow.ctx, dpr = snow.dpr, dt = Math.min(0.05, (t - snow.last) / 1000);
+    snow.last = t;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    ctx.fillStyle = ctx.strokeStyle = snow.color;
+    ctx.lineCap = "round";
+    const fadeAll = Math.max(0, Math.min(1, (snow.end - t) / 1400));
+    snow.flakes = snow.flakes.filter((f) => f.y < innerHeight + 12 && t < snow.end);
+    for (const f of snow.flakes) {
+      if (t < f.born) continue;
+      f.y += f.vy * dt; f.rot += f.vr * dt;
+      const x = f.x + Math.sin(f.phase + (t / 1000) * f.freq) * f.sway;
+      ctx.globalAlpha = Math.min(1, (t - f.born) / 400) * fadeAll;
+      if (f.crystal) {
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let k = 0; k < 3; k++) {
+          const a = f.rot + (k * Math.PI) / 3, dx = Math.cos(a) * f.r * 1.9, dy = Math.sin(a) * f.r * 1.9;
+          ctx.moveTo(x - dx, f.y - dy); ctx.lineTo(x + dx, f.y + dy);
+        }
+        ctx.stroke();
+      } else {
+        ctx.beginPath(); ctx.arc(x, f.y, f.r, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+    if (snow.flakes.length) snow.raf = requestAnimationFrame(stepSnow);
+    else { snow.raf = 0; ctx.clearRect(0, 0, innerWidth, innerHeight); }
+  }
+
+  /* ---------- small builders ---------- */
+  function catLabel(c, fallback) {
+    return c ? `<i class="dot" style="--dot:${catVar(c)}"></i><span class="pl">${esc(c.name)}</span>`
+             : `<i class="dot hollow"></i><span class="pl placeholder">${esc(fallback)}</span>`;
+  }
+  function stampHTML(item, opts = {}) {
+    const c = resolveCat(item);
+    const h = hash(item.id);
+    const shape = opts.shape || ["circle", "oval", "rect"][h % 3];
+    const rot = opts.rot != null ? opts.rot : ((h >> 4) % 15) - 10;
+    const d = validISO(item.doneOn) ? parseISO(item.doneOn) : new Date();
+    const date = `${pad(d.getDate())} ${MON[d.getMonth()]} ${String(d.getFullYear()).slice(2)}`;
+    const t0 = opts.t0 || state.fresh.get(item.id);
+    return `<span class="stamp ${shape}${opts.big ? " big" : ""}${t0 ? " fresh" : ""}" style="--ink:${c ? catVar(c) : "var(--done)"};--rot:${rot}deg;--t:-${t0 ? Date.now() - t0 : 0}ms" aria-hidden="true">
+      <span class="s1">${esc(c ? c.name : "Bucket list")}</span><span class="s2">${date}</span><span class="s3">Done</span></span>`;
+  }
+  function mrzLines(a, b) {
+    const clean = (s) => String(s || "").toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Z0-9]+/g, "<").replace(/^<+|<+$/g, "");
+    return esc([clean(a), clean(b)].map((s) => (s + "<".repeat(44)).slice(0, 44)).join("\n"));
+  }
+
+  /* ---------- checklist component ---------- */
+  function checklistHTML(item, where) {
+    const w = state.canWrite, id = esc(item.id);
+    const tasks = tasksOf(item), done = tasks.filter((t) => t.done).length;
+    if (!w && !tasks.length) return "";
+    const have = new Set(tasks.map((t) => t.text.trim().toLowerCase()));
+    const ideas = STEP_IDEAS.filter((s) => !have.has(s.toLowerCase()) && !(s === "Pick a date" && validISO(item.plannedFor)));
+    const steps = tasks.map((t) => {
+      const tid = esc(t.id);
+      let claim = "<span></span>";
+      if (userNs && state.me) {
+        if (t.who) {
+          const mine = t.who === state.me;
+          const av = avatar(t.who, mine ? "You're on it" : "{name} is on it");
+          claim = w ? `<button type="button" class="claim on" data-act="task-claim" data-id="${id}" data-task="${tid}" aria-label="${mine ? "Unassign yourself" : "Take this step over"}">${av}</button>` : `<span class="claim on">${av}</span>`;
+        } else if (w) claim = `<button type="button" class="claim" data-act="task-claim" data-id="${id}" data-task="${tid}">I'll do it</button>`;
+      }
+      return `<li class="step${t.done ? " done" : ""}">
+        <button type="button" class="sbox" ${w ? "" : "disabled"} data-act="task-toggle" data-id="${id}" data-task="${tid}" aria-pressed="${!!t.done}" aria-label="${t.done ? "Mark step not done" : "Mark step done"}: ${esc(t.text)}">${ICON.check}</button>
+        <span class="stext">${esc(t.text)}</span>${claim}
+        ${w ? `<button type="button" class="icon-btn sm danger sdel" data-act="task-del" data-id="${id}" data-task="${tid}" aria-label="Remove step: ${esc(t.text)}">${ICON.x}</button>` : "<span></span>"}
+      </li>`;
+    }).join("");
+    return `<div class="cl">
+      <div class="cl-head"><span class="cl-title">Before we go</span>${tasks.length ? `<span class="cl-prog">${done}/${tasks.length}<span class="cl-bar" aria-hidden="true"><i style="width:${Math.round((done / tasks.length) * 100)}%"></i></span></span>` : ""}</div>
+      ${tasks.length ? `<ul class="steps">${steps}</ul>` : ""}
+      ${w ? `<label class="step-add">${ICON.plus}<input data-key="task:${where}:${id}" maxlength="140" placeholder="${tasks.length ? "Add a step" : "Add the first step, e.g. Book flights"}" aria-label="Add a step to ${esc(item.title)}"><button type="button" class="btn sm ghost" data-act="task-add" data-id="${id}" data-where="${where}">Add</button></label>` : ""}
+      ${w && tasks.length < 3 && ideas.length ? `<div class="ideas">${ideas.slice(0, 5).map((s) => `<button type="button" class="idea" data-act="task-suggest" data-id="${id}" data-text="${esc(s)}">${esc(s)}</button>`).join("")}</div>` : ""}
+    </div>`;
+  }
+
+  /* ---------- the document ---------- */
+  function renderNext(c) {
+    const el = $("#next");
+    const w = state.canWrite;
+    const no = c.by.done.length + 1;
+    const top = (left, right) => `<div class="doc-top"><span class="label">${left}</span><span class="label">${right}</span></div>`;
+    let html;
+    if (state.mode === "loading") {
+      html = `<article class="doc"><canvas class="guill" aria-hidden="true"></canvas>${top("Next up", "")}<div class="doc-idle"><span class="sk" style="height:44px;width:70%"></span><span class="sk" style="height:14px;width:45%"></span></div><div class="mrz" aria-hidden="true">${mrzLines("", "")}</div></article>`;
+    } else {
+      const stamped = state.heroStamp && find(state.heroStamp);
+      const next = stamped || c.by.planned[0];
+      if (next) {
+        const dated = validISO(next.plannedFor), d = dated ? parseISO(next.plannedFor) : null;
+        const late = dated && daysUntil(next.plannedFor) < 0 && !stamped;
+        const cat = resolveCat(next);
+        const tasks = tasksOf(next), td = tasks.filter((t) => t.done).length;
+        const more = c.by.planned.filter((x) => x.id !== next.id).length;
+        const cl = stamped ? "" : checklistHTML(next, "hero");
+        html = `<article class="doc">
+          <canvas class="guill" aria-hidden="true"></canvas>
+          ${top("Next up", `Adventure <b>Nº ${pad(stamped ? no - 1 : no)}</b>`)}
+          <div class="doc-grid">
+            ${dated ? `<div class="doc-date"><span class="dd-day">${d.getDate()}</span><span class="dd-mon">${MON[d.getMonth()]}${d.getFullYear() !== new Date().getFullYear() ? ` ’${String(d.getFullYear()).slice(2)}` : ""}</span><span class="dd-dow">${esc(d.toLocaleDateString(undefined, { weekday: "short" }))}</span></div>`
+                    : `<div class="doc-date tbd"><span class="dd-day">tbd</span><span class="dd-dow">Date</span></div>`}
+            <div class="doc-main">
+              <h2><button type="button" class="doc-title-btn" data-act="open-sheet" data-id="${esc(next.id)}">${esc(next.title)}</button></h2>
+              ${next.planNote ? `<p class="lede">${esc(next.planNote)}</p>` : ""}
+              <dl class="fields">
+                <div><dt>Departs</dt><dd><span>${dated ? esc(fmtDate(next.plannedFor, { day: true })) : "To be decided"}</span></dd></div>
+                ${dated ? `<div><dt>Countdown</dt><dd class="${late ? "late" : "time"}"><span>${countdown(next.plannedFor)}</span></dd></div>` : ""}
+                ${cat ? `<div><dt>Category</dt><dd><i class="dot" style="--dot:${catVar(cat)}"></i><span>${esc(cat.name)}</span></dd></div>` : ""}
+                ${tasks.length ? `<div><dt>Prepared</dt><dd><span>${td} of ${plural(tasks.length, "step", "steps")}</span></dd></div>` : ""}
+              </dl>
+            </div>
+          </div>
+          ${(w && !stamped) || more ? `<div class="doc-actions">
+            ${w && !stamped ? `<button type="button" class="btn primary" data-act="hero-done" data-id="${esc(next.id)}">${ICON.check} We did it</button>
+            <button type="button" class="btn" data-act="reschedule" data-id="${esc(next.id)}">${ICON.cal} ${dated ? "Reschedule" : "Pick a date"}</button>
+            <button type="button" class="btn ghost" data-act="cancel-plan" data-id="${esc(next.id)}">Cancel plan</button>` : ""}
+            ${more ? `<button type="button" class="btn ghost" data-act="tab" data-v="planned">${plural(more, "more plan", "more plans")}</button>` : ""}
+          </div>` : ""}
+          <div class="mrz" aria-hidden="true">${mrzLines("BL " + next.title, `${pad(no)} ${dated ? `${pad(d.getDate())}${MON[d.getMonth()]}${String(d.getFullYear()).slice(2)}` : "TBD"} ${cat ? cat.name : ""}`)}</div>
+          ${stamped ? `<div class="hero-stamp">${stampHTML(next, { big: true, shape: "circle", rot: -12, t0: state.heroT0 })}</div>` : ""}
+          ${cl ? `<div class="stub">${cl}</div>` : ""}
+        </article>`;
+      } else {
+        const todo = c.by.todo.filter(matchesCat);
+        const sug = state.suggestion && todo.find((x) => x.id === state.suggestion);
+        const fc = state.catFilter && state.catFilter !== "none" ? catById(state.catFilter) : null;
+        if (sug) {
+          const cat = resolveCat(sug);
+          html = `<article class="doc">
+            <canvas class="guill" aria-hidden="true"></canvas>
+            ${top("A suggestion", `<b>${todo.length}</b> to choose from${fc ? ` in ${esc(fc.name)}` : ""}`)}
+            <div class="doc-idle">
+              <h2>${esc(sug.title)}</h2>
+              ${sug.notes ? `<p>${esc(sug.notes)}</p>` : ""}
+              ${cat ? `<dl class="fields"><div><dt>Category</dt><dd><i class="dot" style="--dot:${catVar(cat)}"></i><span>${esc(cat.name)}</span></dd></div></dl>` : ""}
+            </div>
+            ${w ? `<div class="doc-actions">
+              <button type="button" class="btn primary" data-act="plan-pick" data-id="${esc(sug.id)}">${ICON.cal} Plan this one</button>
+              ${todo.length > 1 ? `<button type="button" class="btn" data-act="pick">${ICON.dice} Another</button>` : ""}
+              <button type="button" class="btn ghost" data-act="clear-pick">Not now</button>
+            </div>` : ""}
+            <div class="mrz" aria-hidden="true">${mrzLines("BL HOW ABOUT " + sug.title, "")}</div>
+          </article>`;
+        } else {
+          let title, msg, action = "";
+          if (!c.total) { title = "Start <em>your</em> list"; msg = "Add the first thing you want to do together below. Plan one, and it lands here with a countdown and a checklist."; }
+          else if (!c.by.todo.length) { title = "Every stamp <em>collected</em>"; msg = "You've done everything on the list. Time to dream up more."; }
+          else if (!todo.length) { title = "Where <em>to</em> next?"; msg = "Nothing left to do in this category. Show all categories to pick from everything."; }
+          else {
+            title = "Where <em>to</em> next?";
+            msg = `${plural(todo.length, "activity is", "activities are")} waiting for a date. Plan one and it lands here.`;
+            if (w) action = `<div class="doc-actions"><button type="button" class="btn primary" data-act="pick">${ICON.dice} Pick one for us</button></div>`;
+          }
+          html = `<article class="doc">
+            <canvas class="guill" aria-hidden="true"></canvas>
+            ${top("Next up", `Adventure <b>Nº ${pad(no)}</b>`)}
+            <div class="doc-idle"><h2>${title}</h2><p>${msg}</p></div>
+            ${action}
+            <div class="mrz" aria-hidden="true">${mrzLines("BL WHERE TO NEXT", pad(no))}</div>
+          </article>`;
+        }
+      }
+    }
+    el.innerHTML = html;
+    const cv = $("canvas.guill", el);
+    if (cv) { if (guillRO) { guillRO.disconnect(); guillRO.observe(cv); } else drawGuilloche(cv); }
+  }
+
+  /* ---------- list ---------- */
+  function rowHTML(item) {
+    const w = state.canWrite, id = esc(item.id), st = statusOf(item);
+    const lg = state.linger.get(item.id);
+    const checked = st === "done" || !!lg;
+    const t0 = lg ? lg.t0 : state.fresh.get(item.id);
+    const cat = resolveCat(item), tasks = tasksOf(item), td = tasks.filter((x) => x.done).length;
+    const meta = [];
+    if (cat) meta.push(`<span><i class="dot" style="--dot:${catVar(cat)}"></i>${esc(cat.name)}</span>`);
+    if (st === "planned" && tasks.length) meta.push(`<span>${ICON.steps}${td}/${tasks.length}</span>`);
+    if (st === "done" && item.memory) meta.push(`<span class="note">“${esc(item.memory)}”</span>`);
+    else if (item.notes) meta.push(`<span class="note">${esc(item.notes.split("\n")[0])}</span>`);
+    let end = "";
+    if (st === "planned" && !lg) {
+      end = validISO(item.plannedFor)
+        ? `<span class="when${daysUntil(item.plannedFor) < 0 ? " late" : ""}"><b>${stampDate(item.plannedFor)}</b><span>${shortCount(item.plannedFor)}</span></span>`
+        : `<span class="when tbd"><b>TBD</b></span>`;
+    } else if (st === "done") {
+      end = `<span class="mini-stamp" style="--ink-c:${cat ? catVar(cat) : "var(--done)"}">${validISO(item.doneOn) ? stampDate(item.doneOn) : "Done"}</span>`;
+    } else if (item.addedBy) end = avatar(item.addedBy, "Added by {name}");
+    const leaving = lg && state.filter !== "all";
+    return `<li class="row${checked ? " is-done" : ""}${leaving ? " leaving" : ""}" style="--t:-${t0 ? Date.now() - t0 : 0}ms">
+      <button type="button" class="cb${checked ? " on" : ""}${t0 ? " pop" : ""}" ${w ? "" : "disabled"} data-act="${checked ? "uncomplete" : "complete"}" data-id="${id}" aria-label="${checked ? "Mark as not done" : "Mark as done"}: ${esc(item.title)}">${CB_SVG}</button>
+      <button type="button" class="row-open" data-act="open-sheet" data-id="${id}">
+        <span class="row-main"><span class="row-title">${esc(item.title)}</span>${meta.length ? `<span class="row-meta">${meta.join("")}</span>` : ""}</span>
+        <span class="row-end">${end}${ICON.right}</span>
+      </button>
+    </li>`;
+  }
+  function stampCardHTML(item) {
+    const who = item.doneBy ? avatar(item.doneBy, "Ticked off by {name}") : "";
+    return `<li><button type="button" class="stamp-card" data-act="open-sheet" data-id="${esc(item.id)}">
+      ${stampHTML(item)}
+      <span class="sc-title">${esc(item.title)}</span>
+      ${item.memory ? `<span class="sc-memory">“${esc(item.memory)}”</span>` : ""}
+      <span class="sc-meta">${who}${validISO(item.doneOn) ? esc(fmtDate(item.doneOn, { year: true })) : ""}</span>
+    </button>${state.canWrite ? `<button type="button" class="sc-undo" data-act="unstamp" data-id="${esc(item.id)}" title="Remove stamp" aria-label="Remove stamp from ${esc(item.title)}">${ICON.undo}</button>` : ""}</li>`;
+  }
+  function renderList(c) {
+    const el = $("#list");
+    if (state.mode === "loading") {
+      el.innerHTML = `<div class="card"><ul class="rows">${[62, 48, 56].map((w) => `<li class="row" style="padding:18px 20px;gap:16px"><span class="sk" style="width:22px;height:22px;border-radius:50%"></span><span class="sk" style="height:14px;width:${w}%;margin-top:4px"></span></li>`).join("")}</ul></div>`;
+      return;
+    }
+    const inTab = (x, tab) => (statusOf(x) === tab || (state.linger.get(x.id) || {}).from === tab) && matchesCat(x);
+    const f = state.filter;
+    let body;
+    if (f === "done") {
+      const list = c.by.done.filter(matchesCat);
+      body = list.length ? `<ul class="stamps">${list.map(stampCardHTML).join("")}</ul>` : emptyHTML(c);
+    } else {
+      const list = f === "todo" ? c.items.filter((x) => inTab(x, "todo")).sort(byCreated)
+        : f === "planned" ? c.items.filter((x) => inTab(x, "planned")).sort(byPlanned)
+        : [...c.by.planned, ...c.by.todo, ...c.by.done].filter(matchesCat);
+      body = list.length ? `<ul class="rows">${list.map(rowHTML).join("")}</ul>` : emptyHTML(c);
+    }
+    el.innerHTML = `<div class="card">${body}</div>`;
+  }
+  function emptyHTML(c) {
+    let t, s;
+    if (!c.total) { t = "Nothing on the list yet"; s = "Type your first idea above, or paste a whole list to add everything at once."; }
+    else if (state.catFilter) {
+      const name = state.catFilter === "none" ? "without a category" : `in ${esc((catById(state.catFilter) || {}).name || "this category")}`;
+      t = `Nothing here ${name}`; s = `Try another tab, or <button type="button" class="link" data-act="clear-cat">show all categories</button>.`;
+    }
+    else if (state.filter === "todo") { t = "All caught up"; s = "Everything is planned or done."; }
+    else if (state.filter === "planned") { t = "No plans yet"; s = "Open any activity and set it to Planned to give it a date and a checklist."; }
+    else if (state.filter === "done") { t = "No stamps yet"; s = "Tick off your first activity and its stamp lands here."; }
+    else { t = "Nothing here"; s = ""; }
+    return `<div class="empty"><strong>${t}</strong>${s ? `<span>${s}</span>` : ""}</div>`;
+  }
+
+  /* ---------- dialogs ---------- */
+  function sheetParts(item) {
+    const w = state.canWrite, ro = w ? "" : "readonly", id = esc(item.id), st = statusOf(item);
+    const cat = resolveCat(item), tasks = tasksOf(item);
+    const seg = [["todo", "Someday"], ["planned", "Planned"], ["done", "Done"]].map(([v, l]) =>
+      `<button type="button" role="radio" data-act="set-status" data-v="${v}" aria-checked="${st === v}" ${w ? "" : "disabled"}>${l}</button>`).join("");
+    const added = item.createdAt ? fmtDate(iso(new Date(item.createdAt)), { year: true }) : "";
+    const who = item.addedBy && userNs
+      ? `<span class="who">${avatar(item.addedBy, "Added by {name}")}Added by <span data-name-for="${esc(item.addedBy)}">${esc(personName(item.addedBy))}</span>${added ? ` · ${esc(added)}` : ""}</span>`
+      : `<span class="who">${added ? `Added ${esc(added)}` : ""}</span>`;
+    const head = `<div class="seg no-anim" role="radiogroup" aria-label="Status"><span class="seg-ind" aria-hidden="true"></span>${seg}</div>
+      <button type="button" class="icon-btn" data-act="close-dialog" aria-label="Close">${ICON.x}</button>`;
+    const body = `
+      <textarea class="title-input autogrow" rows="1" maxlength="200" data-key="s:title" data-field="title" aria-label="Activity name" ${ro}>${esc(item.title)}</textarea>
+      <dl class="props">
+        <dt>Category</dt>
+        <dd><button type="button" class="picker bare" data-act="pop" data-kind="sheet-cat" data-pop-anchor="sheet-cat" aria-haspopup="listbox" aria-expanded="false" ${w ? "" : "disabled"}>${catLabel(cat, "No category")}${w ? ICON.chev : ""}</button></dd>
+        ${st === "planned" ? `
+        <dt>Date</dt>
+        <dd><div class="date-row"><input type="date" class="fp" data-key="s:plannedFor" data-field="plannedFor" value="${esc(validISO(item.plannedFor) ? item.plannedFor : "")}" aria-label="Planned date" ${ro}>
+          ${w ? `<button type="button" class="qd" data-act="quick-date" data-v="weekend">This weekend</button><button type="button" class="qd" data-act="quick-date" data-v="month">In a month</button>${validISO(item.plannedFor) ? `<button type="button" class="qd" data-act="quick-date" data-v="clear">No date</button>` : ""}` : ""}</div></dd>
+        <dt class="top">Plan</dt>
+        <dd><textarea class="fp autogrow" rows="1" maxlength="300" data-key="s:planNote" data-field="planNote" placeholder="Where, who books what…" aria-label="Plan notes" ${ro}>${esc(item.planNote || "")}</textarea></dd>` : ""}
+        ${st === "done" ? `
+        <dt>Done on</dt>
+        <dd><input type="date" class="fp" data-key="s:doneOn" data-field="doneOn" value="${esc(validISO(item.doneOn) ? item.doneOn : "")}" max="${todayISO()}" aria-label="Done on" ${ro}></dd>
+        <dt class="top">Memory</dt>
+        <dd><textarea class="fp autogrow" rows="1" maxlength="300" data-key="s:memory" data-field="memory" placeholder="A line to remember it by" aria-label="Memory" ${ro}>${esc(item.memory || "")}</textarea></dd>` : ""}
+        <dt class="top">Notes</dt>
+        <dd><textarea class="fp autogrow" rows="1" maxlength="1000" data-key="s:notes" data-field="notes" placeholder="Ideas, links, costs…" aria-label="Notes" ${ro}>${esc(item.notes || "")}</textarea></dd>
+      </dl>
+      ${st === "planned" || tasks.length ? `<section class="sheet-cl">${checklistHTML(item, "sheet")}</section>` : ""}`;
+    const reverse = st === "planned" ? `<button type="button" class="btn sm ghost" data-act="cancel-plan" data-id="${id}">${ICON.x} Cancel plan</button>`
+      : st === "done" ? `<button type="button" class="btn sm ghost" data-act="unstamp" data-id="${id}">${ICON.undo} Remove stamp</button>` : "";
+    const foot = `${who}${w ? (state.sheetConfirm
+      ? `<span class="foot-confirm">Delete for both of you?<button type="button" class="btn sm ghost" data-act="sheet-delete-cancel">Cancel</button><button type="button" class="btn sm danger" data-act="sheet-delete-confirm" data-id="${id}">Delete</button></span>`
+      : `<span class="foot-actions">${reverse}<button type="button" class="btn sm ghost danger-text" data-act="sheet-delete">${ICON.trash} Delete</button></span>`) : ""}`;
+    return { head, body, foot, status: st };
+  }
+  function managerParts(c) {
+    const w = state.canWrite, cats = sortedCats();
+    const counts = {};
+    for (const it of c.items) { const k = resolveCat(it); if (k && k.id) counts[k.id] = (counts[k.id] || 0) + 1; }
+    const rows = cats.map((k) => {
+      const id = esc(k.id), n = counts[k.id] || 0;
+      return `<li class="mgr-row">
+        <button type="button" class="swatch" style="--dot:${catVar(k)}" data-act="pop" data-kind="color" data-pop-anchor="color:${id}" data-cat="${id}" aria-haspopup="listbox" aria-expanded="false" aria-label="Change color of ${esc(k.name)}" ${w ? "" : "disabled"}></button>
+        <input class="fp" data-key="cat:${id}" data-cat-name="${id}" value="${esc(k.name)}" maxlength="40" aria-label="Category name" ${w ? "" : "readonly"}>
+        <span class="mgr-count">${plural(n, "activity", "activities")}</span>
+        ${w ? `<button type="button" class="icon-btn sm danger" data-act="cat-del" data-cat="${id}" aria-label="Delete ${esc(k.name)}">${ICON.trash}</button>` : "<span></span>"}
+        ${state.catConfirm === k.id ? `<div class="mgr-confirm">Delete “${esc(k.name)}”?${n ? ` ${plural(n, "activity", "activities")} will have no category.` : ""}<button type="button" class="btn sm ghost" data-act="cat-keep">Keep</button><button type="button" class="btn sm danger" data-act="cat-confirm-del" data-cat="${id}">Delete</button></div>` : ""}
+      </li>`;
+    }).join("");
+    const head = `<div><h2 class="dlg-title" id="dlg-title">Categories</h2><p class="dlg-sub">Shared by both of you. Click a color to change it, or a name to rename it.</p></div>
+      <button type="button" class="icon-btn" data-act="close-dialog" aria-label="Close">${ICON.x}</button>`;
+    const body = `${cats.length ? `<ul class="mgr">${rows}</ul>` : `<p class="dlg-sub">No categories yet. Add your first one below.</p>`}
+      ${w ? `<label class="step-add">${ICON.plus}<input id="cat-new" data-key="cat:new" maxlength="40" placeholder="New category, e.g. Road Trips" aria-label="New category name"><button type="button" class="btn sm ghost" data-act="cat-add">Add</button></label>` : ""}`;
+    return { head, body, foot: null };
+  }
+  function renderDialog(c) {
+    const root = $("#dialog-root");
+    if (state.sheet && !find(state.sheet)) { state.sheet = null; state.sheetConfirm = false; }
+    const open = !!(state.sheet || state.manager);
+    $("#app").inert = open;
+    document.documentElement.style.overflow = open ? "hidden" : "";
+    if (!open) { if (!root.dataset.closing) root.innerHTML = ""; return; }
+    const kind = state.sheet ? "sheet" : "manager";
+    const parts = kind === "sheet" ? sheetParts(find(state.sheet)) : managerParts(c);
+    let sheet = $(".sheet", root);
+    if (!sheet || root.dataset.closing || state.dialogFresh || sheet.dataset.kind !== kind) {
+      delete root.dataset.closing;
+      const label = kind === "manager" ? 'aria-labelledby="dlg-title"' : 'aria-label="Activity details"';
+      root.innerHTML = `<div class="scrim" data-act="scrim"><div class="sheet${kind === "manager" ? " narrow" : ""}" data-kind="${kind}" role="dialog" aria-modal="true" ${label} tabindex="-1">
+        <div class="grab" aria-hidden="true"></div>
+        <header class="sheet-head${kind === "manager" ? " tall" : ""}">${parts.head}</header>
+        <div class="sheet-body">${parts.body}</div>
+        ${parts.foot != null ? `<footer class="sheet-foot">${parts.foot}</footer>` : ""}
+      </div></div>`;
+      const scrim = $(".scrim", root);
+      sheet = $(".sheet", root);
+      const fresh = state.dialogFresh; state.dialogFresh = false;
+      requestAnimationFrame(() => scrim.classList.add("open"));
+      if (fresh) {
+        const f = state.sheetFocus && $(`[data-field="${state.sheetFocus}"]`, sheet);
+        if (f) { f.focus({ preventScroll: true }); f.classList.add("flash"); } else sheet.focus({ preventScroll: true });
+        state.sheetFocus = null;
+      }
+    } else {
+      if (kind === "sheet") $$(".sheet-head [data-act='set-status']", sheet).forEach((b) => b.setAttribute("aria-checked", String(b.dataset.v === parts.status)));
+      const body = $(".sheet-body", sheet), top = body.scrollTop;
+      body.innerHTML = parts.body; body.scrollTop = top;
+      const foot = $(".sheet-foot", sheet); if (foot && parts.foot != null) foot.innerHTML = parts.foot;
+    }
+    $$(".autogrow", root).forEach(grow);
+    $$(".seg", root).forEach(syncSeg);
+  }
+  function openSheet(id, focusField) { closePop(); state.sheet = id; state.sheetFocus = focusField || null; state.sheetConfirm = false; state.manager = false; state.dialogFresh = true; render(); }
+  function openManager() { closePop(); state.managerReturn = state.sheet; state.sheet = null; state.manager = true; state.catConfirm = null; state.dialogFresh = true; render(); }
+  function closeDialog() {
+    if (!state.sheet && !state.manager) return;
+    if (state.manager && state.managerReturn && find(state.managerReturn)) { const back = state.managerReturn; state.managerReturn = null; openSheet(back); return; }
+    const backSel = state.sheet ? `[data-act="open-sheet"][data-id="${CSS.escape(state.sheet)}"]` : "#filter-cat";
+    state.sheet = null; state.manager = false; state.managerReturn = null; state.catConfirm = null; state.sheetConfirm = false;
+    closePop();
+    const root = $("#dialog-root"), scrim = $(".scrim", root);
+    if (scrim) {
+      root.dataset.closing = "1"; scrim.classList.remove("open");
+      setTimeout(() => { if (root.dataset.closing && !state.sheet && !state.manager) { delete root.dataset.closing; root.innerHTML = ""; } }, 260);
+    }
+    render();
+    const back = document.querySelector(backSel); if (back) back.focus({ preventScroll: true });
+  }
+
+  /* ---------- popover ---------- */
+  function popOptions(kind, c) {
+    const cats = sortedCats();
+    if (kind === "filter-cat") {
+      const counts = {}; let none = 0;
+      for (const it of c.items) { const k = resolveCat(it); if (k && k.id) counts[k.id] = (counts[k.id] || 0) + 1; else if (!k) none++; }
+      return { cur: state.catFilter, opts: [{ v: "", label: "All categories", count: c.total, all: true }, ...cats.map((k) => ({ v: k.id, label: k.name, dot: catVar(k), count: counts[k.id] || 0 })), ...(none || state.catFilter === "none" ? [{ v: "none", label: "No category", count: none }] : [])] };
+    }
+    const cur = kind === "composer-cat" ? state.composerCat : ((resolveCat(find(state.sheet)) || {}).id || "");
+    return { cur, opts: cats.map((k) => ({ v: k.id, label: k.name, dot: catVar(k) })) };
+  }
+  function popHTML(c) {
+    const p = state.pop;
+    if (p.kind === "color") {
+      const k = catById(p.cat), cur = k ? colorIndex(k) : 0;
+      return `<div class="pop-head label">Color</div><div class="swatches" role="listbox" aria-label="Category color">${Array.from({ length: COLORS }, (_, i) => `<button type="button" class="swatch-opt" role="option" data-act="color" data-v="${i + 1}" style="--dot:var(--k${i + 1})" aria-selected="${cur === i + 1}" aria-label="Color ${i + 1}"></button>`).join("")}</div>`;
+    }
+    const { cur, opts } = popOptions(p.kind, c);
+    return `<div role="listbox" aria-label="Categories">${opts.map((o) => `<button type="button" class="opt" role="option" data-act="opt" data-v="${esc(o.v)}" aria-selected="${o.v === cur}">
+        ${o.all ? `<i class="dot" style="--dot:var(--faint)"></i>` : `<i class="dot${o.dot ? "" : " hollow"}" style="--dot:${o.dot || "transparent"}"></i>`}
+        <span class="ol">${esc(o.label)}</span>${o.count != null ? `<span class="oc">${o.count}</span>` : ""}${o.v === cur ? ICON.check : ""}
+      </button>`).join("")}</div>
+      <div class="pop-sep"></div>
+      <button type="button" class="opt quiet" data-act="open-manager">${ICON.gear}<span class="ol">Manage categories…</span></button>`;
+  }
+  function openPop(kind, anchor, cat) {
+    state.pop = { kind, anchor, cat };
+    const pop = $("#pop");
+    pop.innerHTML = popHTML(compute());
+    pop.hidden = false; pop.classList.remove("in");
+    placePop();
+    requestAnimationFrame(() => pop.classList.add("in"));
+    const first = $('[aria-selected="true"]', pop) || $("button", pop); if (first) first.focus({ preventScroll: true });
+    syncAnchors();
+  }
+  function refreshPop(c) {
+    if (!state.pop) return;
+    const pop = $("#pop"), active = document.activeElement;
+    const fv = active && pop.contains(active) ? active.dataset.v ?? active.dataset.act : null;
+    pop.innerHTML = popHTML(c);
+    if (fv != null) { const el = $$("button", pop).find((b) => (b.dataset.v ?? b.dataset.act) === fv); if (el) el.focus({ preventScroll: true }); }
+    placePop();
+  }
+  function closePop(returnFocus) {
+    if (!state.pop) return;
+    const anchor = state.pop.anchor;
+    state.pop = null;
+    const pop = $("#pop"); pop.classList.remove("in"); pop.hidden = true; pop.innerHTML = "";
+    syncAnchors();
+    if (returnFocus) { const a = document.querySelector(`[data-pop-anchor="${CSS.escape(anchor)}"]`); if (a) a.focus({ preventScroll: true }); }
+  }
+  function placePop() {
+    if (!state.pop) return;
+    const pop = $("#pop"), a = document.querySelector(`[data-pop-anchor="${CSS.escape(state.pop.anchor)}"]`);
+    if (!a) { closePop(); return; }
+    const r = a.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight, vw = innerWidth, vh = innerHeight;
+    let left = r.left;
+    if (left + pw > vw - 12) left = Math.max(12, r.right - pw);
+    let top = r.bottom + 6;
+    if (top + ph > vh - 12 && r.top - ph - 6 > 12) top = r.top - ph - 6;
+    pop.style.left = `${Math.round(Math.max(12, left))}px`;
+    pop.style.top = `${Math.round(top)}px`;
+  }
+  function syncAnchors() { $$("[data-pop-anchor]").forEach((a) => a.setAttribute("aria-expanded", String(!!state.pop && state.pop.anchor === a.dataset.popAnchor))); }
+
+  /* ---------- segmented control ---------- */
+  function syncSeg(seg) {
+    const a = $('[aria-selected="true"], [aria-checked="true"]', seg), ind = $(".seg-ind", seg);
+    if (!a || !ind) return;
+    ind.style.width = `${a.offsetWidth}px`;
+    ind.style.transform = `translateX(${a.offsetLeft}px)`;
+    if (seg.classList.contains("no-anim")) requestAnimationFrame(() => requestAnimationFrame(() => seg.classList.remove("no-anim")));
+  }
+
+  /* ---------- drafts: keep what someone is typing when the list updates ---------- */
+  function captureDrafts() {
+    const d = {};
+    $$("#next [data-key], #dialog-root [data-key]").forEach((el) => { if (el.value !== el.defaultValue) d[el.dataset.key] = el.value; });
+    const a = document.activeElement; let focus = null, sel = null;
+    if (a && a.dataset && a.dataset.key) { focus = a.dataset.key; try { sel = [a.selectionStart, a.selectionEnd]; } catch {} }
+    return { d, focus, sel };
+  }
+  function restoreDrafts({ d, focus, sel }) {
+    $$("#next [data-key], #dialog-root [data-key]").forEach((el) => { if (el.dataset.key in d) el.value = d[el.dataset.key]; });
+    if (focus) {
+      const el = document.querySelector(`[data-key="${CSS.escape(focus)}"]`);
+      if (el && document.activeElement !== el) { el.focus({ preventScroll: true }); if (sel && sel[0] != null) try { el.setSelectionRange(sel[0], sel[1]); } catch {} }
+    }
+  }
+  function grow(el) { el.style.height = "auto"; el.style.height = `${el.scrollHeight}px`; }
+
+  /* ---------- render ---------- */
+  function compute() {
+    const items = state.items.filter((x) => x && typeof x.title === "string");
+    const by = { todo: [], planned: [], done: [] };
+    for (const it of items) by[statusOf(it)].push(it);
+    by.todo.sort(byCreated); by.planned.sort(byPlanned); by.done.sort(byDone);
+    return { items, by, total: items.length };
+  }
+  function render() {
+    const drafts = captureDrafts();
+    const c = compute();
+    if (state.catFilter && state.catFilter !== "none" && state.catsLoaded && !catById(state.catFilter)) { state.catFilter = ""; safeSet("bucketlist.cat", ""); }
+    if (state.composerCat && state.catsLoaded && !catById(state.composerCat)) state.composerCat = "";
+    // Every new activity gets a category: default to the first one.
+    if (!state.composerCat && state.catsLoaded) state.composerCat = (sortedCats()[0] || {}).id || "";
+    const loading = state.mode === "loading";
+
+    // masthead
+    const d = c.by.done.length, p = c.by.planned.length, t = c.by.todo.length;
+    const gd = $("#g-done"), gp = $("#g-plan"), gt = $("#g-todo");
+    gd.style.flexGrow = d; gp.style.flexGrow = p; gt.style.flexGrow = c.total ? t : 1;
+    gd.hidden = !d; gp.hidden = !p; gt.hidden = !!c.total && !t;
+    $("#legend").innerHTML = loading ? "&nbsp;" : `<span><i style="background:var(--done)"></i><b>${d}</b> done</span><span><i style="background:var(--gold)"></i><b>${p}</b> planned</span><span><i style="background:var(--line-2)"></i><b>${t}</b> to go</span>`;
+    $("#pct").textContent = c.total ? `${Math.round((d / c.total) * 100)}% complete` : "";
+    const first = c.items.reduce((m, x) => (x.createdAt > 1e12 && x.createdAt < m ? x.createdAt : m), Infinity);
+    $("#since").textContent = isFinite(first) ? `Since ${new Date(first).toLocaleDateString(undefined, { month: "short", year: "numeric" })}` : "";
+
+    // notice
+    let n = "";
+    if (state.mode === "local") n = "Saved in this browser only. Publish this page as a Claude artifact to share the list with your friend.";
+    else if (state.mode === "unavailable") n = "This list opens from its private link. Open the link you were sent, or check your connection and reload.";
+    else if (state.mode === "db" && !state.canWrite) n = "You can view this list. To add or tick off activities, ask the owner to share it with you as an Editor.";
+    $("#notice").innerHTML = n ? `${ICON.info}<span>${esc(n)}</span>` : ""; $("#notice").hidden = !n;
+
+    // composer + paste
+    $("#add-area").hidden = !state.canWrite || loading || state.mode === "unavailable";
+    $("#composer-cat").innerHTML = catLabel(catById(state.composerCat), "Category") + ICON.chev;
+    renderPaste();
+
+    // toolbar
+    const fil = (arr) => arr.filter(matchesCat).length;
+    const counts = { todo: fil(c.by.todo), planned: fil(c.by.planned), done: fil(c.by.done) };
+    counts.all = counts.todo + counts.planned + counts.done;
+    $$("#tabs [data-act='tab']").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.v === state.filter)));
+    $$("#tabs [data-n]").forEach((s) => (s.textContent = loading ? "" : counts[s.dataset.n]));
+    syncSeg($("#tabs"));
+    const fc = state.catFilter === "none" ? null : catById(state.catFilter);
+    $("#filter-cat").innerHTML = (state.catFilter === "none" ? `<i class="dot hollow"></i><span class="pl">No category</span>` : fc ? catLabel(fc) : `<span class="pl">All categories</span>`) + ICON.chev;
+    $("#filter-cat").hidden = loading || state.mode === "unavailable";
+
+    renderNext(c);
+    renderList(c);
+    renderDialog(c);
+    restoreDrafts(drafts);
+    refreshPop(c);
+    syncAnchors();
+    fillAvatars();
+  }
+  function renderPaste() {
+    const el = $("#paste");
+    if (!state.paste || !state.paste.length) { el.hidden = true; el.innerHTML = ""; return; }
+    const lines = state.paste, cat = catById(state.composerCat);
+    el.hidden = false;
+    el.innerHTML = `<div class="paste-head"><strong>Add ${plural(lines.length, "activity", "activities")}?</strong><span>From your paste${cat ? ` · into ${esc(cat.name)}` : ""}</span></div>
+      <ol>${lines.slice(0, 6).map((l) => `<li>${esc(l)}</li>`).join("")}${lines.length > 6 ? `<li class="more">and ${lines.length - 6} more</li>` : ""}</ol>
+      <div class="paste-actions"><button type="button" class="btn sm ghost" data-act="paste-cancel">Cancel</button><button type="button" class="btn sm primary" data-act="paste-add">Add all ${lines.length}</button></div>`;
+  }
+
+  /* ---------- actions ---------- */
+  function baseItem(title, categoryId, i = 0) {
+    return { title, categoryId: categoryId || null, category: "", notes: "", status: "todo", plannedFor: null, planNote: "", doneOn: null, doneAt: null, memory: "", createdAt: Date.now() + i, addedBy: state.me || null, doneBy: null };
+  }
+  async function complete(item, from) {
+    const prev = { status: item.status || "todo", doneOn: item.doneOn ?? null, doneAt: item.doneAt ?? null, doneBy: item.doneBy ?? null };
+    const now = Date.now();
+    state.fresh.set(item.id, now);
+    if (from) { state.linger.set(item.id, { from, t0: now }); setTimeout(() => { state.linger.delete(item.id); render(); }, 1100); }
+    setTimeout(() => state.fresh.delete(item.id), 2000);
+    render();
+    if (await updateItem(item.id, { status: "done", doneOn: todayISO(), doneAt: now, doneBy: state.me || null })) {
+      toast(`Ticked off “${item.title}”`, () => updateItem(item.id, prev));
+    } else { state.linger.delete(item.id); state.fresh.delete(item.id); render(); }
+  }
+  async function uncomplete(item) {
+    const prev = { status: "done", doneOn: item.doneOn ?? null, doneAt: item.doneAt ?? null, doneBy: item.doneBy ?? null };
+    const back = validISO(item.plannedFor) ? "planned" : "todo";
+    if (await updateItem(item.id, { status: back, doneOn: null, doneAt: null, doneBy: null })) toast(`Stamp removed. “${item.title}” is back in ${back === "planned" ? "Planned" : "To do"}`, () => updateItem(item.id, prev));
+  }
+  // Cancelling a plan clears its date but keeps the plan notes and checklist for when you reschedule.
+  async function cancelPlan(item) {
+    const prev = { status: statusOf(item), plannedFor: item.plannedFor ?? null };
+    if (await updateItem(item.id, { status: "todo", plannedFor: null })) toast(`Plan cancelled. “${item.title}” is back in To do`, () => updateItem(item.id, prev));
+  }
+  async function addTask(item, text) {
+    const clean = String(text || "").trim().slice(0, 140); if (!clean) return false;
+    return updateItem(item.id, { checklist: { [taskId()]: { text: clean, done: false, order: Date.now(), who: null, doneBy: null } } });
+  }
+  async function saveField(el) {
+    const item = find(state.sheet); if (!item || !state.canWrite) return;
+    const f = el.dataset.field;
+    let v = el.value;
+    if (f === "title") {
+      v = v.replace(/\s+/g, " ").trim().slice(0, 200);
+      if (!v) { el.value = item.title; grow(el); toast("An activity needs a name."); return; }
+    } else if (f === "plannedFor") v = validISO(v) ? v : null;
+    else if (f === "doneOn") v = validISO(v) ? v : (item.doneOn || todayISO());
+    else v = v.trim();
+    if ((item[f] ?? "") === (v ?? "")) return;
+    el.defaultValue = v ?? "";
+    await updateItem(item.id, { [f]: v });
+  }
+  async function saveCatName(input) {
+    const id = input.dataset.catName, k = catById(id); if (!k || !state.canWrite) return;
+    const name = input.value.trim().slice(0, 40);
+    if (name === k.name) return;
+    if (!name) { input.value = k.name; toast("A category needs a name."); return; }
+    const clash = catByName(name);
+    if (clash && clash.id !== id) { input.value = k.name; toast(`There's already a category called “${clash.name}”.`); return; }
+    input.defaultValue = name;
+    await update("categories", id, { name });
+  }
+  function focusKey(key) { const i = document.querySelector(`[data-key="${CSS.escape(key)}"]`); if (i) i.focus({ preventScroll: true }); }
+
+  document.addEventListener("click", async (ev) => {
+    const tgt = ev.target;
+    if (!tgt.closest) return;
+    if (tgt.closest("#toast-undo")) { const fn = undoFn; hideToast(); if (fn) await fn(); return; }
+    if (state.pop && !tgt.closest("#pop") && !tgt.closest("[data-pop-anchor]")) closePop();
+    const b = tgt.closest("[data-act]"); if (!b) return;
+    const act = b.dataset.act;
+    if (act === "scrim") { if (tgt === b) closeDialog(); return; }
+    ev.preventDefault();
+    const id = b.dataset.id, item = id ? find(id) : null;
+    const tid = b.dataset.task, task = item && tid ? tasksOf(item).find((x) => x.id === tid) : null;
+    switch (act) {
+      case "tab":
+        state.filter = b.dataset.v; safeSet("bucketlist.filter", state.filter); render();
+        if (b.closest("#next")) $("#toolbar").scrollIntoView({ behavior: "smooth", block: "start" });
+        break;
+      case "clear-cat": state.catFilter = ""; safeSet("bucketlist.cat", ""); render(); break;
+      case "pop":
+        if (state.pop && state.pop.anchor === b.dataset.popAnchor) closePop(true); else openPop(b.dataset.kind, b.dataset.popAnchor, b.dataset.cat);
+        break;
+      case "opt": {
+        const p = state.pop, v = b.dataset.v; if (!p) break;
+        closePop(true);
+        if (p.kind === "composer-cat") { state.composerCat = v; render(); $("#new-title").focus(); }
+        else if (p.kind === "filter-cat") { state.catFilter = v; safeSet("bucketlist.cat", v); state.suggestion = null; render(); }
+        else if (p.kind === "sheet-cat") { const it = find(state.sheet); if (it) await updateItem(it.id, { categoryId: v || null, category: "" }); }
+        break;
+      }
+      case "color": { const p = state.pop; if (!p) break; closePop(true); await update("categories", p.cat, { color: Number(b.dataset.v) }); break; }
+      case "open-manager": openManager(); break;
+      case "open-sheet": if (item) openSheet(id); break;
+      case "close-dialog": closeDialog(); break;
+      case "complete": if (item) complete(item, state.filter === "all" ? null : statusOf(item)); break;
+      case "uncomplete": if (item) { state.linger.delete(id); uncomplete(item); } break;
+      case "unstamp": if (item && statusOf(item) === "done") uncomplete(item); break;
+      case "cancel-plan": if (item && statusOf(item) === "planned") cancelPlan(item); break;
+      case "reschedule": if (item) openSheet(id, "plannedFor"); break;
+      case "hero-done": {
+        if (!item) break;
+        state.heroStamp = id; state.heroT0 = Date.now();
+        setTimeout(() => { if (state.heroStamp === id) { state.heroStamp = null; render(); } }, 1700);
+        complete(item, null); break;
+      }
+      case "pick": {
+        const todo = state.items.filter((x) => x && typeof x.title === "string" && statusOf(x) === "todo" && matchesCat(x));
+        const pool = todo.length > 1 ? todo.filter((x) => x.id !== state.suggestion) : todo;
+        state.suggestion = pool.length ? pool[Math.floor(Math.random() * pool.length)].id : null;
+        render(); break;
+      }
+      case "clear-pick": state.suggestion = null; render(); break;
+      case "plan-pick": if (item) { state.suggestion = null; if (await updateItem(id, { status: "planned" })) openSheet(id); } break;
+      case "set-status": {
+        const it = find(state.sheet), v = b.dataset.v; if (!it || statusOf(it) === v) break;
+        const seg = b.closest(".seg"); $$("button", seg).forEach((x) => x.setAttribute("aria-checked", String(x === b))); syncSeg(seg);
+        if (v === "done") { state.fresh.set(it.id, Date.now()); setTimeout(() => state.fresh.delete(it.id), 2000); await updateItem(it.id, { status: "done", doneOn: it.doneOn || todayISO(), doneAt: Date.now(), doneBy: state.me || null }); }
+        else await updateItem(it.id, statusOf(it) === "done" ? { status: v, doneOn: null, doneAt: null, doneBy: null } : { status: v });
+        break;
+      }
+      case "quick-date": {
+        const input = $('#dialog-root [data-field="plannedFor"]'); if (!input) break;
+        const dt = new Date();
+        if (b.dataset.v === "weekend") { const day = dt.getDay(); dt.setDate(dt.getDate() + (day === 0 ? 0 : 6 - day)); input.value = iso(dt); }
+        else if (b.dataset.v === "month") { dt.setMonth(dt.getMonth() + 1); input.value = iso(dt); }
+        else input.value = "";
+        await saveField(input); break;
+      }
+      case "sheet-delete": state.sheetConfirm = true; render(); break;
+      case "sheet-delete-cancel": state.sheetConfirm = false; render(); break;
+      case "sheet-delete-confirm": {
+        if (!item) break;
+        const { id: _drop, ...data } = item;
+        closeDialog();
+        if (state.suggestion === id) state.suggestion = null;
+        if (await remove("activities", id)) toast(`Deleted “${item.title}”`, () => setDoc("activities", id, data));
+        break;
+      }
+      case "paste-cancel": state.paste = null; render(); $("#new-title").focus(); break;
+      case "paste-add": {
+        const lines = state.paste || []; state.paste = null; render();
+        let ok = 0;
+        for (let i = 0; i < lines.length; i++) { if (await add("activities", baseItem(lines[i], state.composerCat, i))) ok++; else break; }
+        if (ok) { toast(`Added ${plural(ok, "activity", "activities")}`); if (state.filter !== "all") { state.filter = "todo"; safeSet("bucketlist.filter", "todo"); render(); } }
+        break;
+      }
+
+      /* checklist */
+      case "task-add": {
+        if (!item) break;
+        const key = `task:${b.dataset.where}:${id}`, input = document.querySelector(`[data-key="${CSS.escape(key)}"]`);
+        const text = input ? input.value.trim() : "";
+        if (!text) { if (input) input.focus(); break; }
+        input.value = ""; input.defaultValue = "";
+        if (!(await addTask(item, text))) { const i = document.querySelector(`[data-key="${CSS.escape(key)}"]`); if (i) i.value = text; }
+        focusKey(key); break;
+      }
+      case "task-suggest": if (item) await addTask(item, b.dataset.text); break;
+      case "task-toggle": if (task) await updateItem(id, { checklist: { [tid]: { done: !task.done, doneBy: !task.done ? state.me || null : null } } }); break;
+      case "task-claim": if (task && state.me) await updateItem(id, { checklist: { [tid]: { who: task.who === state.me ? null : state.me } } }); break;
+      case "task-del": if (task) await updateItem(id, { checklist: { [tid]: null } }); break;
+
+      /* categories */
+      case "cat-add": {
+        const input = $("#cat-new"), name = input ? input.value.trim().slice(0, 40) : "";
+        if (!name) { if (input) input.focus(); break; }
+        const clash = catByName(name);
+        if (clash) { toast(`There's already a category called “${clash.name}”.`); break; }
+        const used = new Set(state.cats.map(colorIndex));
+        let color = 1; while (used.has(color) && color < COLORS) color++;
+        if (used.has(color)) color = (state.cats.length % COLORS) + 1;
+        const order = state.cats.reduce((m, k) => Math.max(m, Number(k.order) || 0), 0) + 1;
+        input.value = ""; input.defaultValue = "";
+        if (!(await add("categories", { name, color, order }))) { const i = $("#cat-new"); if (i) i.value = name; }
+        focusKey("cat:new"); break;
+      }
+      case "cat-del": state.catConfirm = b.dataset.cat; render(); break;
+      case "cat-keep": state.catConfirm = null; render(); break;
+      case "cat-confirm-del": {
+        const cid = b.dataset.cat; state.catConfirm = null;
+        if (state.catFilter === cid) { state.catFilter = ""; safeSet("bucketlist.cat", ""); }
+        if (state.composerCat === cid) state.composerCat = "";
+        await remove("categories", cid); render(); break;
+      }
+    }
+  });
+
+  document.addEventListener("keydown", (ev) => {
+    const t = ev.target;
+    if (ev.key === "Escape") {
+      if (state.pop) { ev.preventDefault(); closePop(true); }
+      else if (state.catConfirm) { state.catConfirm = null; render(); }
+      else if (state.sheetConfirm) { state.sheetConfirm = false; render(); }
+      else if (state.sheet || state.manager) closeDialog();
+      else if (state.paste) { state.paste = null; render(); }
+      return;
+    }
+    if (state.pop && t.closest && t.closest("#pop")) {
+      const btns = $$("#pop button"), i = btns.indexOf(t);
+      if (ev.key === "ArrowDown" || ev.key === "ArrowRight") { ev.preventDefault(); btns[(i + 1) % btns.length].focus(); }
+      else if (ev.key === "ArrowUp" || ev.key === "ArrowLeft") { ev.preventDefault(); btns[(i - 1 + btns.length) % btns.length].focus(); }
+      else if (ev.key === "Tab") closePop();
+      return;
+    }
+    const typing = t.matches && t.matches("input, textarea, select, [contenteditable]");
+    if (!typing && !ev.metaKey && !ev.ctrlKey && !ev.altKey && (ev.key === "n" || ev.key === "N") && !state.sheet && !state.manager && !$("#add-area").hidden) {
+      ev.preventDefault(); $("#new-title").focus(); return;
+    }
+    if (ev.key !== "Enter" || !t.matches) return;
+    if (t.matches("[data-key^='task:']")) { ev.preventDefault(); const btn = t.parentElement.querySelector("[data-act='task-add']"); if (btn) btn.click(); }
+    else if (t.id === "cat-new") { ev.preventDefault(); const btn = $("[data-act='cat-add']"); if (btn) btn.click(); }
+    else if (t.matches("[data-cat-name], .title-input, input.fp")) { ev.preventDefault(); t.blur(); }
+  });
+  document.addEventListener("change", (ev) => { if (ev.target.matches && ev.target.matches("#dialog-root [data-field]")) saveField(ev.target); });
+  document.addEventListener("focusout", (ev) => { if (ev.target.matches && ev.target.matches("[data-cat-name]")) saveCatName(ev.target); });
+  document.addEventListener("input", (ev) => { if (ev.target.classList && ev.target.classList.contains("autogrow")) grow(ev.target); });
+  document.addEventListener("scroll", () => placePop(), true);
+  addEventListener("resize", () => { placePop(); $$(".seg").forEach(syncSeg); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { $$(".seg").forEach(syncSeg); redrawAll(); });
+
+  $("#composer").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const inp = $("#new-title"), title = inp.value.replace(/\s+/g, " ").trim();
+    if (!title) { inp.focus(); return; }
+    inp.value = "";
+    if (await add("activities", baseItem(title.slice(0, 200), state.composerCat))) {
+      if (state.filter === "planned" || state.filter === "done") { state.filter = "todo"; safeSet("bucketlist.filter", "todo"); render(); }
+    } else inp.value = title;
+    inp.focus();
+  });
+  $("#new-title").addEventListener("paste", (ev) => {
+    const text = (ev.clipboardData && ev.clipboardData.getData("text")) || "";
+    const lines = text.split(/\r?\n/).map(cleanLine).filter(Boolean).map((l) => l.slice(0, 200));
+    if (lines.length < 2) return;
+    ev.preventDefault(); state.paste = lines; renderPaste();
+  });
+
+  /* ---------- boot ---------- */
+  function startLocal() {
+    state.mode = "local";
+    let cats = readLocal("categories");
+    if (!cats) cats = LOCAL_STARTER_CATS.map(([name, color], i) => ({ id: newId(), name, color, order: i + 1 }));
+    let items = readLocal("activities") || [];
+    // Move older free-text categories onto the category list.
+    items = items.map((it) => {
+      if (it.categoryId || !it.category || !String(it.category).trim()) return it;
+      const name = String(it.category).trim();
+      let k = cats.find((x) => x.name.toLowerCase() === name.toLowerCase());
+      if (!k) { k = { id: newId(), name, color: (cats.length % COLORS) + 1, order: cats.length + 1 }; cats.push(k); }
+      return { ...it, categoryId: k.id, category: "" };
+    });
+    state.catsLoaded = true;
+    writeLocal("categories", cats, true);
+    writeLocal("activities", items, true);
+    render();
+  }
+  function subscribe(coll, onData, retried) {
+    dbNs.collection(coll).onSnapshot((snap) => onData(snap.docs.map((d) => ({ id: d.id, ...d.data() })), snap.metadata || {}), (err) => {
+      if (err && err.code === "unavailable" && !retried) { setTimeout(() => subscribe(coll, onData, true), 2000); return; }
+      if (err && err.code === "revoked") { state.canWrite = false; render(); return; }
+      toast("Lost the connection to your shared list. Reload the page to reconnect.");
+    });
+  }
+  async function boot() {
+    render();
+    if (!window.claude || typeof window.claude.use !== "function") { startLocal(); return; }
+    const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+    userNs = user;
+    if (!db) { state.mode = "unavailable"; state.canWrite = false; render(); return; }
+    if (user) {
+      state.me = await user.id();
+      if ((await user.can("data.write")) === false) state.canWrite = false;
+    }
+    dbNs = db;
+    subscribe("categories", (list) => { state.cats = list; state.catsLoaded = true; render(); });
+    subscribe("activities", (list, meta) => { state.items = list; if (state.mode === "loading") state.mode = "db"; render(); checkNew(list, !!meta.fromCache); });
+  }
+  boot();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,13 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Each list lives under lists/<secret id>, the part of the link after "#".
+    // Anyone with the link can read and change that list. Nobody can browse
+    // or search for other lists, because there is no rule that allows it.
+    match /lists/{listId}/{coll}/{docId} {
+      allow read, delete: if listId.size() >= 20 && coll in ['activities', 'categories'];
+      allow create, update: if listId.size() >= 20 && coll in ['activities', 'categories']
+        && request.resource.data.size() <= 40;
+    }
+  }
+}

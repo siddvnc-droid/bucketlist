@@ -42,3 +42,11 @@ Each published copy is a separate page with its own link, its own list and its o
 | 2027 Bucket List | [`copies/2027-bucket-list.html`](copies/2027-bucket-list.html) |
 
 To add a copy, add a line to `COPIES` in `make_copies.py`. After changing `bucketlist.html`, run `python3 make_copies.py` and republish each copy so they all stay on the same version of the app.
+
+## Hosting on Firebase
+
+The same app can also run on Firebase (project `winter-bucket-list`), with your list stored in Cloud Firestore.
+
+- `web/` is the site that gets published. Build it with `python3 build_web.py` (it wraps `bucketlist.html` and adds `firebase/firebase-shim.js`, which connects the app to Firestore).
+- Each list is opened with a private link: `https://winter-bucket-list.web.app/#<list id>`. Anyone with the link can view and edit that list; nobody can browse other lists. The rules are in `firestore.rules`.
+- To publish: `npm install -g firebase-tools`, `firebase login`, then `firebase deploy` from this folder.
