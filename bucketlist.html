@@ -475,9 +475,9 @@ textarea.fp { resize: none; overflow: hidden; line-height: 1.5; }
 .cal-nav button { border: 0; background: none; color: var(--cal-red); height: 32px; min-width: 32px; padding: 0 8px; border-radius: 9px; font-size: 14px; font-weight: 500; display: grid; place-items: center; }
 .cal-nav button:hover { background: color-mix(in srgb, var(--cal-red) 10%, transparent); }
 .cal-nav svg { width: 18px; height: 18px; }
-.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 2px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); row-gap: 2px; }
 .cal-dow { text-align: center; font-size: 10.5px; font-weight: 600; letter-spacing: .02em; color: var(--faint); padding-bottom: 6px; }
-.cal-day { justify-self: center; width: 38px; height: 38px; border-radius: 50%; border: 0; padding: 0; background: none; font-size: 16px; font-variant-numeric: tabular-nums; color: var(--ink); display: grid; place-items: center; transition: background .12s, color .12s; }
+.cal-day { justify-self: center; width: 100%; max-width: 38px; height: auto; aspect-ratio: 1; border-radius: 50%; border: 0; padding: 0; background: none; font-size: 16px; font-variant-numeric: tabular-nums; color: var(--ink); display: grid; place-items: center; transition: background .12s, color .12s; }
 .cal-day:hover { background: var(--surface-3); }
 .cal-day.today { color: var(--cal-red); font-weight: 600; }
 .cal-day.sel { background: var(--cal-red); color: #fff; font-weight: 600; }
@@ -553,7 +553,16 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   .sheet-head { padding: 10px 12px 4px 18px; }
   .sheet-body { padding: 12px 18px 22px; }
   .sheet-foot { padding: 10px 12px 10px 18px; }
-  .props { grid-template-columns: 84px minmax(0, 1fr); gap: 14px 12px; }
+  /* labels sit above their fields on phones, so the calendar gets the full width */
+  .props { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .props dt, .props dt.top { padding: 14px 0 4px; }
+  .props dt:first-child { padding-top: 0; }
+  .dp-cal { max-width: none; padding: 12px 8px 8px; }
+  .cal-head { margin-left: 6px; }
+  .sheet-foot .who { flex-basis: 100%; }
+  .sheet-foot .foot-actions { margin-left: -8px; width: calc(100% + 8px); flex-wrap: nowrap; }
+  .save-hint { display: none; }
+  .foot-actions #sheet-save { margin-left: auto; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-delay: 0ms !important; }
@@ -941,7 +950,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   /* ---------- date picker: a month calendar styled after Apple Calendar ---------- */
   function dpHTML(field, value, label, readOnly, max) {
     return `<input type="text" hidden class="dp-value" data-key="s:${field}" data-field="${field}" value="${esc(validISO(value) ? value : "")}"${max ? ` data-max="${max}"` : ""}>
-      <button type="button" class="fp dp-trigger" data-act="cal-toggle" data-field="${field}" aria-expanded="false" aria-label="${esc(label)}" ${readOnly ? "disabled" : ""}></button>`;
+      <button type="button" class="fp dp-trigger" data-act="cal-toggle" data-for="${field}" aria-expanded="false" aria-label="${esc(label)}" ${readOnly ? "disabled" : ""}></button>`;
   }
   function openCal(field, value) {
     const d = validISO(value) ? parseISO(value) : new Date();
@@ -954,7 +963,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     for (let i = 0; i < first.getDay(); i++) cells += "<span></span>";
     for (let d = 1; d <= days; d++) {
       const day = iso(new Date(y, m, d)), off = max && day > max;
-      cells += `<button type="button" class="cal-day${day === value ? " sel" : ""}${day === today ? " today" : ""}" data-act="cal-pick" data-field="${field}" data-v="${day}" aria-pressed="${day === value}" aria-label="${esc(fmtDate(day, { day: true, year: true }))}"${off ? " disabled" : ""}>${d}</button>`;
+      cells += `<button type="button" class="cal-day${day === value ? " sel" : ""}${day === today ? " today" : ""}" data-act="cal-pick" data-for="${field}" data-v="${day}" aria-pressed="${day === value}" aria-label="${esc(fmtDate(day, { day: true, year: true }))}"${off ? " disabled" : ""}>${d}</button>`;
     }
     return `<div class="cal-head"><span class="cal-title">${esc(first.toLocaleDateString(undefined, { month: "long" }))} <span>${y}</span></span>
       <span class="cal-nav"><button type="button" data-act="cal-today">Today</button><button type="button" data-act="cal-prev" aria-label="Previous month">${ICON.left}</button><button type="button" data-act="cal-next" aria-label="Next month">${ICON.right}</button></span></div>
@@ -963,7 +972,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   function renderCalendars() {
     $$("#dialog-root input.dp-value").forEach((inp) => {
       const f = inp.dataset.field, v = inp.value, open = state.cal.open === f;
-      const trig = $(`#dialog-root .dp-trigger[data-field="${f}"]`), cal = $(`#dialog-root .dp-cal[data-cal-for="${f}"]`);
+      const trig = $(`#dialog-root .dp-trigger[data-for="${f}"]`), cal = $(`#dialog-root .dp-cal[data-cal-for="${f}"]`);
       if (trig) {
         trig.innerHTML = `${ICON.cal}<span>${validISO(v) ? esc(fmtDate(v, { day: true, year: true })) : trig.disabled ? "No date" : "Pick a date"}</span>`;
         trig.classList.toggle("is-empty", !validISO(v));
@@ -1285,7 +1294,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       requestAnimationFrame(() => scrim.classList.add("open"));
       if (fresh) {
         const fv = state.sheetFocus && $(`[data-field="${state.sheetFocus}"]`, sheet);
-        const f = fv && fv.hidden ? $(`.dp-trigger[data-field="${state.sheetFocus}"]`, sheet) : fv;
+        const f = fv && fv.hidden ? $(`.dp-trigger[data-for="${state.sheetFocus}"]`, sheet) : fv;
         if (f) { f.focus({ preventScroll: true }); f.classList.add("flash"); } else sheet.focus({ preventScroll: true });
         state.sheetFocus = null;
       }
@@ -1529,7 +1538,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   function sheetChanges() {
     const item = find(state.sheet), patch = {};
     if (!item) return patch;
-    $$("#dialog-root [data-field]").forEach((el) => {
+    $$("#dialog-root input[data-field], #dialog-root textarea[data-field]").forEach((el) => {
       const v = sheetFieldValue(el, item);
       if ((item[el.dataset.field] ?? "") !== (v ?? "")) patch[el.dataset.field] = v;
     });
@@ -1547,7 +1556,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     if ("title" in patch && !patch.title) { toast("An activity needs a name."); return; }
     if (!Object.keys(patch).length) { if (closeAfter) closeDialog(true); return; }
     if (await updateItem(item.id, patch)) {
-      $$("#dialog-root [data-field]").forEach((el) => { if (el.dataset.field in patch) el.defaultValue = el.value; });
+      $$("#dialog-root input[data-field], #dialog-root textarea[data-field]").forEach((el) => { if (el.dataset.field in patch) el.defaultValue = el.value; });
       toast("Saved");
       if (closeAfter) closeDialog(true);
       else { state.sheetLeave = false; render(); }
@@ -1643,7 +1652,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
         renderCalendars(); updateSaveState(); break;
       }
       case "cal-toggle": {
-        const f = b.dataset.field, inp = $(`#dialog-root [data-field="${f}"]`);
+        const f = b.dataset.for, inp = $(`#dialog-root [data-field="${f}"]`);
         if (state.cal.open === f) state.cal.open = null; else openCal(f, inp && inp.value);
         renderCalendars(); break;
       }
@@ -1653,10 +1662,10 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       }
       case "cal-today": { const t = new Date(); state.cal.y = t.getFullYear(); state.cal.m = t.getMonth(); renderCalendars(); break; }
       case "cal-pick": {
-        const f = b.dataset.field, inp = $(`#dialog-root [data-field="${f}"]`); if (!inp) break;
+        const f = b.dataset.for, inp = $(`#dialog-root [data-field="${f}"]`); if (!inp) break;
         inp.value = b.dataset.v; state.cal.open = null;
         renderCalendars(); updateSaveState();
-        const trig = $(`#dialog-root .dp-trigger[data-field="${f}"]`); if (trig) trig.focus({ preventScroll: true });
+        const trig = $(`#dialog-root .dp-trigger[data-for="${f}"]`); if (trig) trig.focus({ preventScroll: true });
         break;
       }
       case "plan-row": {
