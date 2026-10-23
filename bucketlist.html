@@ -1,0 +1,678 @@
+<title>Our Bucket List</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one narrow column — progress, a "next up" ticket stub, an add bar, then the list with passport-style DONE stamps. */
+:root {
+  --paper: #EEF2F5;
+  --card: #FFFFFF;
+  --ink: #15202C;
+  --muted: #5A6A7B;
+  --line: #D3DCE4;
+  --accent: #F2AE1C;      /* marigold: the ticket */
+  --accent-ink: #2A1E00;
+  --stamp: #1D7A54;       /* green: done */
+  --stamp-soft: #E2F2EA;
+  --danger: #B42318;
+  --focus: #2F5BEA;
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0E151D; --card: #16202B; --ink: #E6EDF3; --muted: #93A3B4; --line: #2A3846;
+    --accent: #F5B935; --accent-ink: #231900; --stamp: #4CC38A; --stamp-soft: #15301F;
+    --danger: #FF8A80; --focus: #8FB0FF; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0E151D; --card: #16202B; --ink: #E6EDF3; --muted: #93A3B4; --line: #2A3846;
+  --accent: #F5B935; --accent-ink: #231900; --stamp: #4CC38A; --stamp-soft: #15301F;
+  --danger: #FF8A80; --focus: #8FB0FF; color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font: 15px/1.5 var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 64px;
+}
+.wrap { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+button, input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* Header + progress */
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; }
+h1 {
+  font-family: var(--font-display); font-weight: 800; font-size: clamp(2rem, 6vw, 2.9rem);
+  line-height: 1; letter-spacing: -0.02em; margin: 0; text-wrap: balance;
+}
+.progress { display: flex; flex-direction: column; gap: 6px; min-width: 180px; flex: 0 1 240px; }
+.progress-num { font-family: var(--font-mono); font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; display: flex; justify-content: space-between; gap: 8px; }
+.progress-num b { color: var(--ink); font-weight: 700; }
+.bar { height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--stamp); border-radius: inherit; transition: width .5s ease; }
+
+.notice { font-size: 0.9rem; color: var(--muted); border: 1px dashed var(--line); border-radius: 10px; padding: 10px 14px; }
+
+/* Ticket (next up) */
+.ticket {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; background: var(--accent); color: var(--accent-ink);
+  border-radius: 14px; position: relative; overflow: hidden; --stub-w: 136px;
+}
+.ticket.empty { background: var(--card); color: var(--ink); border: 1.5px dashed var(--line); }
+.ticket-main { padding: 20px 22px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.eyebrow { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; opacity: .8; }
+.ticket h2 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.5rem, 4.6vw, 2.1rem); line-height: 1.08; margin: 0; letter-spacing: -0.01em; text-wrap: balance; overflow-wrap: anywhere; }
+.ticket .sub { margin: 0; font-size: 0.95rem; opacity: .85; overflow-wrap: anywhere; }
+.ticket-stub {
+  border-left: 2px dashed color-mix(in srgb, currentColor 35%, transparent);
+  padding: 20px 22px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; width: var(--stub-w); font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+}
+.ticket::before, .ticket::after { /* perforation notches */
+  content: ""; position: absolute; right: calc(var(--stub-w) - 9px); width: 18px; height: 18px;
+  border-radius: 50%; background: var(--paper);
+}
+.ticket::before { top: -9px; } .ticket::after { bottom: -9px; }
+.ticket.empty::before, .ticket.empty::after { display: none; }
+.stub-day { font-size: 2.4rem; font-weight: 700; line-height: 1; }
+.stub-mon { font-size: 0.8rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.stub-count { font-size: 0.75rem; margin-top: 8px; opacity: .85; }
+.ticket .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+
+/* Buttons */
+.btn {
+  border: 1.5px solid currentColor; background: transparent; border-radius: 999px; padding: 6px 14px;
+  font-weight: 600; font-size: 0.9rem; cursor: pointer; line-height: 1.3;
+}
+.btn:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
+.btn.solid { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.btn.solid:hover { opacity: .9; }
+.ticket:not(.empty) .btn.solid { background: var(--accent-ink); color: var(--accent); border-color: var(--accent-ink); }
+.btn.green { background: var(--stamp); border-color: var(--stamp); color: var(--card); }
+.btn.danger { color: var(--danger); }
+.btn:disabled { opacity: .5; cursor: default; }
+.link { background: none; border: 0; padding: 4px 6px; color: var(--muted); font-size: 0.85rem; font-weight: 600; cursor: pointer; border-radius: 6px; }
+.link:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 7%, transparent); }
+.link.danger:hover { color: var(--danger); }
+
+/* Add bar */
+.add { display: flex; flex-direction: column; gap: 8px; }
+.add-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.field {
+  background: var(--card); border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 12px; min-width: 0;
+}
+.field:focus { border-color: var(--focus); outline: none; }
+#new-title { flex: 3 1 240px; }
+#new-cat { flex: 1 1 130px; }
+textarea.field { width: 100%; resize: vertical; min-height: 120px; line-height: 1.5; }
+.add-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.hint { font-size: 0.82rem; color: var(--muted); }
+
+/* Tabs */
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 1.5px solid var(--line); }
+.tab {
+  background: none; border: 0; border-bottom: 3px solid transparent; margin-bottom: -1.5px; padding: 8px 12px;
+  font-weight: 600; color: var(--muted); cursor: pointer;
+}
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+.tab .n { font-family: var(--font-mono); font-size: 0.78rem; font-variant-numeric: tabular-nums; margin-left: 4px; opacity: .8; }
+
+/* List */
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.item {
+  display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 4px 12px; align-items: start;
+  padding: 14px 4px; border-bottom: 1px solid var(--line);
+}
+.check {
+  width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--muted); background: transparent;
+  cursor: pointer; display: grid; place-items: center; margin-top: 1px; padding: 0;
+}
+.check:hover { border-color: var(--stamp); background: var(--stamp-soft); }
+.check svg { width: 14px; height: 14px; opacity: 0; }
+.check:hover svg { opacity: .6; }
+.item.done .check { background: var(--stamp); border-color: var(--stamp); }
+.item.done .check svg { opacity: 1; color: var(--card); }
+.check[disabled] { cursor: default; }
+.body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.title { font-weight: 600; font-size: 1.02rem; overflow-wrap: anywhere; }
+.meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 0.84rem; color: var(--muted); }
+.tag { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: .04em; text-transform: uppercase; border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; }
+.chip-plan { font-family: var(--font-mono); font-size: 0.78rem; background: color-mix(in srgb, var(--accent) 28%, transparent); color: var(--ink); border-radius: 5px; padding: 1px 7px; font-variant-numeric: tabular-nums; }
+.notes { color: var(--muted); font-size: 0.9rem; overflow-wrap: anywhere; white-space: pre-wrap; }
+.memory { font-size: 0.92rem; font-style: italic; overflow-wrap: anywhere; white-space: pre-wrap; }
+.memory::before { content: "“"; } .memory::after { content: "”"; }
+.av { width: 18px; height: 18px; border-radius: 50%; vertical-align: -4px; object-fit: cover; background: var(--line); }
+.row-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 2px; align-items: center; }
+.stamp {
+  font-family: var(--font-mono); font-weight: 700; color: var(--stamp); border: 2px solid var(--stamp); border-radius: 6px;
+  padding: 2px 8px; transform: rotate(-6deg); text-align: center; line-height: 1.15; font-variant-numeric: tabular-nums;
+  font-size: 0.68rem; letter-spacing: .08em; text-transform: uppercase; justify-self: end; white-space: nowrap;
+}
+.stamp b { display: block; font-size: 0.9rem; letter-spacing: .14em; }
+.stamp.fresh { animation: thunk .45s cubic-bezier(.2, 1.6, .4, 1) both; }
+@keyframes thunk { from { transform: rotate(-18deg) scale(1.9); opacity: 0; } to { transform: rotate(-6deg) scale(1); opacity: 1; } }
+.item .side { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+
+/* Inline editor */
+.editor {
+  grid-column: 2 / -1; display: flex; flex-direction: column; gap: 8px; margin-top: 8px; padding: 12px;
+  background: var(--card); border: 1.5px solid var(--line); border-radius: 10px; color: var(--ink);
+}
+.ticket .editor { margin-top: 2px; }
+.editor label { font-size: 0.82rem; font-weight: 600; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+.editor .row { display: flex; flex-wrap: wrap; gap: 8px; }
+.editor .row > label { flex: 1 1 160px; }
+.editor .field { width: 100%; }
+.editor .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.empty-state { text-align: center; padding: 36px 16px; color: var(--muted); display: flex; flex-direction: column; gap: 6px; align-items: center; }
+.empty-state strong { color: var(--ink); font-family: var(--font-display); font-size: 1.2rem; }
+
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  background: var(--ink); color: var(--paper); padding: 10px 16px; border-radius: 10px; font-size: 0.9rem;
+  max-width: min(92vw, 520px); box-shadow: 0 6px 24px rgb(0 0 0 / .2); z-index: 20;
+}
+
+@media (max-width: 560px) {
+  .ticket { grid-template-columns: 1fr; }
+  .ticket-stub { border-left: 0; border-top: 2px dashed color-mix(in srgb, currentColor 35%, transparent); flex-direction: row; gap: 10px; justify-content: flex-start; padding: 12px 22px; width: auto; }
+  .stub-count { margin: 0 0 0 auto; }
+  .ticket::before, .ticket::after { display: none; }
+  .item { grid-template-columns: 30px minmax(0, 1fr); }
+  .item .side { grid-column: 2; flex-direction: row; justify-content: space-between; align-items: center; width: 100%; }
+  .item .side .stamp { order: 2; }
+  .row-actions { justify-content: flex-start; margin-left: -6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stamp.fresh { animation: none; }
+  .bar > i { transition: none; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Our Bucket List</h1>
+    <div class="progress" aria-label="Progress">
+      <div class="progress-num"><span><b id="done-n">0</b> of <b id="total-n">0</b> done</span><span id="pct">0%</span></div>
+      <div class="bar"><i id="bar"></i></div>
+    </div>
+  </header>
+
+  <div id="notice" class="notice" hidden></div>
+
+  <section id="next" aria-label="Next up"></section>
+
+  <form id="add" class="add" autocomplete="off">
+    <div class="add-row" id="single-row">
+      <input id="new-title" class="field" placeholder="Add an activity, e.g. See the northern lights" aria-label="Activity" maxlength="200">
+      <input id="new-cat" class="field" placeholder="Category (optional)" aria-label="Category" list="cats" maxlength="40">
+      <button class="btn solid" type="submit">Add</button>
+    </div>
+    <div id="bulk-row" hidden>
+      <textarea id="bulk-text" class="field" placeholder="Paste your list here, one activity per line.&#10;Bullets and numbers are removed for you."></textarea>
+    </div>
+    <div class="add-foot">
+      <button type="button" class="link" id="toggle-bulk">Paste a whole list</button>
+      <span class="hint" id="bulk-hint" hidden></span>
+      <button type="button" class="btn solid" id="bulk-add" hidden>Add all</button>
+    </div>
+    <datalist id="cats"></datalist>
+  </form>
+
+  <section aria-label="Activities">
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <ul class="list" id="list"></ul>
+    <div id="list-empty" class="empty-state" hidden></div>
+  </section>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const LOCAL_KEY = "bucketlist.items.v1";
+  const CHECK_SVG = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg>';
+
+  const state = {
+    mode: "loading",      // loading | db | local | unavailable
+    items: [],
+    canWrite: true,
+    me: null,
+    filter: safeGet("bucketlist.filter") || "todo",
+    editor: null,          // { id, kind: plan|done|edit|delete, where: hero|list }
+    suggestion: null,      // id picked by "Pick one for us"
+    fresh: new Set(),      // ids just marked done (stamp animation)
+  };
+  let col = null, userNs = null;
+  const profiles = {};
+
+  /* ---------- helpers ---------- */
+  function safeGet(k) { try { return localStorage.getItem(k); } catch { return null; } }
+  function safeSet(k, v) { try { localStorage.setItem(k, v); } catch {} }
+  function esc(s) { return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+  function pad(n) { return String(n).padStart(2, "0"); }
+  function todayISO() { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
+  function parseISO(s) { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); }
+  function validISO(s) { return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s); }
+  function daysUntil(s) { return Math.round((parseISO(s) - parseISO(todayISO())) / 86400000); }
+  function fmtDate(s, withDay) {
+    const d = parseISO(s), sameYear = d.getFullYear() === new Date().getFullYear();
+    return d.toLocaleDateString(undefined, { weekday: withDay ? "short" : undefined, day: "numeric", month: "short", year: sameYear ? undefined : "numeric" });
+  }
+  function countdown(s) {
+    const n = daysUntil(s);
+    if (n === 0) return "today";
+    if (n === 1) return "tomorrow";
+    if (n === -1) return "yesterday";
+    return n > 0 ? `in ${n} days` : `${-n} days ago`;
+  }
+  function toast(msg) {
+    const t = $("#toast"); t.textContent = msg; t.hidden = false;
+    clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 4200);
+  }
+  function cleanLine(l) { return l.replace(/^\s*(?:[-*•–]|\d+[.)]|\[[ xX]?\])\s*/, "").replace(/^\[[ xX]?\]\s*/, "").trim(); }
+  function byCreated(a, b) { return (a.createdAt || 0) - (b.createdAt || 0); }
+  function byPlanned(a, b) {
+    const ap = validISO(a.plannedFor), bp = validISO(b.plannedFor);
+    if (ap && bp) return a.plannedFor.localeCompare(b.plannedFor) || byCreated(a, b);
+    return ap ? -1 : bp ? 1 : byCreated(a, b);
+  }
+  function byDone(a, b) { return String(b.doneOn || "").localeCompare(String(a.doneOn || "")) || (b.doneAt || 0) - (a.doneAt || 0); }
+
+  /* ---------- storage: shared db when available, this device otherwise ---------- */
+  function readLocal() { try { return JSON.parse(localStorage.getItem(LOCAL_KEY)) || []; } catch { return []; } }
+  function writeLocal(list) { try { localStorage.setItem(LOCAL_KEY, JSON.stringify(list)); } catch {} state.items = list; render(); }
+  function newId() { return (crypto.randomUUID && crypto.randomUUID()) || Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+  async function guarded(fn) {
+    if (!state.canWrite) { toast("You can view this list but not change it."); return false; }
+    try { await fn(); return true; }
+    catch (e) {
+      const code = e && e.code;
+      if (code === "unavailable") {
+        await new Promise((r) => setTimeout(r, 400 + Math.random() * 600));
+        try { await fn(); return true; } catch {}
+        toast("Couldn't save just now. Check your connection and try again.");
+      } else if (code === "invalid_argument") {
+        state.canWrite = false; render();
+        toast("You can view this list but not change it. Ask the owner to share it with you as an Editor.");
+      } else if (code === "quota_exceeded") {
+        toast("The list is full. Delete a few old activities to make room.");
+      } else {
+        toast("Couldn't save that change. Try again in a moment.");
+      }
+      return false;
+    }
+  }
+  function addItem(data) {
+    return guarded(async () => {
+      if (col) await col.add(data);
+      else writeLocal([...readLocal(), { id: newId(), ...data }]);
+    });
+  }
+  function updateItem(id, patch) {
+    return guarded(async () => {
+      if (col) await col.doc(id).update(patch);
+      else writeLocal(readLocal().map((x) => (x.id === id ? { ...x, ...patch } : x)));
+    });
+  }
+  function removeItem(id) {
+    return guarded(async () => {
+      if (col) await col.doc(id).delete();
+      else writeLocal(readLocal().filter((x) => x.id !== id));
+    });
+  }
+
+  /* ---------- people ---------- */
+  function avatar(uid, verb) {
+    if (!uid || !userNs) return "";
+    const p = profiles[uid];
+    const label = p && p.name ? `${verb} by ${p.name}` : "";
+    return `<img class="av" data-uid="${esc(uid)}" data-verb="${esc(verb)}" alt="${esc(label)}" title="${esc(label)}"${p ? ` src="${esc(p.avatarUrl)}"` : ""}>`;
+  }
+  async function fillAvatars() {
+    if (!userNs) return;
+    const imgs = [...document.querySelectorAll("img.av[data-uid]")];
+    const ids = [...new Set(imgs.map((i) => i.dataset.uid))];
+    if (!ids.length) return;
+    const ps = await userNs.profiles(ids);
+    Object.assign(profiles, ps);
+    for (const img of document.querySelectorAll("img.av[data-uid]")) {
+      const p = ps[img.dataset.uid]; if (!p) continue;
+      img.src = p.avatarUrl;
+      const label = p.name ? `${img.dataset.verb} by ${p.name}` : "";
+      img.alt = label; img.title = label;
+    }
+  }
+
+  /* ---------- rendering ---------- */
+  function editorHTML(item, kind) {
+    const id = esc(item.id);
+    if (kind === "plan") return `
+      <div class="editor" data-editor="${id}">
+        <div class="row">
+          <label>When?<input type="date" class="field" name="date" value="${esc(item.plannedFor || "")}" min="${todayISO()}"></label>
+          <label>Plan notes<input class="field" name="planNote" maxlength="200" placeholder="Where, who books what…" value="${esc(item.planNote || "")}"></label>
+        </div>
+        <div class="btns"><button class="btn solid" data-act="save-plan" data-id="${id}">Save plan</button><button class="btn" data-act="cancel">Cancel</button></div>
+        <span class="hint">Leave the date empty if you haven't picked one yet.</span>
+      </div>`;
+    if (kind === "done") return `
+      <div class="editor" data-editor="${id}">
+        <div class="row">
+          <label>Done on<input type="date" class="field" name="date" value="${esc(item.doneOn || item.plannedFor && daysUntil(item.plannedFor) <= 0 && item.plannedFor || todayISO())}" max="${todayISO()}"></label>
+          <label>How was it?<input class="field" name="memory" maxlength="300" placeholder="A line to remember it by (optional)" value="${esc(item.memory || "")}"></label>
+        </div>
+        <div class="btns"><button class="btn green" data-act="save-done" data-id="${id}">Mark as done</button><button class="btn" data-act="cancel">Cancel</button></div>
+      </div>`;
+    if (kind === "edit") return `
+      <div class="editor" data-editor="${id}">
+        <div class="row">
+          <label>Activity<input class="field" name="title" maxlength="200" value="${esc(item.title)}"></label>
+          <label>Category<input class="field" name="category" maxlength="40" list="cats" value="${esc(item.category || "")}"></label>
+        </div>
+        <label>Notes<input class="field" name="notes" maxlength="500" placeholder="Ideas, links, costs…" value="${esc(item.notes || "")}"></label>
+        ${item.status === "done" ? `<label>How was it?<input class="field" name="memory" maxlength="300" value="${esc(item.memory || "")}"></label>` : ""}
+        <div class="btns"><button class="btn solid" data-act="save-edit" data-id="${id}">Save</button><button class="btn" data-act="cancel">Cancel</button></div>
+      </div>`;
+    if (kind === "delete") return `
+      <div class="editor" data-editor="${id}">
+        <span>Delete “${esc(item.title)}”? It disappears for both of you.</span>
+        <div class="btns"><button class="btn danger" data-act="confirm-delete" data-id="${id}">Delete</button><button class="btn" data-act="cancel">Keep it</button></div>
+      </div>`;
+    return "";
+  }
+  function editorFor(item, where) {
+    const e = state.editor;
+    return e && e.id === item.id && e.where === where ? editorHTML(item, e.kind) : "";
+  }
+
+  function renderNext(todo, planned, total) {
+    const el = $("#next");
+    const w = state.canWrite;
+    if (state.mode === "loading") { el.innerHTML = `<div class="ticket empty"><div class="ticket-main"><span class="eyebrow">Next up</span><p class="sub">Loading your list…</p></div></div>`; return; }
+    const next = planned[0];
+    if (next) {
+      const dated = validISO(next.plannedFor);
+      const d = dated ? parseISO(next.plannedFor) : null;
+      const overdue = dated && daysUntil(next.plannedFor) < 0;
+      el.innerHTML = `
+        <div class="ticket">
+          <div class="ticket-main">
+            <span class="eyebrow">Next up${planned.length > 1 ? ` · ${planned.length - 1} more planned` : ""}</span>
+            <h2>${esc(next.title)}</h2>
+            ${next.planNote ? `<p class="sub">${esc(next.planNote)}</p>` : ""}
+            ${overdue ? `<p class="sub"><b>That date has passed. Did you go?</b></p>` : ""}
+            ${w ? `<div class="actions">
+              <button class="btn solid" data-act="open" data-kind="done" data-where="hero" data-id="${esc(next.id)}">We did it</button>
+              <button class="btn" data-act="open" data-kind="plan" data-where="hero" data-id="${esc(next.id)}">${dated ? "Change date" : "Pick a date"}</button>
+              <button class="btn" data-act="unplan" data-id="${esc(next.id)}">Unplan</button>
+            </div>` : ""}
+            ${editorFor(next, "hero")}
+          </div>
+          <div class="ticket-stub">
+            ${dated ? `<span class="stub-day">${d.getDate()}</span><span class="stub-mon">${d.toLocaleDateString(undefined, { month: "short" })} ${d.getFullYear() !== new Date().getFullYear() ? d.getFullYear() : ""}</span><span class="stub-count">${countdown(next.plannedFor)}</span>`
+                     : `<span class="stub-mon">Date</span><span class="stub-count">to be decided</span>`}
+          </div>
+        </div>`;
+      return;
+    }
+    const sug = state.suggestion && todo.find((x) => x.id === state.suggestion);
+    if (sug) {
+      el.innerHTML = `
+        <div class="ticket">
+          <div class="ticket-main">
+            <span class="eyebrow">How about…</span>
+            <h2>${esc(sug.title)}</h2>
+            ${sug.notes ? `<p class="sub">${esc(sug.notes)}</p>` : ""}
+            ${w ? `<div class="actions">
+              <button class="btn solid" data-act="open" data-kind="plan" data-where="hero" data-id="${esc(sug.id)}">Plan this one</button>
+              ${todo.length > 1 ? `<button class="btn" data-act="pick">Pick another</button>` : ""}
+              <button class="btn" data-act="clear-pick">Not now</button>
+            </div>` : ""}
+            ${editorFor(sug, "hero")}
+          </div>
+          <div class="ticket-stub"><span class="stub-mon">Random pick</span><span class="stub-count">1 of ${todo.length}</span></div>
+        </div>`;
+      return;
+    }
+    let msg, action = "";
+    if (!total) msg = "Add your activities below and this is where your next adventure shows up.";
+    else if (!todo.length) msg = "You've done everything on the list. Time to dream up some more.";
+    else {
+      msg = `Nothing planned yet. ${todo.length} ${todo.length === 1 ? "activity is" : "activities are"} waiting.`;
+      if (w) action = `<div class="actions"><button class="btn solid" data-act="pick">Pick one for us</button></div>`;
+    }
+    el.innerHTML = `<div class="ticket empty"><div class="ticket-main"><span class="eyebrow">Next up</span><p class="sub">${msg}</p>${action}</div></div>`;
+  }
+
+  function itemHTML(item) {
+    const w = state.canWrite, id = esc(item.id), done = item.status === "done";
+    const planned = item.status === "planned";
+    const meta = [];
+    if (item.category) meta.push(`<span class="tag">${esc(item.category)}</span>`);
+    if (planned) meta.push(`<span class="chip-plan">${validISO(item.plannedFor) ? `${esc(fmtDate(item.plannedFor, true))} · ${countdown(item.plannedFor)}` : "Planned · date TBD"}</span>`);
+    const who = done ? avatar(item.doneBy || item.addedBy, "Ticked off") : avatar(item.addedBy, "Added");
+    if (who) meta.push(who);
+    const actions = !w ? "" : done
+      ? `<button class="link" data-act="open" data-kind="edit" data-where="list" data-id="${id}">Edit</button>
+         <button class="link" data-act="undo" data-id="${id}">Not done</button>
+         <button class="link danger" data-act="open" data-kind="delete" data-where="list" data-id="${id}">Delete</button>`
+      : `<button class="link" data-act="open" data-kind="plan" data-where="list" data-id="${id}">${planned ? "Reschedule" : "Plan"}</button>
+         ${planned ? `<button class="link" data-act="unplan" data-id="${id}">Unplan</button>` : ""}
+         <button class="link" data-act="open" data-kind="edit" data-where="list" data-id="${id}">Edit</button>
+         <button class="link danger" data-act="open" data-kind="delete" data-where="list" data-id="${id}">Delete</button>`;
+    return `
+      <li class="item${done ? " done" : ""}" data-item="${id}">
+        <button class="check" ${w ? "" : "disabled"} data-act="${done ? "undo" : "open"}" data-kind="done" data-where="list" data-id="${id}" aria-label="${done ? "Mark as not done" : "Mark as done"}: ${esc(item.title)}">${CHECK_SVG}</button>
+        <div class="body">
+          <span class="title">${esc(item.title)}</span>
+          ${item.notes ? `<span class="notes">${esc(item.notes)}</span>` : ""}
+          ${done && item.memory ? `<span class="memory">${esc(item.memory)}</span>` : ""}
+          ${meta.length ? `<span class="meta">${meta.join("")}</span>` : ""}
+        </div>
+        <div class="side">
+          ${done ? `<span class="stamp${state.fresh.has(item.id) ? " fresh" : ""}"><b>Done</b>${validISO(item.doneOn) ? esc(fmtDate(item.doneOn)) : ""}</span>` : ""}
+          <div class="row-actions">${actions}</div>
+        </div>
+        ${editorFor(item, "list")}
+      </li>`;
+  }
+
+  function captureDrafts() {
+    const drafts = {};
+    document.querySelectorAll("[data-editor] input").forEach((i) => { drafts[i.closest("[data-editor]").dataset.editor + "|" + i.name] = i.value; });
+    const a = document.activeElement;
+    const focus = a && a.closest && a.closest("[data-editor]") ? a.closest("[data-editor]").dataset.editor + "|" + a.name : null;
+    return { drafts, focus };
+  }
+  function restoreDrafts({ drafts, focus }) {
+    document.querySelectorAll("[data-editor] input").forEach((i) => {
+      const k = i.closest("[data-editor]").dataset.editor + "|" + i.name;
+      if (k in drafts) i.value = drafts[k];
+      if (k === focus) i.focus();
+    });
+  }
+
+  function render() {
+    const saved = captureDrafts();
+    const items = state.items.filter((x) => x && typeof x.title === "string");
+    const todo = items.filter((x) => x.status !== "done" && x.status !== "planned").sort(byCreated);
+    const planned = items.filter((x) => x.status === "planned").sort(byPlanned);
+    const done = items.filter((x) => x.status === "done").sort(byDone);
+    const total = items.length;
+
+    $("#done-n").textContent = done.length;
+    $("#total-n").textContent = total;
+    const pct = total ? Math.round((done.length / total) * 100) : 0;
+    $("#pct").textContent = pct + "%";
+    $("#bar").style.width = pct + "%";
+
+    const notice = $("#notice");
+    let n = "";
+    if (state.mode === "local") n = "Saved in this browser only. Publish this page as a Claude artifact to share the list with your friend.";
+    else if (state.mode === "unavailable") n = "The shared list isn't available in this view. Open it on claude.ai while signed in.";
+    else if (state.mode === "db" && !state.canWrite) n = "You can view this list. To add or tick off activities, ask the owner to share it with you as an Editor.";
+    notice.textContent = n; notice.hidden = !n;
+
+    $("#add").hidden = !state.canWrite || state.mode === "unavailable" || state.mode === "loading";
+    $("#cats").innerHTML = [...new Set(items.map((x) => (x.category || "").trim()).filter(Boolean))].sort().map((c) => `<option value="${esc(c)}">`).join("");
+
+    renderNext(todo, planned, total);
+
+    const tabs = [["todo", "To do", todo.length], ["planned", "Planned", planned.length], ["done", "Done", done.length], ["all", "All", total]];
+    $("#tabs").innerHTML = tabs.map(([k, label, c]) => `<button class="tab" role="tab" data-act="filter" data-filter="${k}" aria-selected="${state.filter === k}">${label}<span class="n">${c}</span></button>`).join("");
+
+    const shown = state.filter === "todo" ? todo : state.filter === "planned" ? planned : state.filter === "done" ? done : [...planned, ...todo, ...done];
+    $("#list").innerHTML = state.mode === "loading" ? "" : shown.map(itemHTML).join("");
+
+    const empty = $("#list-empty");
+    let e = "";
+    if (state.mode !== "loading" && !shown.length) {
+      if (!total) e = `<strong>Your bucket list is empty</strong><span>Add activities one at a time above, or paste your whole list in one go.</span>`;
+      else if (state.filter === "todo") e = `<strong>Nothing left to do</strong><span>Everything is planned or done.</span>`;
+      else if (state.filter === "planned") e = `<strong>Nothing planned</strong><span>Choose “Plan” on any activity to set a date.</span>`;
+      else if (state.filter === "done") e = `<strong>No stamps yet</strong><span>Tick off your first activity and it shows up here.</span>`;
+    }
+    empty.innerHTML = e; empty.hidden = !e;
+
+    restoreDrafts(saved);
+    fillAvatars();
+  }
+
+  /* ---------- actions ---------- */
+  function find(id) { return state.items.find((x) => x.id === id); }
+  function editorValues(id) {
+    const box = document.querySelector(`[data-editor="${CSS.escape(id)}"]`);
+    const v = {}; if (box) box.querySelectorAll("input").forEach((i) => (v[i.name] = i.value.trim()));
+    return v;
+  }
+  function openEditor(id, kind, where) {
+    state.editor = { id, kind, where }; render();
+    const box = document.querySelector(`[data-editor="${CSS.escape(id)}"]`);
+    const first = box && box.querySelector("input, button"); if (first) first.focus();
+  }
+
+  document.addEventListener("click", async (ev) => {
+    const b = ev.target.closest("[data-act]"); if (!b) return;
+    ev.preventDefault();
+    const act = b.dataset.act, id = b.dataset.id, item = id && find(id);
+    switch (act) {
+      case "filter": state.filter = b.dataset.filter; safeSet("bucketlist.filter", state.filter); state.editor = null; render(); break;
+      case "open": if (item) openEditor(id, b.dataset.kind, b.dataset.where); break;
+      case "cancel": state.editor = null; render(); break;
+      case "pick": {
+        const todo = state.items.filter((x) => x.status !== "done" && x.status !== "planned");
+        const pool = todo.length > 1 ? todo.filter((x) => x.id !== state.suggestion) : todo;
+        state.suggestion = pool.length ? pool[Math.floor(Math.random() * pool.length)].id : null;
+        state.editor = null; render(); break;
+      }
+      case "clear-pick": state.suggestion = null; state.editor = null; render(); break;
+      case "save-plan": {
+        const v = editorValues(id);
+        const date = validISO(v.date) ? v.date : null;
+        state.editor = null; state.suggestion = null;
+        if (await updateItem(id, { status: "planned", plannedFor: date, planNote: v.planNote || "" })) toast(date ? `Planned for ${fmtDate(date, true)}.` : "Added to your plans.");
+        render(); break;
+      }
+      case "unplan": state.editor = null; await updateItem(id, { status: "todo", plannedFor: null, planNote: "" }); render(); break;
+      case "save-done": {
+        const v = editorValues(id);
+        const date = validISO(v.date) ? v.date : todayISO();
+        state.editor = null; state.fresh.add(id);
+        if (await updateItem(id, { status: "done", doneOn: date, doneAt: Date.now(), memory: v.memory || "", doneBy: state.me || null })) toast(`Ticked off: ${item ? item.title : "activity"}.`);
+        render(); setTimeout(() => state.fresh.delete(id), 1500); break;
+      }
+      case "undo": state.editor = null; await updateItem(id, { status: "todo", doneOn: null, doneAt: null, doneBy: null, plannedFor: null }); render(); break;
+      case "save-edit": {
+        const v = editorValues(id);
+        if (!v.title) { toast("Give the activity a name first."); break; }
+        const patch = { title: v.title, category: v.category || "", notes: v.notes || "" };
+        if ("memory" in v) patch.memory = v.memory;
+        state.editor = null; await updateItem(id, patch); render(); break;
+      }
+      case "confirm-delete": state.editor = null; if (state.suggestion === id) state.suggestion = null; await removeItem(id); render(); break;
+    }
+  });
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key === "Escape" && state.editor) { state.editor = null; render(); }
+    if (ev.key === "Enter" && ev.target.matches("[data-editor] input")) {
+      ev.preventDefault();
+      const box = ev.target.closest("[data-editor]"); const save = box.querySelector("[data-act^='save'], [data-act='confirm-delete']"); if (save) save.click();
+    }
+  });
+
+  function baseItem(title, category, i = 0) {
+    return { title, category, notes: "", status: "todo", plannedFor: null, planNote: "", doneOn: null, doneAt: null, memory: "", createdAt: Date.now() + i, addedBy: state.me || null, doneBy: null };
+  }
+  $("#add").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    if (!$("#bulk-row").hidden) return $("#bulk-add").click();
+    const t = $("#new-title"), c = $("#new-cat");
+    const title = t.value.trim(); if (!title) { t.focus(); return; }
+    t.value = "";
+    if (await addItem(baseItem(title.slice(0, 200), c.value.trim().slice(0, 40)))) {
+      if (state.filter !== "todo" && state.filter !== "all") { state.filter = "todo"; safeSet("bucketlist.filter", "todo"); render(); }
+    } else t.value = title;
+    t.focus();
+  });
+
+  function bulkLines() { return $("#bulk-text").value.split(/\r?\n/).map(cleanLine).filter(Boolean).map((l) => l.slice(0, 200)); }
+  function setBulk(on) {
+    $("#bulk-row").hidden = !on; $("#single-row").hidden = on; $("#bulk-add").hidden = !on; $("#bulk-hint").hidden = !on;
+    $("#toggle-bulk").textContent = on ? "Add one at a time" : "Paste a whole list";
+    if (on) { $("#bulk-text").focus(); updateBulkHint(); } else $("#new-title").focus();
+  }
+  function updateBulkHint() { const n = bulkLines().length; $("#bulk-hint").textContent = n ? `${n} ${n === 1 ? "activity" : "activities"} found` : "One per line"; $("#bulk-add").disabled = !n; }
+  $("#toggle-bulk").addEventListener("click", () => setBulk($("#bulk-row").hidden));
+  $("#bulk-text").addEventListener("input", updateBulkHint);
+  $("#bulk-add").addEventListener("click", async () => {
+    const lines = bulkLines(); if (!lines.length) return;
+    const btn = $("#bulk-add"); btn.disabled = true; btn.textContent = "Adding…";
+    let ok = 0;
+    for (let i = 0; i < lines.length; i++) { if (await addItem(baseItem(lines[i], "", i))) ok++; else break; }
+    btn.textContent = "Add all";
+    if (ok) { $("#bulk-text").value = ""; toast(`Added ${ok} ${ok === 1 ? "activity" : "activities"}.`); setBulk(false); state.filter = "todo"; render(); }
+    updateBulkHint();
+  });
+
+  /* ---------- boot ---------- */
+  function startLocal() { state.mode = "local"; state.items = readLocal(); render(); }
+
+  function subscribe(retried) {
+    col.onSnapshot((snap) => {
+      state.items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      if (state.mode === "loading") state.mode = "db";
+      render();
+    }, (err) => {
+      if (err && err.code === "unavailable" && !retried) { setTimeout(() => subscribe(true), 2000); return; }
+      if (err && err.code === "revoked") { state.canWrite = false; render(); return; }
+      toast("Lost the connection to your shared list. Reload the page to reconnect.");
+    });
+  }
+
+  async function boot() {
+    render();
+    if (!window.claude || typeof window.claude.use !== "function") { startLocal(); return; }
+    const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+    userNs = user;
+    if (!db) { state.mode = "unavailable"; state.canWrite = false; render(); return; }
+    if (user) {
+      state.me = await user.id();
+      if ((await user.can("data.write")) === false) state.canWrite = false;
+    }
+    col = db.collection("activities");
+    subscribe(false);
+  }
+  boot();
+})();
+</script>
