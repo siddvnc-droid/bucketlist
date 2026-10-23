@@ -967,8 +967,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
           </div>
           ${(w && !stamped) || more ? `<div class="doc-actions">
             ${w && !stamped ? `<button type="button" class="btn primary" data-act="hero-done" data-id="${esc(next.id)}">${ICON.check} We did it</button>
-            <button type="button" class="btn" data-act="reschedule" data-id="${esc(next.id)}">${ICON.cal} ${dated ? "Reschedule" : "Pick a date"}</button>
-            <button type="button" class="btn ghost" data-act="cancel-plan" data-id="${esc(next.id)}">Cancel plan</button>` : ""}
+            <button type="button" class="btn" data-act="reschedule" data-id="${esc(next.id)}">${ICON.cal} ${dated ? "Reschedule" : "Pick a date"}</button>` : ""}
             ${more ? `<button type="button" class="btn ghost" data-act="tab" data-v="planned">${plural(more, "more plan", "more plans")}</button>` : ""}
           </div>` : ""}
           <div class="mrz" aria-hidden="true">${mrzLines("BL " + next.title, `${pad(no)} ${dated ? `${pad(d.getDate())}${MON[d.getMonth()]}${String(d.getFullYear()).slice(2)}` : "TBD"} ${cat ? cat.name : ""}`)}</div>
