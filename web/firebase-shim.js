@@ -6,8 +6,9 @@
 // app itself needs no changes.
 //
 // Each list lives at lists/<list id>, where the id is the part of the link
-// after "#". The list document holds the Google emails and phone numbers
-// allowed to open it; the first person to sign in becomes its first member.
+// after "#". The list document holds the emails allowed to open it; the
+// first person to sign in becomes its first member. People sign in with
+// Google, Apple, or an email and password.
 (function () {
   const firebaseConfig = {
     apiKey: "AIzaSyB95TZl4D0Q66VL2-It5QlkAdTi4J02pzA",
@@ -73,18 +74,10 @@
   }
   const CODES = { unavailable: "unavailable", "deadline-exceeded": "unavailable", "resource-exhausted": "quota_exceeded", "permission-denied": "invalid_argument", "not-found": "not_found" };
   const wrap = (p) => p.catch((e) => { throw { code: CODES[e && e.code] || "unknown", message: String((e && e.message) || e) }; });
-  const myEmail = () => (S.user.email || "").toLowerCase();
+  // Only a confirmed email counts, the same as in firestore.rules.
+  const myEmail = () => (S.user.email && S.user.emailVerified ? S.user.email.toLowerCase() : "");
   const myPhone = () => S.user.phoneNumber || "";
   const isMember = (m) => (myEmail() && (m.emails || []).includes(myEmail())) || (myPhone() && (m.phones || []).includes(myPhone()));
-  function normalizePhone(s) {
-    let t = String(s).trim().replace(/[^\d+]/g, "");
-    if (t.startsWith("00")) t = "+" + t.slice(2);
-    // A number typed without a country code is taken as a US number.
-    if (/^\d{10}$/.test(t)) t = "+1" + t;
-    else if (/^1\d{10}$/.test(t)) t = "+" + t;
-    return /^\+\d{8,15}$/.test(t) ? t : null;
-  }
-  const PHONE_HELP = "Enter your full number, like 555 123 4567. Outside the US, start with + and your country code.";
   function colorFor(id) { let h = 0; for (const ch of String(id)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return ["#3B5BA9", "#7A4FB5", "#B35A2E", "#1F7A58", "#A8436E", "#5E7A1E", "#1A7C95", "#5F6873"][h % 8]; }
   function labelFor(p) { return p.name || p.email || (p.phone ? `Phone ending ${p.phone.slice(-4)}` : ""); }
   function initialsAvatar(text, color) {
@@ -93,32 +86,29 @@
     return "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect width="40" height="40" rx="20" fill="${color}"/><text x="20" y="25.5" font-family="Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#fff" text-anchor="middle">${esc(ch)}</text></svg>`);
   }
   function avatarFor(uid) { const p = S.people[uid] || {}; return p.photo || initialsAvatar(p.name || (p.phone ? p.phone.slice(-2) : p.email), colorFor(uid)); }
-  function friendly(e, byPhone) {
+  function friendly(e) {
     const c = (e && e.code) || "";
     if (e) console.warn("Sign-in error", e);
-    const noTexts = "Sign-in by text isn't set up for this list yet. Use Continue with Google for now, or let the person who sent you the link know.";
-    if (byPhone && (c === "auth/operation-not-allowed" || c === "auth/billing-not-enabled")) return noTexts;
-    const robot = "Couldn't confirm you're not a robot. Reload the page and try again. If it keeps happening, open the link in Safari or Chrome.";
+    const noMatch = "That email and password don't match. Try again or use Forgot password. New here? Tap Create account instead. If you signed in with Google or Apple before, use that button.";
     return ({
-      "auth/invalid-phone-number": "That phone number doesn't look right. " + PHONE_HELP,
-      "auth/missing-phone-number": "Enter your phone number first.",
-      "auth/invalid-verification-code": "That code isn't right. Check the text and try again.",
-      "auth/code-expired": "That code has expired. Ask for a new one.",
-      "auth/session-expired": "That code has expired. Ask for a new one.",
-      "auth/invalid-verification-id": "That code has expired. Ask for a new one.",
-      "auth/missing-verification-code": "Enter the 6-digit code from the text.",
-      "auth/quota-exceeded": "Too many codes have been sent today. Try again tomorrow, or use Continue with Google.",
-      "auth/captcha-check-failed": robot,
-      "auth/invalid-app-credential": robot,
-      "auth/missing-app-credential": robot,
-      "auth/error-code:-39": "Couldn't send a text to that number right now. Try again later, or use Continue with Google.",
+      "auth/invalid-email": "That email doesn't look right.",
+      "auth/missing-email": "Enter your email first.",
+      "auth/missing-password": "Enter your password.",
+      "auth/weak-password": "Use a password with at least 6 characters.",
+      "auth/email-already-in-use": "There's already an account with this email. Tap Sign in instead, or use Forgot password.",
+      "auth/invalid-credential": noMatch,
+      "auth/invalid-login-credentials": noMatch,
+      "auth/wrong-password": noMatch,
+      "auth/user-not-found": noMatch,
+      "auth/account-exists-with-different-credential": "This email already signs in another way. Use the button you used before, like Continue with Google.",
+      "auth/user-disabled": "This account has been turned off.",
+      "auth/cancelled-popup-request": "Finish signing in in the window that's already open.",
       "auth/too-many-requests": "Too many tries. Wait a few minutes and try again.",
-      "auth/operation-not-allowed": "This sign-in method isn't turned on for the project yet.",
-      "auth/billing-not-enabled": "Phone sign-in needs billing turned on in Firebase. Use Google for now.",
+      "auth/operation-not-allowed": "This way of signing in isn't turned on for this list yet. Try another one.",
       "auth/unauthorized-domain": "This web address isn't allowed to sign in yet. Add it under Authentication → Settings → Authorized domains.",
       "auth/popup-closed-by-user": "The sign-in window was closed before finishing.",
       "auth/network-request-failed": "Couldn't reach Google. Check your connection and try again.",
-    })[c] || `Sign-in didn't work (${c || "unknown error"}). Try again, or use Continue with Google.`;
+    })[c] || `Sign-in didn't work (${c || "unknown error"}). Try again, or use another way to sign in.`;
   }
 
   /* ---------- storage the app uses ---------- */
@@ -183,6 +173,8 @@
     if (!user) { showGate("signin"); return; }
     S.user = user;
     const { F } = S;
+    // An email and password account opens lists once its email is confirmed.
+    if (user.email && !user.emailVerified && !myPhone()) { showGate("verify"); return; }
     // Only a refusal from the rules means "not on this list"; anything else is a connection problem.
     const failed = (e) => showGate(e && e.code === "permission-denied" ? "denied" : "offline");
     let snap;
@@ -212,6 +204,8 @@
 
   /* ---------- sign-in screen ---------- */
   const G_ICON = '<svg viewBox="0 0 18 18" width="18" height="18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.05l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>';
+  const APPLE_ICON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg>';
+  const EMAIL_HINT = "New here? Enter your email, choose a password and tap Create account.";
   function injectCss() {
     if ($("fb-css")) return;
     const st = document.createElement("style"); st.id = "fb-css";
@@ -227,7 +221,15 @@
       .fb-or { display: flex; align-items: center; gap: 12px; color: var(--faint); font-size: 12.5px; margin: 4px 0; }
       .fb-or::before, .fb-or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
       .fb-row { display: flex; gap: 8px; }
-      .fb-input { flex: 1; min-width: 0; height: 40px; border: 1px solid var(--line-2); border-radius: 11px; padding: 0 12px; background: var(--surface); color: var(--ink); font: inherit; font-size: 15px; }
+      .fb-input { flex: 1; min-width: 0; height: 42px; border: 1px solid var(--line-2); border-radius: 11px; padding: 0 12px; background: var(--surface); color: var(--ink); font: inherit; font-size: 16px; }
+      .fb-stack { display: flex; flex-direction: column; gap: 8px; }
+      .fb-stack .fb-input { flex: none; width: 100%; }
+      .fb-row .btn { flex: 1 1 0; height: 42px; }
+      .fb-row .fb-input + .btn { flex: none; }
+      .fb-links { display: flex; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; }
+      .fb-link { border: 0; background: none; padding: 2px 0; color: var(--ink-2); font: inherit; font-size: 13px; font-weight: 500; text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; cursor: pointer; }
+      .fb-link:hover { color: var(--ink); text-decoration-color: currentColor; }
+      .fb-social svg { flex: none; }
       .fb-input:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 15%, transparent); }
       .fb-hint { font-size: 13px; color: var(--muted); margin: 0; }
       .fb-hint.err { color: var(--danger); }
@@ -248,7 +250,6 @@
   }
   function setMsg(text, err) { const m = $("fb-msg"); if (m) { m.textContent = text; m.classList.toggle("err", !!err); } }
   function hideGate() { const g = $("fb-gate"); if (g) g.remove(); }
-  let verifier = null, confirmation = null;
   function showGate(kind) {
     injectCss();
     let g = $("fb-gate");
@@ -266,13 +267,35 @@
       return;
     }
     if (kind === "denied") {
-      const who = S.user.email || S.user.phoneNumber || "this account";
+      const who = S.user.email || "this account";
       g.innerHTML = `<div class="fb-card" role="dialog" aria-labelledby="fb-title">
         <span class="label">${esc(LIST_NAME)}</span>
         <h2 id="fb-title">You're not on this list yet</h2>
         <p>You're signed in as <b>${esc(who)}</b>. Ask the person who sent you the link to add you under People, then reload this page.</p>
+        ${/@privaterelay\.appleid\.com$/i.test(who) ? "<p>You chose Hide My Email with Apple, so that's the address to send them.</p>" : ""}
         <button type="button" class="btn fb-wide" id="fb-switch">Use a different account</button>
       </div>`;
+      $("fb-switch").onclick = () => S.F.signOut(S.auth).then(() => location.reload());
+      return;
+    }
+    if (kind === "verify") {
+      const email = S.user.email;
+      g.innerHTML = `<div class="fb-card" role="dialog" aria-labelledby="fb-title">
+        <span class="label">${esc(LIST_NAME)}</span>
+        <h2 id="fb-title">Check your email</h2>
+        <p>We sent a link to <b>${esc(email)}</b>. Open it to confirm it's you, then come back here.</p>
+        <button type="button" class="btn primary fb-wide" id="fb-verified">I've confirmed my email</button>
+        <button type="button" class="btn fb-wide" id="fb-resend">Send the email again</button>
+        <p class="fb-hint" id="fb-msg" role="status">Can't find it? Check your spam or junk folder.</p>
+        <div class="fb-links"><button type="button" class="fb-link" id="fb-switch">Use a different account</button></div>
+      </div>`;
+      $("fb-verified").onclick = () => checkVerified(true);
+      $("fb-resend").onclick = async () => {
+        $("fb-resend").disabled = true;
+        try { await sendVerify(S.user); setMsg(`Sent again to ${email}.`); }
+        catch (e) { setMsg(e && e.code === "auth/too-many-requests" ? "We just sent one. Wait a minute, then try again." : friendly(e), true); }
+        $("fb-resend").disabled = false;
+      };
       $("fb-switch").onclick = () => S.F.signOut(S.auth).then(() => location.reload());
       return;
     }
@@ -280,53 +303,88 @@
       <span class="label">${esc(LIST_NAME)}</span>
       <h2 id="fb-title">Sign in to open your list</h2>
       <p>Only people added to this list can see it.</p>
-      <button type="button" class="btn primary fb-wide" id="fb-google">${G_ICON} Continue with Google</button>
-      <div class="fb-or">or use your phone</div>
-      <form class="fb-row" id="fb-phone-form" autocomplete="on">
-        <input class="fb-input" id="fb-phone" type="tel" autocomplete="tel" placeholder="555 123 4567" aria-label="Phone number">
-        <button type="submit" class="btn" id="fb-send">Text me a code</button>
+      <button type="button" class="btn fb-wide fb-social" id="fb-google">${G_ICON} Continue with Google</button>
+      <button type="button" class="btn fb-wide fb-social" id="fb-apple">${APPLE_ICON} Continue with Apple</button>
+      <div class="fb-or">or</div>
+      <form class="fb-stack" id="fb-email-form" autocomplete="on" novalidate>
+        <input class="fb-input" id="fb-email" type="email" autocomplete="email" inputmode="email" placeholder="Email" aria-label="Email">
+        <input class="fb-input" id="fb-pass" type="password" autocomplete="current-password" placeholder="Password" aria-label="Password">
+        <div class="fb-row">
+          <button type="submit" class="btn primary" id="fb-signin">Sign in</button>
+          <button type="button" class="btn" id="fb-create">Create account</button>
+        </div>
       </form>
-      <form class="fb-row" id="fb-code-form" hidden>
-        <input class="fb-input" id="fb-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code" aria-label="Code from the text message">
-        <button type="submit" class="btn primary">Sign in</button>
-      </form>
-      <p class="fb-hint" id="fb-msg" role="status">Outside the US, start with + and your country code.</p>
+      <p class="fb-hint" id="fb-msg" role="status">${EMAIL_HINT}</p>
+      <div class="fb-links"><button type="button" class="fb-link" id="fb-forgot">Forgot password?</button></div>
     </div>`;
     const { F } = S;
-    $("fb-google").onclick = async () => {
-      setMsg("Opening Google…");
-      const provider = new F.GoogleAuthProvider();
+    const popup = async (provider, name) => {
+      setMsg(`Opening ${name}…`);
       try { await F.signInWithPopup(S.auth, provider); }
       catch (e) {
         // A redirect fallback can loop on Safari (the sign-in page lives on a different domain), so explain instead.
-        if (e && (e.code === "auth/popup-blocked" || e.code === "auth/operation-not-supported-in-this-environment")) setMsg("Your browser blocked the Google sign-in window. Allow pop-ups for this site and try again, or open the link in Safari or Chrome.", true);
+        if (e && (e.code === "auth/popup-blocked" || e.code === "auth/operation-not-supported-in-this-environment")) setMsg(`Your browser blocked the ${name} sign-in window. Allow pop-ups for this site and try again, or open the link in Safari or Chrome.`, true);
         else setMsg(friendly(e), true);
       }
     };
-    $("fb-phone-form").onsubmit = async (ev) => {
-      ev.preventDefault();
-      const phone = normalizePhone($("fb-phone").value);
-      if (!phone) { setMsg(PHONE_HELP, true); return; }
-      const btn = $("fb-send"); btn.disabled = true; setMsg("Sending a code…");
-      try {
-        if (!verifier) verifier = new F.RecaptchaVerifier(S.auth, "fb-send", { size: "invisible" });
-        confirmation = await F.signInWithPhoneNumber(S.auth, phone, verifier);
-        $("fb-code-form").hidden = false; $("fb-code").focus();
-        setMsg(`We texted a code to ${phone}.`);
-      } catch (e) {
-        setMsg(friendly(e, true), true);
-        try { verifier && verifier.clear(); } catch {}
-        verifier = null;
-      }
-      btn.disabled = false;
+    $("fb-google").onclick = () => popup(new F.GoogleAuthProvider(), "Google");
+    $("fb-apple").onclick = () => {
+      const provider = new F.OAuthProvider("apple.com");
+      provider.addScope("email"); provider.addScope("name");
+      popup(provider, "Apple");
     };
-    $("fb-code-form").onsubmit = async (ev) => {
+
+    const readEmail = () => {
+      const email = $("fb-email").value.trim(), pass = $("fb-pass").value;
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setMsg(email ? "That email doesn't look right." : "Enter your email first.", true); $("fb-email").focus(); return null; }
+      return { email, pass };
+    };
+    const busy = (on) => { for (const id of ["fb-signin", "fb-create"]) $(id).disabled = on; };
+    $("fb-email-form").onsubmit = async (ev) => {
       ev.preventDefault();
-      if (!confirmation) return;
-      setMsg("Checking the code…");
-      try { await confirmation.confirm($("fb-code").value.trim()); } catch (e) { setMsg(friendly(e, true), true); }
+      const v = readEmail(); if (!v) return;
+      if (!v.pass) { setMsg("Enter your password.", true); $("fb-pass").focus(); return; }
+      busy(true); setMsg("Signing in…");
+      try { await F.signInWithEmailAndPassword(S.auth, v.email, v.pass); }
+      catch (e) { setMsg(friendly(e), true); busy(false); }
+    };
+    $("fb-create").onclick = async () => {
+      const v = readEmail(); if (!v) return;
+      if (v.pass.length < 6) { setMsg("Choose a password with at least 6 characters, then tap Create account.", true); $("fb-pass").focus(); return; }
+      busy(true); setMsg("Creating your account…");
+      try {
+        const cred = await F.createUserWithEmailAndPassword(S.auth, v.email, v.pass);
+        try { await sendVerify(cred.user); } catch (e) { setMsg("Your account is ready, but the email didn't send. Tap Send the email again.", true); }
+      } catch (e) { setMsg(friendly(e), true); busy(false); }
+    };
+    $("fb-forgot").onclick = async () => {
+      const email = $("fb-email").value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setMsg("Enter your email above, then tap Forgot password.", true); $("fb-email").focus(); return; }
+      setMsg("Sending…");
+      try { await F.sendPasswordResetEmail(S.auth, email); setMsg(`If there's an account for ${email}, we've sent it a link to choose a new password.`); }
+      catch (e) { setMsg(friendly(e), true); }
     };
   }
+
+  /* ---------- confirming an email ---------- */
+  async function sendVerify(user) {
+    // The link in the email brings people back to this list; without it they land on Firebase's own page.
+    try { await S.F.sendEmailVerification(user, { url: location.href }); }
+    catch (e) {
+      if (e && /continue-uri|unauthorized-domain/.test(e.code || "")) await S.F.sendEmailVerification(user);
+      else throw e;
+    }
+  }
+  async function checkVerified(fromButton) {
+    const user = S.auth && S.auth.currentUser;
+    if (!user || S.ready || !$("fb-verified")) return;
+    try { await user.reload(); } catch (e) { if (fromButton) setMsg(friendly(e), true); return; }
+    if (!user.emailVerified) { if (fromButton) setMsg("It isn't confirmed yet. Open the link in the email first, then tap the button again.", true); return; }
+    try { await user.getIdToken(true); } catch {}
+    onUser(user);
+  }
+  // Confirming usually happens in another tab or the mail app, so look again when people come back.
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") checkVerified(false); });
 
   /* ---------- people panel ---------- */
   function addPeopleButton() {
@@ -365,13 +423,13 @@
     el.innerHTML = `<div class="sheet narrow" role="dialog" aria-modal="true" aria-labelledby="fb-people-title" tabindex="-1">
       <div class="grab" aria-hidden="true"></div>
       <header class="sheet-head tall">
-        <div><h2 class="dlg-title" id="fb-people-title">People</h2><p class="dlg-sub">Everyone here can open and edit this list. Add someone by their Google email or phone number, then send them the link.</p></div>
+        <div><h2 class="dlg-title" id="fb-people-title">People</h2><p class="dlg-sub">Everyone here can open and edit this list. Add someone by the email they sign in with, then send them the link.</p></div>
         <button type="button" class="icon-btn" data-fb-close aria-label="Close"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
       </header>
       <div class="sheet-body">
         <ul class="fb-members" id="fb-members"></ul>
-        <form class="step-add" id="fb-add" autocomplete="off">
-          <input id="fb-add-input" maxlength="120" placeholder="friend@gmail.com or 555 123 4567" aria-label="Email or phone number to add">
+        <form class="step-add" id="fb-add" autocomplete="off" novalidate>
+          <input id="fb-add-input" maxlength="120" type="email" inputmode="email" placeholder="friend@gmail.com" aria-label="Email to add">
           <button type="submit" class="btn sm ghost">Add</button>
         </form>
         <p class="fb-hint" id="fb-add-msg" role="status"></p>
@@ -401,19 +459,10 @@
     });
     $("fb-add").onsubmit = async (ev) => {
       ev.preventDefault();
-      const raw = $("fb-add-input").value.trim(); if (!raw) return;
-      let field, value;
-      if (raw.includes("@")) {
-        value = raw.toLowerCase();
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) { msg("That email doesn't look right.", true); return; }
-        field = "emails";
-      } else {
-        value = normalizePhone(raw);
-        if (!value) { msg("That phone number doesn't look right. Enter the full number, like 555 123 4567. Outside the US, start with + and the country code.", true); return; }
-        field = "phones";
-      }
+      const value = $("fb-add-input").value.trim().toLowerCase(); if (!value) return;
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) { msg("Enter the email they sign in with, like friend@gmail.com.", true); return; }
       try {
-        await S.F.updateDoc(S.listRef, { [field]: S.F.arrayUnion(value) });
+        await S.F.updateDoc(S.listRef, { emails: S.F.arrayUnion(value) });
         $("fb-add-input").value = "";
         msg(`Added ${value}. Send them the link and they can sign in.`);
       } catch (e) { msg("Couldn't add them. Try again.", true); }
@@ -444,5 +493,5 @@
     };
   }
 
-  window.__bucketlistTest = { flatten, normalizePhone };
+  window.__bucketlistTest = { flatten };
 })();

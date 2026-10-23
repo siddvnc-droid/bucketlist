@@ -8,7 +8,7 @@ service cloud.firestore {
         ? request.auth.token.get('email', '').lower() : '';
     }
     function myPhone() { return request.auth.token.get('phone_number', ''); }
-    // A list document holds the Google emails and phone numbers allowed in.
+    // A list document holds the emails and phone numbers allowed in.
     function isMemberOf(data) {
       return signedIn() && (
         (myEmail() != '' && myEmail() in data.get('emails', [])) ||
