@@ -565,7 +565,14 @@
       : `<p class="dlg-sub">On a phone, open this page in Safari (iPhone) or Chrome (Android) and add it to your home screen from the browser menu.</p>`;
     return `<div class="fb-section" id="fb-home-help"><span class="label">Home screen</span><p class="dlg-sub">Open your lists like an app, full screen, from an icon on your phone.</p>${how}</div>`;
   }
-  function closePeople() { const el = $("fb-people"); if (el) el.remove(); document.removeEventListener("keydown", onPeopleKey); $("fb-people-btn") && $("fb-people-btn").focus(); }
+  function closePeople() {
+    const el = $("fb-people");
+    // Fade out while the page behind comes forward again (phones), then remove.
+    if (el) { el.id = ""; el.classList.remove("open"); setTimeout(() => el.remove(), 260); }
+    if (window.bucketStepBack) window.bucketStepBack(false);
+    document.removeEventListener("keydown", onPeopleKey);
+    $("fb-people-btn") && $("fb-people-btn").focus();
+  }
   function onPeopleKey(ev) { if (ev.key === "Escape") closePeople(); }
   function openPeople() {
     injectCss();
@@ -598,6 +605,7 @@
     document.body.appendChild(el);
     renderPeople();
     requestAnimationFrame(() => el.classList.add("open"));
+    if (window.bucketStepBack) window.bucketStepBack(true);
     el.querySelector(".sheet").focus();
     document.addEventListener("keydown", onPeopleKey);
     const msg = (t, err) => { const m = $("fb-add-msg"); m.textContent = t; m.classList.toggle("err", !!err); };
