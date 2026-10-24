@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="Bucket List">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>body { margin: 0; }</style>
-<script src="firebase-shim.js?v=bdda87e77a"></script>
+<script src="firebase-shim.js?v=fcf587b14e"></script>
 </head>
 <body>
 <title>Winter Bucket List</title>
@@ -441,7 +441,6 @@ h1 em { font-style: italic; color: var(--ink-2); }
 .sheet {
   width: min(600px, 100%); max-height: min(88vh, 900px); display: flex; flex-direction: column; background: var(--surface);
   border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow-3); outline: none;
-  position: relative; z-index: 1;  /* above the step-back frame drawn by the scrim */
   transform: translateY(14px) scale(.98); transition: transform .32s var(--ease);
 }
 .scrim.open .sheet { transform: none; }
@@ -545,32 +544,13 @@ button.ch-row:hover { background: var(--surface-2); }
 .ch-time { flex: none; font-size: 12px; color: var(--faint); white-space: nowrap; }
 .ch-more { align-self: flex-start; margin: 2px 12px 8px; font-size: 13.5px; }
 
-/* ---------- motion: step-back, title morph, stamp moment, shuffle ---------- */
-/* How far the page has stepped back behind an open panel: 0 (not at all) to 1. */
-@property --sb-p { syntax: "<number>"; inherits: true; initial-value: 0; }
-html { --sb-p: 0; transition: --sb-p .45s var(--ease); }
-html.sb-drag, html.vt-snap { transition: none; }
-html.vt-snap .scrim, html.vt-snap .sheet, html.vt-snap #app { transition: none !important; }
-@media (max-width: 600px) and (prefers-reduced-motion: no-preference) {
-  /* on phones the list steps back like a stacked card, with black around it */
-  html.sb-on #app { transform-origin: 50% var(--sb-oy, 0px); transform: translateY(calc(var(--sb-p) * 10px)) scale(calc(1 - .075 * var(--sb-p))); }
-  html.sb-on .scrim { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
-  html.sb-on .scrim::before {
-    content: ""; position: absolute; pointer-events: none;
-    left: calc(3.75% * var(--sb-p)); right: calc(3.75% * var(--sb-p));
-    top: calc(var(--sb-p) * 10px); height: calc(100% - 7.5% * var(--sb-p));
-    border-radius: calc(var(--sb-p) * 14px);
-    background: rgba(0, 0, 0, calc(var(--sb-p) * .16));
-    box-shadow: 0 0 0 100vmax #000;
-  }
-}
+/* ---------- motion: title morph, stamp moment, shuffle ---------- */
+/* while a view transition captures the panel, it shows its end state at once */
+html.vt-snap .scrim, html.vt-snap .sheet { transition: none !important; }
 /* tapping an activity grows its name into the panel's heading (browsers with view transitions) */
 ::view-transition-group(activity-title) { animation-duration: .44s; animation-timing-function: var(--ease); z-index: 3; }  /* stays above the sliding panel */
 ::view-transition-group(sheet) { z-index: 2; }
 ::view-transition-old(activity-title), ::view-transition-new(activity-title) { width: auto; height: 100%; left: 0; right: auto; animation-duration: .44s; }
-::view-transition-group(page) { animation-duration: .45s; animation-timing-function: var(--ease); }
-::view-transition-old(page) { animation: none; opacity: 0; }
-::view-transition-new(page) { animation: none; }
 ::view-transition-new(sheet) { animation: vtSheetIn .44s var(--ease) both; }
 ::view-transition-old(sheet) { animation: vtSheetOut .3s cubic-bezier(.4, 0, 1, 1) both; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .3s; }
@@ -1618,10 +1598,8 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
         scrim.classList.add("open");
         sheet.style.viewTransitionName = "sheet";
         const t = $(".title-input", sheet); if (t) t.style.viewTransitionName = "activity-title";
-        stepBack(true, true);
       } else {
         requestAnimationFrame(() => scrim.classList.add("open"));
-        stepBack(true);
       }
       if (fresh) {
         const fv = state.sheetFocus && $(`[data-field="${state.sheetFocus}"]`, sheet);
@@ -1661,11 +1639,10 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     return null;
   }
   function morph(src, update) {
-    const root = document.documentElement, app = $("#app");
+    const root = document.documentElement;
     if (src) src.style.viewTransitionName = "activity-title";
-    app.style.viewTransitionName = "page";
     const tidy = () => {
-      root.classList.remove("vt-snap"); app.style.viewTransitionName = "";
+      root.classList.remove("vt-snap");
       $$('#dialog-root .sheet, #dialog-root .title-input, .row-title, .sc-title, .doc-title-btn').forEach((el) => { el.style.viewTransitionName = ""; });
     };
     let vt;
@@ -1699,14 +1676,12 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       if (sh) sh.style.viewTransitionName = "sheet";
       morph(null, () => {
         delete root.dataset.closing; root.innerHTML = "";
-        stepBack(false, true);
         render();
         const back = titleOnScreen(closing); if (back) back.style.viewTransitionName = "activity-title";
       });
       const back = document.querySelector(backSel); if (back) back.focus({ preventScroll: true });
       return;
     }
-    stepBack(false);
     if (scrim) {
       root.dataset.closing = "1"; scrim.classList.remove("open");
       setTimeout(() => { if (root.dataset.closing && !state.sheet && !state.manager) { delete root.dataset.closing; root.innerHTML = ""; } }, 260);
@@ -2309,28 +2284,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     writeLocal("activities", items, true);
     render();
   }
-  /* ---------- background step-back (phones) ---------- */
   const reduceMotion = () => !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
-  let sbTimer = 0;
-  function stepBack(on, instant) {
-    const root = document.documentElement;
-    clearTimeout(sbTimer);
-    if (on) {
-      if (!root.classList.contains("sb-on")) {
-        // Scale around the top of the screen, wherever the page is scrolled to.
-        root.style.setProperty("--sb-oy", `${Math.round(-$("#app").getBoundingClientRect().top)}px`);
-        root.classList.add("sb-on");
-      }
-      if (instant) root.style.setProperty("--sb-p", "1");
-      else requestAnimationFrame(() => root.style.setProperty("--sb-p", "1"));
-    } else {
-      root.style.setProperty("--sb-p", "0");
-      if (instant) root.classList.remove("sb-on");
-      else sbTimer = setTimeout(() => root.classList.remove("sb-on"), 480);
-    }
-  }
-  window.bucketStepBack = stepBack;  // the Firebase site's account panel uses it too
-  const steppedBack = () => document.documentElement.classList.contains("sb-on") && !reduceMotion();
 
   /* ---------- no pinch zoom on phones ---------- */
   // The layout already fits the screen. Safari ignores the page's no-zoom setting, so the
@@ -2367,9 +2321,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     e.preventDefault();
     d.dy = Math.max(0, t.clientY - d.y0);
     d.sheet.style.transform = `translateY(${d.dy}px)`;
-    // The page behind comes forward as the panel goes down.
-    if (steppedBack()) { document.documentElement.classList.add("sb-drag"); document.documentElement.style.setProperty("--sb-p", Math.max(0, 1 - d.dy / d.sheet.offsetHeight).toFixed(3)); }
-    else d.scrim.style.opacity = String(Math.max(0.3, 1 - d.dy / (d.sheet.offsetHeight * 1.4)));
+    d.scrim.style.opacity = String(Math.max(0.3, 1 - d.dy / (d.sheet.offsetHeight * 1.4)));
     d.samples.push([performance.now(), t.clientY]); if (d.samples.length > 5) d.samples.shift();
   }, { passive: false });
   function endPull() {
@@ -2379,18 +2331,15 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     const speed = t2 > t1 ? (y2 - y1) / (t2 - t1) : 0;  // px per ms, downward is positive
     const close = d.dy > Math.min(140, sheet.offsetHeight * 0.25) || (speed > 0.5 && d.dy > 20);
     sheet.style.transition = ""; d.scrim.style.transition = "";
-    document.documentElement.classList.remove("sb-drag");
     const btn = close && sheet.querySelector('[data-act="close-dialog"], [data-fb-close]');
     if (btn && btn.matches("[data-fb-close]")) {
       // This panel closes without its own animation, so slide it away first.
       sheet.style.transform = "translateY(100%)"; d.scrim.style.opacity = "0";
-      stepBack(false);
       setTimeout(() => btn.click(), 220);
       return;
     }
     sheet.style.transform = ""; d.scrim.style.opacity = "";
     if (btn) { pull.closing = true; btn.click(); pull.closing = false; }  // slides away, or springs back while asking to save changes
-    if (steppedBack() && sheet.isConnected && sheet.closest(".scrim.open")) document.documentElement.style.setProperty("--sb-p", "1");
   }
   document.addEventListener("touchend", endPull);
   document.addEventListener("touchcancel", endPull);

@@ -567,9 +567,8 @@
   }
   function closePeople() {
     const el = $("fb-people");
-    // Fade out while the page behind comes forward again (phones), then remove.
+    // Fade out, then remove.
     if (el) { el.id = ""; el.classList.remove("open"); setTimeout(() => el.remove(), 260); }
-    if (window.bucketStepBack) window.bucketStepBack(false);
     document.removeEventListener("keydown", onPeopleKey);
     $("fb-people-btn") && $("fb-people-btn").focus();
   }
@@ -605,7 +604,6 @@
     document.body.appendChild(el);
     renderPeople();
     requestAnimationFrame(() => el.classList.add("open"));
-    if (window.bucketStepBack) window.bucketStepBack(true);
     el.querySelector(".sheet").focus();
     document.addEventListener("keydown", onPeopleKey);
     const msg = (t, err) => { const m = $("fb-add-msg"); m.textContent = t; m.classList.toggle("err", !!err); };
