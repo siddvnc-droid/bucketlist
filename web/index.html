@@ -501,6 +501,19 @@ textarea.fp { resize: none; overflow: hidden; line-height: 1.5; }
 .cal-day:hover { background: var(--surface-3); }
 .cal-day.today { color: var(--cal-red); font-weight: 600; }
 .cal-day.sel { background: var(--cal-red); color: #fff; font-weight: 600; }
+/* changing months slides the dates sideways; the picked day pops */
+.cal-pages { position: relative; overflow: hidden; }
+.cal-grid.cal-out { position: absolute; left: 0; right: 0; top: 0; pointer-events: none; animation: calOut .28s var(--ease) both; }
+.cal-grid.cal-in { animation: calSlideIn .34s var(--ease) both; }
+.cal-title.cal-in { display: inline-block; animation: calSlideIn .34s var(--ease) both; }
+.to-left, .from-right { --dx: 40%; }
+.to-right, .from-left { --dx: -40%; }
+.cal-title.from-right { --dx: 12px; } .cal-title.from-left { --dx: -12px; }
+.cal-grid.cal-out.to-left { --dx: -40%; } .cal-grid.cal-out.to-right { --dx: 40%; }
+@keyframes calOut { 55% { opacity: 0; } to { opacity: 0; transform: translateX(var(--dx)); } }
+@keyframes calSlideIn { from { opacity: 0; transform: translateX(var(--dx)); } }
+.cal-day.sel.pop { animation: dayPop .34s cubic-bezier(.2, 1.6, .4, 1) both; }
+@keyframes dayPop { from { transform: scale(.55); } }
 .cal-day:disabled { opacity: .3; cursor: default; background: none; }
 .date-row { display: flex; align-items: center; gap: 6px 10px; flex-wrap: wrap; }
 .date-row .fp { margin-right: 0; }
@@ -1248,15 +1261,18 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   function calendarHTML(field, value, max) {
     const { y, m } = state.cal, first = new Date(y, m, 1), days = new Date(y, m + 1, 0).getDate(), today = todayISO();
     const dows = Array.from({ length: 7 }, (_, i) => new Date(2024, 0, 7 + i).toLocaleDateString(undefined, { weekday: "short" }).toUpperCase());
-    let cells = dows.map((d) => `<span class="cal-dow" aria-hidden="true">${esc(d)}</span>`).join("");
+    const head = dows.map((d) => `<span class="cal-dow" aria-hidden="true">${esc(d)}</span>`).join("");
+    let cells = "";
     for (let i = 0; i < first.getDay(); i++) cells += "<span></span>";
     for (let d = 1; d <= days; d++) {
       const day = iso(new Date(y, m, d)), off = max && day > max;
-      cells += `<button type="button" class="cal-day${day === value ? " sel" : ""}${day === today ? " today" : ""}" data-act="cal-pick" data-for="${field}" data-v="${day}" aria-pressed="${day === value}" aria-label="${esc(fmtDate(day, { day: true, year: true }))}"${off ? " disabled" : ""}>${d}</button>`;
+      cells += `<button type="button" class="cal-day${day === value ? " sel" : ""}${day === value && day === state.cal.popped ? " pop" : ""}${day === today ? " today" : ""}" data-act="cal-pick" data-for="${field}" data-v="${day}" aria-pressed="${day === value}" aria-label="${esc(fmtDate(day, { day: true, year: true }))}"${off ? " disabled" : ""}>${d}</button>`;
     }
-    return `<div class="cal-head"><span class="cal-title">${esc(first.toLocaleDateString(undefined, { month: "long" }))} <span>${y}</span></span>
+    const slide = state.cal.slide > 0 ? " cal-in from-right" : state.cal.slide < 0 ? " cal-in from-left" : "";
+    return `<div class="cal-head"><span class="cal-title${slide}">${esc(first.toLocaleDateString(undefined, { month: "long" }))} <span>${y}</span></span>
       <span class="cal-nav"><button type="button" data-act="cal-today">Today</button><button type="button" data-act="cal-prev" aria-label="Previous month">${ICON.left}</button><button type="button" data-act="cal-next" aria-label="Next month">${ICON.right}</button></span></div>
-      <div class="cal-grid">${cells}</div>`;
+      <div class="cal-grid">${head}</div>
+      <div class="cal-pages"><div class="cal-grid${slide}">${cells}</div></div>`;
   }
   function renderCalendars() {
     $$("#dialog-root input.dp-value").forEach((inp) => {
@@ -1272,8 +1288,21 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       cal.hidden = false;
       cal.style.animation = state.cal.anim ? "" : "none";
       state.cal.anim = false;
+      const dir = state.cal.slide, old = dir && !reduceMotion() && cal.querySelector(".cal-pages .cal-grid");
+      const oldHTML = old ? old.outerHTML : "";
       cal.innerHTML = calendarHTML(f, v, inp.dataset.max || "");
+      if (oldHTML) {
+        const pages = cal.querySelector(".cal-pages");
+        pages.insertAdjacentHTML("afterbegin", oldHTML);
+        const out = pages.firstElementChild;
+        out.classList.remove("cal-in", "from-left", "from-right");
+        out.classList.add("cal-out", dir > 0 ? "to-left" : "to-right");
+        out.setAttribute("aria-hidden", "true"); out.inert = true;
+        const gone = () => out.remove();
+        out.addEventListener("animationend", gone, { once: true }); setTimeout(gone, 450);
+      }
     });
+    state.cal.slide = 0; state.cal.popped = null;
   }
 
   /* ---------- small builders ---------- */
@@ -1969,14 +1998,24 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       }
       case "cal-prev": case "cal-next": {
         const step = act === "cal-next" ? 1 : -1, d0 = new Date(state.cal.y, state.cal.m + step, 1);
-        state.cal.y = d0.getFullYear(); state.cal.m = d0.getMonth(); renderCalendars(); break;
+        state.cal.y = d0.getFullYear(); state.cal.m = d0.getMonth(); state.cal.slide = step; renderCalendars(); break;
       }
-      case "cal-today": { const t = new Date(); state.cal.y = t.getFullYear(); state.cal.m = t.getMonth(); renderCalendars(); break; }
+      case "cal-today": {
+        const t = new Date(), diff = (t.getFullYear() - state.cal.y) * 12 + (t.getMonth() - state.cal.m);
+        state.cal.y = t.getFullYear(); state.cal.m = t.getMonth(); state.cal.slide = Math.sign(diff); renderCalendars(); break;
+      }
       case "cal-pick": {
         const f = b.dataset.for, inp = $(`#dialog-root [data-field="${f}"]`); if (!inp) break;
-        inp.value = b.dataset.v; state.cal.open = null;
+        inp.value = b.dataset.v;
+        // The picked day pops, then the calendar folds away.
+        state.cal.popped = reduceMotion() ? null : b.dataset.v;
+        const pickedAt = state.cal.pickedAt = Date.now();
         renderCalendars(); updateSaveState();
-        const trig = $(`#dialog-root .dp-trigger[data-for="${f}"]`); if (trig) trig.focus({ preventScroll: true });
+        setTimeout(() => {
+          if (state.cal.pickedAt !== pickedAt || state.cal.open !== f) return;
+          state.cal.open = null; renderCalendars();
+          const trig = $(`#dialog-root .dp-trigger[data-for="${f}"]`); if (trig) trig.focus({ preventScroll: true });
+        }, reduceMotion() ? 0 : 280);
         break;
       }
       case "plan-row": {
