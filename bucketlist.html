@@ -78,7 +78,8 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
-html { -webkit-text-size-adjust: 100%; }
+/* no double-tap zoom: the layout is already sized for the screen */
+html { -webkit-text-size-adjust: 100%; touch-action: manipulation; }
 body {
   background: var(--bg); color: var(--ink);
   font: 400 15px/1.5 var(--font-ui); letter-spacing: -0.003em;
@@ -2148,6 +2149,12 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     writeLocal("activities", items, true);
     render();
   }
+  /* ---------- no pinch zoom on phones ---------- */
+  // The layout already fits the screen. Safari ignores the page's no-zoom setting, so the
+  // pinch itself is blocked here (two fingers moving, or Safari's own gesture events).
+  for (const type of ["gesturestart", "gesturechange", "gestureend"]) document.addEventListener(type, (e) => e.preventDefault(), { passive: false });
+  document.addEventListener("touchmove", (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+
   /* ---------- pull a sheet down to close it (phones) ---------- */
   // Only from the strip at the top with the handle, so scrolling or tapping the content
   // never moves the panel. Closing goes through the sheet's own close button, so unsaved
