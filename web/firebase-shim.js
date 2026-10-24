@@ -285,7 +285,8 @@
       .fb-hint { font-size: 13px; color: var(--muted); margin: 0; }
       .fb-hint.err { color: var(--danger); }
       .fb-right { display: inline-flex; align-items: center; gap: 14px; }
-      .fb-people-btn { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; cursor: pointer; padding: 4px 8px; margin: -4px -8px -4px 0; border-radius: 8px; color: var(--ink-2); }
+      .fb-people-btn { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; margin: -12px -8px -12px 0; border: 0; border-radius: 50%; background: none; cursor: pointer; color: var(--ink-2); transition: background .15s, color .15s; }
+      .fb-people-btn svg { width: 22px; height: 22px; }
       .fb-people-btn:hover { background: var(--surface-3); color: var(--ink); }
       .fb-members { list-style: none; margin: 0 -6px; padding: 0; display: flex; flex-direction: column; }
       .fb-member { display: flex; align-items: center; gap: 12px; padding: 8px 6px; border-radius: 12px; }
@@ -489,10 +490,13 @@
   function addPeopleButton() {
     const pct = $("pct");
     if (!pct || $("fb-people-btn")) return;
+    injectCss();
     const wrapEl = document.createElement("span"); wrapEl.className = "fb-right";
     pct.replaceWith(wrapEl);
     const btn = document.createElement("button");
-    btn.type = "button"; btn.id = "fb-people-btn"; btn.className = "label fb-people-btn"; btn.textContent = "People";
+    btn.type = "button"; btn.id = "fb-people-btn"; btn.className = "fb-people-btn";
+    btn.title = "Account and people"; btn.setAttribute("aria-label", "Account and people");
+    btn.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.25"/><circle cx="12" cy="10" r="3.25"/><path d="M6.17 18.4a6.5 6.5 0 0 1 11.66 0"/></svg>';
     btn.onclick = openPeople;
     wrapEl.append(pct, btn);
   }
