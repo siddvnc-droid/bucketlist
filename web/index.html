@@ -1264,8 +1264,8 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   }
 
   /* ---------- dialogs ---------- */
-  // Shown above the name in the details sheet, so it reads "Planning / Tokyo Record Bar".
-  const SHEET_EYEBROW = { todo: "On our list", planned: "Planning", done: "We did" };
+  // Shown above the name in the details sheet.
+  const SHEET_EYEBROW = { todo: "To Do", planned: "Plan", done: "Completed" };
   function sheetParts(item) {
     const w = state.canWrite, ro = w ? "" : "readonly", id = esc(item.id), st = statusOf(item);
     const cat = resolveCat(item), tasks = tasksOf(item);
