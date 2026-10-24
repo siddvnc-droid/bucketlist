@@ -354,7 +354,7 @@ h1 em { font-style: italic; color: var(--ink-2); }
 }
 .row:hover .row-open { background: var(--surface-2); }
 .row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.row-title { align-self: flex-start; max-width: 100%; font-size: 15.5px; font-weight: 500; line-height: 1.35; overflow-wrap: anywhere; transition: color .3s; }
+.row-title { font-size: 15.5px; font-weight: 500; line-height: 1.35; overflow-wrap: anywhere; transition: color .3s; }
 .row.is-done .row-title { color: var(--muted); }
 .row-meta { display: flex; align-items: center; gap: 5px 14px; flex-wrap: wrap; font-size: 13px; color: var(--muted); min-width: 0; }
 .row-meta > span { display: inline-flex; align-items: center; gap: 7px; min-width: 0; }
@@ -525,22 +525,7 @@ button.ch-row:hover { background: var(--surface-2); }
 .ch-time { flex: none; font-size: 12px; color: var(--faint); white-space: nowrap; }
 .ch-more { align-self: flex-start; margin: 2px 12px 8px; font-size: 13.5px; }
 
-/* ---------- motion: title morph, stamp moment, shuffle ---------- */
-/* while a view transition captures the panel, it shows its end state at once */
-html.vt-snap .scrim, html.vt-snap .sheet { transition: none !important; }
-/* tapping an activity grows its name into the panel's heading (browsers with view transitions) */
-::view-transition-group(activity-title) { animation-duration: .44s; animation-timing-function: var(--ease); z-index: 3; }  /* stays above the sliding panel */
-::view-transition-group(sheet) { z-index: 2; }
-::view-transition-old(activity-title), ::view-transition-new(activity-title) { width: auto; height: 100%; left: 0; right: auto; animation-duration: .44s; }
-::view-transition-new(sheet) { animation: vtSheetIn .44s var(--ease) both; }
-::view-transition-old(sheet) { animation: vtSheetOut .3s cubic-bezier(.4, 0, 1, 1) both; }
-::view-transition-old(root), ::view-transition-new(root) { animation-duration: .3s; }
-@keyframes vtSheetIn { from { transform: translateY(100%); } }
-@keyframes vtSheetOut { to { transform: translateY(100%); } }
-@media (min-width: 601px) {
-  @keyframes vtSheetIn { from { opacity: 0; transform: translateY(14px) scale(.98); } }
-  @keyframes vtSheetOut { to { opacity: 0; transform: translateY(10px) scale(.98); } }
-}
+/* ---------- motion: stamp moment, shuffle ---------- */
 /* "We did it": the stamp lands, the card takes the hit, then the next adventure slides in */
 .doc.stamping { animation: docPress .55s cubic-bezier(.3, .7, .3, 1) var(--t, 0ms) both; }
 @keyframes docPress { 0%, 40% { transform: none; } 54% { transform: scale(.984) translateY(2px); } 100% { transform: none; } }
@@ -1574,14 +1559,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       const scrim = $(".scrim", root);
       sheet = $(".sheet", root);
       const fresh = state.dialogFresh; state.dialogFresh = false;
-      if (state.vt === "open") {
-        // Opening as a view transition: show the end state now; the transition animates it.
-        scrim.classList.add("open");
-        sheet.style.viewTransitionName = "sheet";
-        const t = $(".title-input", sheet); if (t) t.style.viewTransitionName = "activity-title";
-      } else {
-        requestAnimationFrame(() => scrim.classList.add("open"));
-      }
+      requestAnimationFrame(() => scrim.classList.add("open"));
       if (fresh) {
         const fv = state.sheetFocus && $(`[data-field="${state.sheetFocus}"]`, sheet);
         const f = fv && fv.hidden ? $(`.dp-trigger[data-for="${state.sheetFocus}"]`, sheet) : fv;
@@ -1602,41 +1580,6 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     state.cal.open = null;
     if (focusField === "plannedFor") { const it = find(id); openCal("plannedFor", it && it.plannedFor); }
     state.sheet = id; state.sheetFocus = focusField || null; state.sheetLeave = false; state.manager = false; state.dialogFresh = true; render(); }
-  // Tapping an activity: its name grows into the panel's heading where the browser can do it.
-  function openSheetFrom(id, b) {
-    const src = b && (b.matches(".doc-title-btn") ? b : b.querySelector(".row-title, .sc-title"));
-    if (!src || !canMorph()) { openSheet(id); return; }
-    morph(src, () => { state.vt = "open"; openSheet(id); state.vt = null; });
-  }
-  const canMorph = () => !!document.startViewTransition && !reduceMotion();
-  // The element showing an activity's name in the list or on the Next up card, if it's on screen.
-  function titleOnScreen(id) {
-    for (const b of $$(`[data-act="open-sheet"][data-id="${CSS.escape(id)}"]`)) {
-      if (b.closest("#dialog-root")) continue;
-      const el = b.matches(".doc-title-btn") ? b : b.querySelector(".row-title, .sc-title");
-      const r = el && el.getBoundingClientRect();
-      if (r && r.width && r.bottom > 0 && r.top < innerHeight) return el;
-    }
-    return null;
-  }
-  function morph(src, update) {
-    const root = document.documentElement;
-    if (src) src.style.viewTransitionName = "activity-title";
-    const tidy = () => {
-      root.classList.remove("vt-snap");
-      $$('#dialog-root .sheet, #dialog-root .title-input, .row-title, .sc-title, .doc-title-btn').forEach((el) => { el.style.viewTransitionName = ""; });
-    };
-    let vt;
-    try {
-      vt = document.startViewTransition(() => { if (src) src.style.viewTransitionName = ""; root.classList.add("vt-snap"); update(); });
-    } catch { tidy(); update(); return; }
-    activeVT = vt;
-    vt.ready.then(() => root.classList.remove("vt-snap"), tidy);
-    vt.finished.then(tidy, tidy).then(() => { if (activeVT === vt) activeVT = null; });
-  }
-  // Taps are ignored while a transition plays, so a tap finishes it at once and the next one works.
-  let activeVT = null;
-  document.addEventListener("pointerdown", () => { if (activeVT) { activeVT.skipTransition(); activeVT = null; } }, true);
   function openManager() { closePop(); state.managerReturn = state.sheet; state.sheet = null; state.manager = true; state.catConfirm = null; state.dialogFresh = true; render(); }
   function closeDialog(force) {
     if (!state.sheet && !state.manager) return;
@@ -1644,25 +1587,10 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     if (!force && state.sheet && state.canWrite && Object.keys(sheetChanges()).length) { state.sheetLeave = true; render(); return; }
     state.sheetLeave = false;
     if (state.manager && state.managerReturn && find(state.managerReturn)) { const back = state.managerReturn; state.managerReturn = null; openSheet(back); return; }
-    const closing = state.sheet;
     const backSel = state.sheet ? `[data-act="open-sheet"][data-id="${CSS.escape(state.sheet)}"]` : "#filter-cat";
     state.sheet = null; state.manager = false; state.managerReturn = null; state.catConfirm = null;
     closePop();
     const root = $("#dialog-root"), scrim = $(".scrim", root);
-    // The panel slides off and its name flies back to its row (not after a pull: that's already sliding).
-    const target = closing && scrim && !pull.closing && canMorph() && titleOnScreen(closing);
-    if (target) {
-      const t = $(".title-input", root), sh = $(".sheet", root);
-      if (t) t.style.viewTransitionName = "activity-title";
-      if (sh) sh.style.viewTransitionName = "sheet";
-      morph(null, () => {
-        delete root.dataset.closing; root.innerHTML = "";
-        render();
-        const back = titleOnScreen(closing); if (back) back.style.viewTransitionName = "activity-title";
-      });
-      const back = document.querySelector(backSel); if (back) back.focus({ preventScroll: true });
-      return;
-    }
     if (scrim) {
       root.dataset.closing = "1"; scrim.classList.remove("open");
       setTimeout(() => { if (root.dataset.closing && !state.sheet && !state.manager) { delete root.dataset.closing; root.innerHTML = ""; } }, 260);
@@ -1956,7 +1884,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       }
       case "color": { const p = state.pop; if (!p) break; closePop(true); await update("categories", p.cat, { color: Number(b.dataset.v) }); break; }
       case "open-manager": openManager(); break;
-      case "open-sheet": if (item) openSheetFrom(id, b); break;
+      case "open-sheet": if (item) openSheet(id); break;
       case "changes-seen": state.changes.dismissed = true; markSeen(); render(); break;
       case "changes-more": state.changes.all = true; render(); break;
       case "close-dialog": closeDialog(); break;
@@ -2320,7 +2248,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       return;
     }
     sheet.style.transform = ""; d.scrim.style.opacity = "";
-    if (btn) { pull.closing = true; btn.click(); pull.closing = false; }  // slides away, or springs back while asking to save changes
+    if (btn) btn.click();  // slides away, or springs back while asking to save changes
   }
   document.addEventListener("touchend", endPull);
   document.addEventListener("touchcancel", endPull);
