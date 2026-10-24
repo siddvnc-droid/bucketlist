@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<defs><linearGradient id="c-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1D2E52"/><stop offset="1" stop-color="#101A30"/></linearGradient></defs>
+<rect width="512" height="512" fill="url(#c-bg)"/>
+<g transform="translate(256 256) scale(0.8) translate(-256 -256)">
+<rect x="58" y="58" width="396" height="396" rx="26" fill="none" stroke="#DDBB72" stroke-width="5"/>
+<rect x="74" y="74" width="364" height="364" rx="16" fill="none" stroke="#DDBB72" stroke-opacity="0.75" stroke-width="1.6"/>
+<g fill="none" stroke="#DDBB72" stroke-width="5" stroke-linecap="round">
+<circle cx="256" cy="226" r="90"/>
+<ellipse cx="256" cy="226" rx="40" ry="90"/>
+<path d="M256 136 V316 M166 226 H346 M171 196 H341 M171 256 H341"/>
+</g>
+<text x="256" y="376" text-anchor="middle" font-family="Instrument Serif, Georgia, serif" font-size="38" letter-spacing="7" fill="#DDBB72">BUCKET LIST</text>
+</g>
+</svg>
