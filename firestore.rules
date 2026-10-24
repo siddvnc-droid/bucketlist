@@ -46,9 +46,10 @@ service cloud.firestore {
             && request.resource.data.emails.size() == 0 && request.resource.data.phones.size() == 0
             && request.resource.data.createdBy == resource.data.createdBy));
 
+      // events: the short log behind "While you were away". seen: when each person last looked.
       match /{coll}/{docId} {
-        allow read, delete: if coll in ['activities', 'categories'] && member(listId);
-        allow create, update: if coll in ['activities', 'categories'] && member(listId)
+        allow read, delete: if coll in ['activities', 'categories', 'events', 'seen'] && member(listId);
+        allow create, update: if coll in ['activities', 'categories', 'events', 'seen'] && member(listId)
           && request.resource.data.size() <= 40;
       }
       // Each member keeps their own name and photo here so others can see who did what.

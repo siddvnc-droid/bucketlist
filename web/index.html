@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="Bucket List">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>body { margin: 0; }</style>
-<script src="firebase-shim.js?v=f2f5ebcfc8"></script>
+<script src="firebase-shim.js?v=d4b5918cca"></script>
 </head>
 <body>
 <title>Winter Bucket List</title>
@@ -530,6 +530,19 @@ textarea.fp { resize: none; overflow: hidden; line-height: 1.5; }
 .toast button { border: 0; background: none; color: var(--toast-act); font-weight: 600; font-size: 13.5px; padding: 4px 8px; border-radius: 8px; }
 .toast button:hover { background: color-mix(in srgb, var(--toast-ink) 10%, transparent); }
 
+/* what the other person changed while you were away */
+.changes { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-1); padding: 12px 8px 6px; display: flex; flex-direction: column; gap: 2px; }
+.ch-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 4px 2px 12px; }
+.ch-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.ch-row { width: 100%; display: flex; align-items: center; gap: 12px; padding: 9px 12px; border: 0; border-radius: 11px; background: none; text-align: left; color: var(--ink-2); font-size: 14px; line-height: 1.4; }
+button.ch-row:hover { background: var(--surface-2); }
+.ch-row .av { width: 24px; height: 24px; }
+.ch-text { flex: 1; min-width: 0; display: block; overflow-wrap: anywhere; }
+.ch-text::first-letter { text-transform: uppercase; }
+.ch-text b { color: var(--ink); font-weight: 500; }
+.ch-time { flex: none; font-size: 12px; color: var(--faint); white-space: nowrap; }
+.ch-more { align-self: flex-start; margin: 2px 12px 8px; font-size: 13.5px; }
+
 /* snowfall when something new is added */
 canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 65; }
 
@@ -605,6 +618,8 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
 
   <div id="notice" class="notice" hidden></div>
 
+  <section id="changes" aria-label="What changed" hidden></section>
+
   <section id="next" aria-label="Next up"></section>
 
   <section aria-label="Add an activity" id="add-area" hidden>
@@ -677,6 +692,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     composerCat: "",
     paste: null,               // lines waiting to be added from a paste
     sheet: null,
+    changes: { events: [], seenAt: null, dismissed: false, all: false, hiddenAt: 0 },  // "While you were away"
     manager: false, managerReturn: null, catConfirm: null,
     dialogFresh: false,
     pop: null,                 // { kind, anchor, cat }
@@ -805,22 +821,170 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       return false;
     }
   }
-  const add = (coll, data) => guarded(async () => {
-    if (dbNs) await dbNs.collection(coll).add(data);
-    else writeLocal(coll, [...listOf(coll), { id: newId(), ...data }]);
-  });
-  const setDoc = (coll, id, data) => guarded(async () => {
-    if (dbNs) await dbNs.collection(coll).doc(id).set(data);
-    else writeLocal(coll, [...listOf(coll).filter((x) => x.id !== id), { ...data, id }]);
-  });
-  const update = (coll, id, patch) => guarded(async () => {
-    if (dbNs) await dbNs.collection(coll).doc(id).update(patch);
-    else writeLocal(coll, listOf(coll).map((x) => (x.id === id ? merge(x, patch) : x)));
-  });
-  const remove = (coll, id) => guarded(async () => {
-    if (dbNs) await dbNs.collection(coll).doc(id).delete();
-    else writeLocal(coll, listOf(coll).filter((x) => x.id !== id));
-  });
+  // Changes to activities are also noted in the "events" log, so the other person sees them later.
+  const add = async (coll, data) => {
+    const id = newId();
+    const ok = await guarded(async () => {
+      if (dbNs) await dbNs.collection(coll).doc(id).set(data);
+      else writeLocal(coll, [...listOf(coll), { id, ...data }]);
+    });
+    if (ok && coll === "activities") logEvent("add", id, data.title);
+    return ok;
+  };
+  const setDoc = async (coll, id, data) => {
+    const ok = await guarded(async () => {
+      if (dbNs) await dbNs.collection(coll).doc(id).set(data);
+      else writeLocal(coll, [...listOf(coll).filter((x) => x.id !== id), { ...data, id }]);
+    });
+    if (ok && coll === "activities") logEvent("add", id, data.title);  // e.g. undoing a delete
+    return ok;
+  };
+  const update = async (coll, id, patch) => {
+    const prev = coll === "activities" ? find(id) : null;
+    const ok = await guarded(async () => {
+      if (dbNs) await dbNs.collection(coll).doc(id).update(patch);
+      else writeLocal(coll, listOf(coll).map((x) => (x.id === id ? merge(x, patch) : x)));
+    });
+    const c = ok && prev && describeChange(prev, patch);
+    if (c) logEvent(c.type, id, patch.title || prev.title, c.date);
+    return ok;
+  };
+  const remove = async (coll, id) => {
+    const prev = coll === "activities" ? find(id) : null;
+    const ok = await guarded(async () => {
+      if (dbNs) await dbNs.collection(coll).doc(id).delete();
+      else writeLocal(coll, listOf(coll).filter((x) => x.id !== id));
+    });
+    if (ok && prev) logEvent("delete", id, prev.title);
+    return ok;
+  };
+
+  /* ---------- what changed: a short log of who did what ---------- */
+  const EVENT_TYPES = new Set(["add", "plan", "move", "done", "unplan", "unstamp", "delete"]);
+  const INVERSE = { done: "unstamp", unstamp: "done", plan: "unplan", unplan: "plan", delete: "add", add: "delete" };
+  const recentEvents = new Map();  // activity id -> the last event this person logged for it
+  function describeChange(prev, patch) {
+    const was = statusOf(prev), now = patch.status || was;
+    if (now === "done" && was !== "done") return { type: "done" };
+    if (was === "done" && now !== "done") return { type: "unstamp" };
+    if (now === "planned" && was !== "planned") return { type: "plan", date: validISO(patch.plannedFor) ? patch.plannedFor : validISO(prev.plannedFor) ? prev.plannedFor : null };
+    if (was === "planned" && now === "todo") return { type: "unplan" };
+    if (now === "planned" && "plannedFor" in patch && validISO(patch.plannedFor) && patch.plannedFor !== prev.plannedFor)
+      return { type: validISO(prev.plannedFor) ? "move" : "plan", date: patch.plannedFor };
+    return null;
+  }
+  async function logEvent(type, itemId, title, date) {
+    if (!dbNs || !state.me || !state.canWrite) return;
+    const now = Date.now(), last = recentEvents.get(itemId);
+    try {
+      // Undoing something straight away takes it back out of the log.
+      if (last && INVERSE[last.type] === type && now - last.at < 60000) {
+        recentEvents.delete(itemId);
+        await dbNs.collection("events").doc(last.id).delete();
+        return;
+      }
+      // Picking the date right after planning updates that one entry instead of adding another.
+      if (last && last.type === "plan" && (type === "plan" || type === "move") && date && now - last.at < 600000) {
+        await dbNs.collection("events").doc(last.id).update({ date, at: now });
+        last.at = now;
+        return;
+      }
+      const id = "e" + now.toString(36) + Math.random().toString(36).slice(2, 7);
+      await dbNs.collection("events").doc(id).set({ type, itemId, title: String(title || "").slice(0, 200), by: state.me, at: now, ...(date ? { date } : {}) });
+      recentEvents.set(itemId, { id, type, at: now });
+    } catch {}
+  }
+  function markSeen() {
+    if (dbNs && state.me) Promise.resolve().then(() => dbNs.collection("seen").doc(state.me).set({ at: Date.now() })).catch(() => {});
+  }
+  function ago(t) {
+    const m = Math.round((Date.now() - t) / 60000);
+    if (m < 1) return "just now";
+    if (m < 60) return `${m}m ago`;
+    const h = Math.round(m / 60);
+    if (h < 24) return `${h}h ago`;
+    const d = Math.round(h / 24);
+    return d === 1 ? "yesterday" : `${d}d ago`;
+  }
+  function changesList() {
+    const ch = state.changes;
+    if (ch.dismissed || ch.seenAt == null || !state.me) return [];
+    const evs = ch.events.filter((e) => e && e.by && e.by !== state.me && e.at > ch.seenAt && EVENT_TYPES.has(e.type)).sort((a, b) => b.at - a.at);
+    // The newest change per activity; several adds by one person become one line.
+    const done = new Set(), out = [], adds = new Map();
+    for (const e of evs) {
+      const key = e.itemId || e.id;
+      if (done.has(key)) continue;
+      done.add(key);
+      if (e.type === "add") {
+        const g = adds.get(e.by);
+        if (g) { g.more.push(e); continue; }
+        const ng = { ...e, more: [] }; adds.set(e.by, ng); out.push(ng);
+      } else out.push(e);
+    }
+    return out;
+  }
+  function changeHTML(e) {
+    const who = `<span data-name-for="${esc(e.by)}">${esc(personName(e.by))}</span>`;
+    const t = (x) => `<b>${esc(x || "an activity")}</b>`;
+    const when = validISO(e.date) ? esc(fmtDate(e.date, { day: true })) : "";
+    const more = e.more && e.more.length ? (e.more.length === 1 ? ` and ${t(e.more[0].title)}` : ` and ${e.more.length} more`) : "";
+    const text = {
+      add: `${who} added ${t(e.title)}${more}`,
+      plan: when ? `${who} planned ${t(e.title)} for ${when}` : `${who} started planning ${t(e.title)}`,
+      move: `${who} moved ${t(e.title)} to ${when}`,
+      done: `${who} ticked off ${t(e.title)}`,
+      unplan: `${who} cancelled the plan for ${t(e.title)}`,
+      unstamp: `${who} took the stamp off ${t(e.title)}`,
+      delete: `${who} deleted ${t(e.title)}`,
+    }[e.type];
+    const item = e.type !== "delete" && e.itemId && find(e.itemId);
+    const inner = `${avatar(e.by, "{name}")}<span class="ch-text">${text}</span><span class="ch-time">${esc(ago(e.at))}</span>`;
+    return item ? `<li><button type="button" class="ch-row" data-act="open-sheet" data-id="${esc(item.id)}">${inner}</button></li>` : `<li><div class="ch-row">${inner}</div></li>`;
+  }
+  function renderChanges() {
+    const el = $("#changes"); if (!el) return;
+    const list = changesList();
+    if (!list.length) { el.hidden = true; el.innerHTML = ""; return; }
+    const shown = state.changes.all ? list : list.slice(0, 4);
+    el.hidden = false;
+    el.innerHTML = `<div class="changes">
+      <div class="ch-head"><span class="label">While you were away</span><button type="button" class="btn sm ghost" data-act="changes-seen">Got it</button></div>
+      <ul class="ch-list">${shown.map(changeHTML).join("")}</ul>
+      ${list.length > shown.length ? `<button type="button" class="link ch-more" data-act="changes-more">Show ${list.length - shown.length} more</button>` : ""}
+    </div>`;
+  }
+  // Separate from subscribe(): if the log can't be read, the list itself keeps working.
+  function watch(coll, onData) {
+    try { dbNs.collection(coll).onSnapshot((snap) => onData(snap.docs.map((d) => ({ id: d.id, ...d.data() }))), () => {}); } catch {}
+  }
+  function watchChanges() {
+    let pruned = false;
+    watch("events", (list) => {
+      state.changes.events = list;
+      // Keep the log short: entries older than 30 days are cleared.
+      if (!pruned && state.canWrite) {
+        pruned = true;
+        const old = list.filter((e) => !e.at || e.at < Date.now() - 30 * 864e5).slice(0, 30);
+        old.forEach((e) => Promise.resolve().then(() => dbNs.collection("events").doc(e.id).delete()).catch(() => {}));
+      }
+      render();
+    });
+    watch("seen", (list) => {
+      if (state.changes.seenAt != null) return;
+      const mine = list.find((x) => x.id === state.me);
+      state.changes.seenAt = mine && typeof mine.at === "number" ? mine.at : Date.now();
+      if (!mine) markSeen();
+      render();
+    });
+    // Leaving counts as having seen everything so far. Coming back after a while
+    // (a tab or home screen app left open) shows what changed in between.
+    document.addEventListener("visibilitychange", () => {
+      const ch = state.changes;
+      if (document.visibilityState === "hidden") { ch.hiddenAt = Date.now(); markSeen(); }
+      else if (ch.hiddenAt && Date.now() - ch.hiddenAt > 120000) { ch.seenAt = ch.hiddenAt; ch.dismissed = false; ch.all = false; ch.hiddenAt = 0; render(); }
+    });
+  }
   const updateItem = (id, patch) => update("activities", id, patch);
 
   /* ---------- toast ---------- */
@@ -1539,6 +1703,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     updateSaveState();
     refreshPop(c);
     syncAnchors();
+    renderChanges();
     fillAvatars();
   }
   function renderPaste() {
@@ -1675,6 +1840,8 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       case "color": { const p = state.pop; if (!p) break; closePop(true); await update("categories", p.cat, { color: Number(b.dataset.v) }); break; }
       case "open-manager": openManager(); break;
       case "open-sheet": if (item) openSheet(id); break;
+      case "changes-seen": state.changes.dismissed = true; markSeen(); render(); break;
+      case "changes-more": state.changes.all = true; render(); break;
       case "close-dialog": closeDialog(); break;
       case "complete": if (item) complete(item, state.filter === "all" ? null : statusOf(item)); break;
       case "uncomplete": if (item) { state.linger.delete(id); uncomplete(item); } break;
@@ -1986,6 +2153,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     dbNs = db;
     subscribe("categories", (list) => { state.cats = list; state.catsLoaded = true; render(); });
     subscribe("activities", (list, meta) => { state.items = list; if (state.mode === "loading") state.mode = "db"; render(); checkNew(list, !!meta.fromCache); if (!meta.fromCache) foldPlanNotes(list); });
+    if (state.me) watchChanges();
   }
   boot();
 })();

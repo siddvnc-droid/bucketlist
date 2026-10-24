@@ -540,7 +540,7 @@
     // A second pass catches anything added while the first one ran.
     for (let pass = 0; pass < 2; pass++) {
       const refs = [];
-      for (const c of ["activities", "categories", "people"]) (await F.getDocs(F.collection(S.db, "lists", listId, c))).forEach((d) => refs.push(d.ref));
+      for (const c of ["activities", "categories", "events", "seen", "people"]) (await F.getDocs(F.collection(S.db, "lists", listId, c))).forEach((d) => refs.push(d.ref));
       if (!refs.length) break;
       for (let i = 0; i < refs.length; i += 400) {
         const batch = F.writeBatch(S.db);
