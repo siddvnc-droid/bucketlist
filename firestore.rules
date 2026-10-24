@@ -24,10 +24,12 @@ service cloud.firestore {
     }
 
     // Each list lives at lists/<id>, the part of the link after "#".
-    // Nobody can browse or search for lists; there is no rule that allows it.
+    // Nobody can browse other people's lists. The home screen app may only ask
+    // for the lists that hold your own confirmed email.
     match /lists/{listId} {
       // Signed-in people may check whether a list exists, and members may read it.
       allow get: if signedIn() && (resource == null || isMemberOf(resource.data));
+      allow list: if signedIn() && myEmail() != '' && myEmail() in resource.data.emails;
       // The first person to open a new list becomes its first member.
       allow create: if listId.size() >= 20 && validList(request.resource.data)
         && isMemberOf(request.resource.data) && request.resource.data.createdBy == request.auth.uid;

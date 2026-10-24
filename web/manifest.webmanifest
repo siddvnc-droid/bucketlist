@@ -1,0 +1,16 @@
+{
+  "id": "/",
+  "name": "Bucket List",
+  "short_name": "Bucket List",
+  "description": "Our shared bucket lists: what we want to do, what's planned, and what we've done.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#EFF0ED",
+  "theme_color": "#EFF0ED",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -9,6 +9,9 @@
 // after "#". The list document holds the emails allowed to open it; the
 // first person to sign in becomes its first member. People sign in with
 // Google or an email and password.
+//
+// Opened without a list (as the home screen app does), it shows the lists
+// you're on, or goes straight to the one you opened last.
 (function () {
   const firebaseConfig = {
     apiKey: "AIzaSyB95TZl4D0Q66VL2-It5QlkAdTi4J02pzA",
@@ -35,17 +38,20 @@
   let listWord = "Our", LIST_NAME = "Our Bucket List";
   // The page heading says "Winter" by default; show this list's own name.
   const nameHeading = () => { const em = document.querySelector("h1 em"); if (em) em.textContent = listWord; document.title = LIST_NAME; };
-  const nameReady = (async () => {
+  async function entryFor(id) {
     try {
-      if (listId) {
-        const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(listId));
-        const hex = [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 16);
-        const entry = LISTS[hex];
-        listWord = entry ? entry.word : "Our";
-        if (entry && entry.effect) document.documentElement.dataset.effect = entry.effect;
-      }
-    } catch {}
-    LIST_NAME = `${listWord} Bucket List`;
+      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(id));
+      const hex = [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 16);
+      return LISTS[hex] || null;
+    } catch { return null; }
+  }
+  const nameReady = (async () => {
+    if (listId) {
+      const entry = await entryFor(listId);
+      listWord = entry ? entry.word : "Our";
+      if (entry && entry.effect) document.documentElement.dataset.effect = entry.effect;
+      LIST_NAME = `${listWord} Bucket List`;
+    } else LIST_NAME = "Bucket List";
     nameHeading();
   })();
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", nameHeading); else nameHeading();
@@ -55,7 +61,23 @@
   const userReady = new Promise((r) => (resolveUser = r));
   window.claude = { use: (name) => (name === "db" ? dbReady : name === "user" ? userReady : Promise.resolve(null)) };
   const giveUp = () => { resolveDb(null); resolveUser(null); };
-  if (!listId) { giveUp(); return; }
+
+  /* ---------- home screen app ---------- */
+  // Opened from a home screen icon rather than a browser tab.
+  const STANDALONE = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+  // "/?lists" always shows the list of lists instead of reopening the last one.
+  const PICK = new URLSearchParams(location.search).has("lists");
+  const saved = {
+    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+  };
+  const LAST_KEY = "bucketlist.lastList", KNOWN_KEY = "bucketlist.knownLists";
+  const knownLists = () => { try { return JSON.parse(saved.get(KNOWN_KEY) || "[]").filter((x) => typeof x === "string"); } catch { return []; } };
+  function rememberList(id) { saved.set(LAST_KEY, id); saved.set(KNOWN_KEY, JSON.stringify([id, ...knownLists().filter((x) => x !== id)].slice(0, 10))); }
+  function openList(id) { saved.set(LAST_KEY, id); location.replace(`/#${id}`); }
+  let installPrompt = null;
+  addEventListener("beforeinstallprompt", (e) => { installPrompt = e; });
+  if ("serviceWorker" in navigator && location.protocol === "https:") addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
 
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -156,11 +178,17 @@
     try {
       const [appM, authM, fsM] = await Promise.all([import(`${SDK}/firebase-app.js`), import(`${SDK}/firebase-auth.js`), import(`${SDK}/firebase-firestore.js`)]);
       S.F = { ...authM, ...fsM };
-      const app = appM.initializeApp(firebaseConfig);
+      // The installed app signs in by going to Google and back. Doing that through this site's own
+      // address keeps Safari from blocking the result (Firebase Hosting serves /__/auth/ on every domain).
+      const sameSite = STANDALONE && /\.(web\.app|firebaseapp\.com)$/.test(location.hostname);
+      const app = appM.initializeApp(sameSite ? { ...firebaseConfig, authDomain: location.hostname } : firebaseConfig);
       S.auth = S.F.getAuth(app);
       S.db = S.F.getFirestore(app);
-      S.listRef = S.F.doc(S.db, "lists", listId);
+      S.listRef = listId ? S.F.doc(S.db, "lists", listId) : null;
       await nameReady;
+      // This file runs in <head>; wait for the page to be built before showing anything on it.
+      if (document.readyState === "loading") await new Promise((r) => document.addEventListener("DOMContentLoaded", r, { once: true }));
+      if (STANDALONE) S.F.getRedirectResult(S.auth).catch((e) => { S.authError = e; setMsg(friendly(e), true); });
       S.F.onAuthStateChanged(S.auth, onUser);
     } catch (e) {
       console.error("Could not connect to Firebase", e);
@@ -175,6 +203,7 @@
     const { F } = S;
     // An email and password account opens lists once its email is confirmed.
     if (user.email && !user.emailVerified && !myPhone()) { showGate("verify"); return; }
+    if (!listId) { showHome(); return; }
     // Only a refusal from the rules means "not on this list"; anything else is a connection problem.
     const failed = (e) => showGate(e && e.code === "permission-denied" ? "denied" : "offline");
     let snap;
@@ -196,6 +225,7 @@
     F.onSnapshot(F.collection(S.db, "lists", listId, "people"), (snap) => { S.people = {}; snap.forEach((d) => (S.people[d.id] = d.data())); renderPeople(); }, () => {});
     F.onSnapshot(S.listRef, (snap) => { if (snap.exists()) { S.members = snap.data(); renderPeople(); } }, () => {});
     S.ready = true;
+    rememberList(listId);
     hideGate();
     addPeopleButton();
     resolveDb(makeDb());
@@ -229,6 +259,14 @@
       .fb-link { border: 0; background: none; padding: 2px 0; color: var(--ink-2); font: inherit; font-size: 13px; font-weight: 500; text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; cursor: pointer; }
       .fb-link:hover { color: var(--ink); text-decoration-color: currentColor; }
       .fb-social svg { flex: none; }
+      .fb-lists { list-style: none; margin: 0 -10px; padding: 0; display: flex; flex-direction: column; }
+      .fb-list { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 10px; border: 0; border-radius: 12px; background: none; color: var(--ink); text-align: left; font: inherit; cursor: pointer; }
+      .fb-list:hover { background: var(--surface-2); }
+      .fb-list .fb-who { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+      .fb-list-name { font-size: 16px; font-weight: 500; }
+      .fb-list svg { color: var(--faint); }
+      .fb-lists li + li { border-top: 1px solid var(--line); }
+      .fb-foot-links { display: inline-flex; align-items: center; gap: 2px; }
       .fb-input:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 15%, transparent); }
       .fb-hint { font-size: 13px; color: var(--muted); margin: 0; }
       .fb-hint.err { color: var(--danger); }
@@ -299,8 +337,8 @@
     }
     g.innerHTML = `<div class="fb-card" role="dialog" aria-labelledby="fb-title">
       <span class="label">${esc(LIST_NAME)}</span>
-      <h2 id="fb-title">Sign in to open your list</h2>
-      <p>Only people added to this list can see it.</p>
+      <h2 id="fb-title">${listId ? "Sign in to open your list" : "Sign in to see your lists"}</h2>
+      <p>${listId ? "Only people added to this list can see it." : "Your bucket lists, shared with the people on them."}</p>
       <button type="button" class="btn fb-wide fb-social" id="fb-google">${G_ICON} Continue with Google</button>
       <div class="fb-or">or</div>
       <form class="fb-stack" id="fb-email-form" autocomplete="on" novalidate>
@@ -314,9 +352,15 @@
       <p class="fb-hint" id="fb-msg" role="status">${EMAIL_HINT}</p>
       <div class="fb-links"><button type="button" class="fb-link" id="fb-forgot">Forgot password?</button></div>
     </div>`;
+    if (S.authError) setMsg(friendly(S.authError), true);
     const { F } = S;
     const popup = async (provider, name) => {
       setMsg(`Opening ${name}…`);
+      if (STANDALONE) {
+        // Pop-up windows don't work in an app opened from the home screen, so go there and come back.
+        try { await F.signInWithRedirect(S.auth, provider); } catch (e) { setMsg(friendly(e), true); }
+        return;
+      }
       try { await F.signInWithPopup(S.auth, provider); }
       catch (e) {
         // A redirect fallback can loop on Safari (the sign-in page lives on a different domain), so explain instead.
@@ -356,6 +400,44 @@
       try { await F.sendPasswordResetEmail(S.auth, email); setMsg(`If there's an account for ${email}, we've sent it a link to choose a new password.`); }
       catch (e) { setMsg(friendly(e), true); }
     };
+  }
+
+  /* ---------- your lists (home screen) ---------- */
+  async function showHome() {
+    const { F } = S;
+    injectCss();
+    let g = $("fb-gate");
+    if (!g) { g = document.createElement("div"); g.id = "fb-gate"; document.body.appendChild(g); }
+    const card = (inner) => { g.innerHTML = `<div class="fb-card" role="dialog" aria-labelledby="fb-title"><span class="label">Bucket List</span><h2 id="fb-title">Your lists</h2>${inner}</div>`; };
+    card(`<p>Finding your lists…</p>`);
+    let ids = [], failed = false;
+    try {
+      const snap = await F.getDocs(F.query(F.collection(S.db, "lists"), F.where("emails", "array-contains", myEmail())));
+      snap.forEach((d) => ids.push(d.id));
+    } catch (e) { failed = true; console.warn("Couldn't look up lists", e); }
+    // Without the lookup, offer the lists opened on this device before.
+    if (failed) ids = knownLists();
+    const last = saved.get(LAST_KEY);
+    if (!PICK && last && ids.includes(last)) { openList(last); return; }
+    if (!PICK && !failed && ids.length === 1) { openList(ids[0]); return; }
+    const lists = await Promise.all(ids.map(async (id) => {
+      const e = await entryFor(id);
+      let count = null;
+      try { count = (await F.getCountFromServer(F.collection(S.db, "lists", id, "activities"))).data().count; } catch {}
+      return { id, name: e ? `${e.word} Bucket List` : "Bucket List", count };
+    }));
+    lists.sort((a, b) => (a.id === last ? -1 : b.id === last ? 1 : a.name.localeCompare(b.name)));
+    const who = S.user.email || "this account";
+    card(`${lists.length ? `<ul class="fb-lists">${lists.map((l) => `<li><button type="button" class="fb-list" data-fb-open="${esc(l.id)}">
+          <span class="fb-who"><span class="fb-list-name">${esc(l.name)}</span>${l.count != null ? `<span class="fb-sub">${l.count === 1 ? "1 activity" : `${l.count} activities`}</span>` : ""}</span>
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5l4.5 4.5L6 12.5"/></svg>
+        </button></li>`).join("")}</ul>`
+      : `<p>${failed ? "Couldn't look up your lists. Open the link you were sent, or check your connection and try again." : "You're not on any lists yet. Open the link you were sent, or ask the person who shared it to add this email under People."}</p>`}
+      <p class="fb-hint">Signed in as <b>${esc(who)}</b></p>
+      <div class="fb-links">${failed ? `<button type="button" class="fb-link" id="fb-retry">Try again</button>` : ""}<button type="button" class="fb-link" id="fb-switch">Use a different account</button></div>`);
+    g.querySelectorAll("[data-fb-open]").forEach((b) => (b.onclick = () => openList(b.dataset.fbOpen)));
+    if ($("fb-retry")) $("fb-retry").onclick = () => location.reload();
+    $("fb-switch").onclick = () => F.signOut(S.auth).then(() => location.reload());
   }
 
   /* ---------- confirming an email ---------- */
@@ -405,6 +487,14 @@
     const m = S.members;
     list.innerHTML = (m.emails || []).map((e) => memberRow("email", e)).join("") + (m.phones || []).map((p) => memberRow("phone", p)).join("");
   }
+  function homeScreenHelp() {
+    if (STANDALONE) return "";
+    const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const how = installPrompt ? `<button type="button" class="btn sm" data-fb-install>Add to home screen</button>`
+      : ios ? `<p class="dlg-sub">In Safari, tap the Share button, then <b>Add to Home Screen</b>. You'll sign in once more inside the app.</p>`
+      : `<p class="dlg-sub">On a phone, open this page in Safari (iPhone) or Chrome (Android) and add it to your home screen from the browser menu.</p>`;
+    return `<div class="fb-section" id="fb-home-help"><span class="label">Home screen</span><p class="dlg-sub">Open your lists like an app, full screen, from an icon on your phone.</p>${how}</div>`;
+  }
   function closePeople() { const el = $("fb-people"); if (el) el.remove(); document.removeEventListener("keydown", onPeopleKey); $("fb-people-btn") && $("fb-people-btn").focus(); }
   function onPeopleKey(ev) { if (ev.key === "Escape") closePeople(); }
   function openPeople() {
@@ -430,8 +520,9 @@
           <p class="dlg-sub">Import a list file, like the one saved from your claude.ai list. Its activities are added to this list.</p>
           <label class="btn sm">Choose file<input type="file" id="fb-import" accept=".json,application/json" hidden></label>
         </div>
+        ${homeScreenHelp()}
       </div>
-      <footer class="sheet-foot"><span>Signed in as ${esc(me)}</span><button type="button" class="btn sm ghost" data-fb-signout>Sign out</button></footer>
+      <footer class="sheet-foot"><span>Signed in as ${esc(me)}</span><span class="fb-foot-links"><button type="button" class="btn sm ghost" data-fb-lists>All lists</button><button type="button" class="btn sm ghost" data-fb-signout>Sign out</button></span></footer>
     </div>`;
     document.body.appendChild(el);
     renderPeople();
@@ -442,6 +533,15 @@
     el.addEventListener("click", async (ev) => {
       if (ev.target === el || ev.target.closest("[data-fb-close]")) { closePeople(); return; }
       if (ev.target.closest("[data-fb-signout]")) { await S.F.signOut(S.auth); location.reload(); return; }
+      if (ev.target.closest("[data-fb-lists]")) { location.href = "/?lists"; return; }
+      if (ev.target.closest("[data-fb-install]")) {
+        if (!installPrompt) return;
+        installPrompt.prompt();
+        try { await installPrompt.userChoice; } catch {}
+        installPrompt = null;
+        const sec = $("fb-home-help"); if (sec) sec.remove();
+        return;
+      }
       const rm = ev.target.closest("[data-fb-remove]");
       if (rm) {
         const [kind, ...rest] = rm.dataset.fbRemove.split(":"); const value = rest.join(":");
