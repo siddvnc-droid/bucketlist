@@ -428,7 +428,10 @@ h1 em { font-style: italic; color: var(--ink-2); }
 .grab { display: none; }
 .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 16px 6px 26px; }
 .sheet-head.tall { align-items: flex-start; padding-top: 22px; }
-.sheet-head .seg button { height: 30px; padding: 0 12px; font-size: 13px; }
+.sheet-eyebrow { display: inline-flex; align-items: center; gap: 8px; }
+.sheet-eyebrow i { width: 7px; height: 7px; border-radius: 50%; background: var(--line-2); }
+.sheet-eyebrow[data-st="planned"] i { background: var(--gold); }
+.sheet-eyebrow[data-st="done"] i { background: var(--done); }
 .sheet-body { overflow: auto; overscroll-behavior: contain; padding: 14px 26px 26px; display: flex; flex-direction: column; gap: 22px; }
 /* scroll instead of squeezing: without this the title shrinks to a sliver when the calendar makes the sheet taller than the screen */
 .sheet-body > * { flex-shrink: 0; }
@@ -1251,16 +1254,16 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   }
 
   /* ---------- dialogs ---------- */
+  // Shown above the name in the details sheet, so it reads "Planning / Tokyo Record Bar".
+  const SHEET_EYEBROW = { todo: "On our list", planned: "Planning", done: "We did" };
   function sheetParts(item) {
     const w = state.canWrite, ro = w ? "" : "readonly", id = esc(item.id), st = statusOf(item);
     const cat = resolveCat(item), tasks = tasksOf(item);
-    const seg = [["todo", "Someday"], ["planned", "Planned"], ["done", "Done"]].map(([v, l]) =>
-      `<button type="button" role="radio" data-act="set-status" data-v="${v}" aria-checked="${st === v}" ${w ? "" : "disabled"}>${l}</button>`).join("");
     const added = item.createdAt ? fmtDate(iso(new Date(item.createdAt)), { year: true }) : "";
     const who = item.addedBy && userNs
       ? `<span class="who">${avatar(item.addedBy, "Added by {name}")}Added by <span data-name-for="${esc(item.addedBy)}">${esc(personName(item.addedBy))}</span>${added ? ` · ${esc(added)}` : ""}</span>`
       : `<span class="who">${added ? `Added ${esc(added)}` : ""}</span>`;
-    const head = `<div class="seg no-anim" role="radiogroup" aria-label="Status"><span class="seg-ind" aria-hidden="true"></span>${seg}</div>
+    const head = `<span class="label sheet-eyebrow" id="sheet-eyebrow" data-st="${st}"><i aria-hidden="true"></i><span>${SHEET_EYEBROW[st]}</span></span>
       <button type="button" class="icon-btn" data-act="close-dialog" aria-label="Close">${ICON.x}</button>`;
     const body = `
       <textarea class="title-input autogrow" rows="1" maxlength="200" data-key="s:title" data-field="title" aria-label="Activity name" ${ro}>${esc(item.title)}</textarea>
@@ -1280,7 +1283,8 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
         <dd><textarea class="fp autogrow" rows="1" maxlength="1000" data-key="s:notes" data-field="notes" placeholder="Ideas, links, costs…" aria-label="Notes" ${ro}>${esc(item.notes || "")}</textarea></dd>
       </dl>
       ${st === "planned" || tasks.length ? `<section class="sheet-cl">${checklistHTML(item, "sheet")}</section>` : ""}`;
-    const reverse = st === "planned" ? `<button type="button" class="btn sm ghost" data-act="cancel-plan" data-id="${id}">${ICON.x} Cancel plan</button>`
+    const reverse = st === "todo" ? `<button type="button" class="btn sm ghost" data-act="set-status" data-v="planned">${ICON.cal} Plan this</button>`
+      : st === "planned" ? `<button type="button" class="btn sm ghost" data-act="cancel-plan" data-id="${id}">${ICON.x} Cancel plan</button>`
       : st === "done" ? `<button type="button" class="btn sm ghost" data-act="unstamp" data-id="${id}">${ICON.undo} Remove stamp</button>` : "";
     const foot = `${who}${w ? (state.sheetLeave
       ? `<span class="foot-confirm">Save your changes?<button type="button" class="btn sm ghost" data-act="sheet-discard">Discard</button><button type="button" class="btn sm primary" data-act="sheet-save" data-close="1">Save</button></span>`
@@ -1337,7 +1341,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
         state.sheetFocus = null;
       }
     } else {
-      if (kind === "sheet") $$(".sheet-head [data-act='set-status']", sheet).forEach((b) => b.setAttribute("aria-checked", String(b.dataset.v === parts.status)));
+      if (kind === "sheet") { const eb = $("#sheet-eyebrow", sheet); if (eb) { eb.dataset.st = parts.status; $("span", eb).textContent = SHEET_EYEBROW[parts.status]; } }
       const body = $(".sheet-body", sheet), top = body.scrollTop;
       body.innerHTML = parts.body; body.scrollTop = top;
       const foot = $(".sheet-foot", sheet); if (foot && parts.foot != null) foot.innerHTML = parts.foot;
@@ -1675,7 +1679,8 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       case "set-status": {
         const it = find(state.sheet), v = b.dataset.v; if (!it || statusOf(it) === v) break;
         state.cal.open = null;
-        const seg = b.closest(".seg"); $$("button", seg).forEach((x) => x.setAttribute("aria-checked", String(x === b))); syncSeg(seg);
+        // Planning from the sheet opens the calendar, the same as the Plan button on a row.
+        if (v === "planned" && !validISO(it.plannedFor)) openCal("plannedFor", null);
         // Keep anything typed but not yet saved (a date, plan notes) by saving it with the status.
         const edits = sheetChanges();
         if ("title" in edits && !edits.title) delete edits.title;
