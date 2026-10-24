@@ -39,7 +39,7 @@ Each category is one document in the `categories` collection: `{ name, color, or
 
 The **While you were away** card reads two more collections:
 
-- `events`: one entry per meaningful change, `{ type, itemId, title, by, at, date }`, where `type` is `add`, `plan`, `move`, `done`, `unplan`, `unstamp` or `delete`. Undoing a change within a minute removes its entry, and entries older than 30 days are cleared.
+- `events`: one entry per meaningful change, `{ type, itemId, title, by, at, date }`, where `type` is `add`, `plan`, `move`, `done`, `unplan`, `unstamp` or `delete`. A change reversed by the same person within 15 minutes is taken back out (ticked then un-ticked, planned then cancelled, added then deleted, deleted then typed back in, a date moved and moved back), even after a reload. Move entries keep the previous date in `from`. Entries older than 30 days are cleared.
 - `seen`: one document per person (`{ at }`), the last time they had the list open. The card shows the other person's changes since then; **Got it** or leaving the page moves it forward.
 
 ## Copies for other lists

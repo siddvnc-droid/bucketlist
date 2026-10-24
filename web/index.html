@@ -846,7 +846,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       else writeLocal(coll, listOf(coll).map((x) => (x.id === id ? merge(x, patch) : x)));
     });
     const c = ok && prev && describeChange(prev, patch);
-    if (c) logEvent(c.type, id, patch.title || prev.title, c.date);
+    if (c) logEvent(c.type, id, patch.title || prev.title, c.date, c.from);
     return ok;
   };
   const remove = async (coll, id) => {
@@ -862,37 +862,69 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   /* ---------- what changed: a short log of who did what ---------- */
   const EVENT_TYPES = new Set(["add", "plan", "move", "done", "unplan", "unstamp", "delete"]);
   const INVERSE = { done: "unstamp", unstamp: "done", plan: "unplan", unplan: "plan", delete: "add", add: "delete" };
-  const recentEvents = new Map();  // activity id -> the last event this person logged for it
+  // A change reversed within this long never shows up in the log.
+  const UNDO_WINDOW = 15 * 60000;
+  const myLog = [];            // entries this person wrote in this visit, until the live log catches up
+  const goneEvents = new Set();  // entries taken back out
   function describeChange(prev, patch) {
     const was = statusOf(prev), now = patch.status || was;
+    const before = validISO(prev.plannedFor) ? prev.plannedFor : null;
     if (now === "done" && was !== "done") return { type: "done" };
     if (was === "done" && now !== "done") return { type: "unstamp" };
-    if (now === "planned" && was !== "planned") return { type: "plan", date: validISO(patch.plannedFor) ? patch.plannedFor : validISO(prev.plannedFor) ? prev.plannedFor : null };
-    if (was === "planned" && now === "todo") return { type: "unplan" };
-    if (now === "planned" && "plannedFor" in patch && validISO(patch.plannedFor) && patch.plannedFor !== prev.plannedFor)
-      return { type: validISO(prev.plannedFor) ? "move" : "plan", date: patch.plannedFor };
+    if (now === "planned" && was !== "planned") return { type: "plan", date: validISO(patch.plannedFor) ? patch.plannedFor : before };
+    if (was === "planned" && now === "todo") return { type: "unplan", from: before };
+    if (now === "planned" && "plannedFor" in patch && validISO(patch.plannedFor) && patch.plannedFor !== before)
+      return before ? { type: "move", date: patch.plannedFor, from: before } : { type: "plan", date: patch.plannedFor };
     return null;
   }
-  async function logEvent(type, itemId, title, date) {
+  // This person's own entries from the last few minutes, newest first.
+  function myRecent(now) {
+    const byId = new Map();
+    for (const e of [...state.changes.events, ...myLog]) {
+      if (e && e.id && e.by === state.me && now - e.at < UNDO_WINDOW && !goneEvents.has(e.id)) byId.set(e.id, { ...byId.get(e.id), ...e });
+    }
+    return [...byId.values()].sort((a, b) => b.at - a.at);
+  }
+  // Log writes run one after another, so an Undo right after a change finds its entry.
+  let logQueue = Promise.resolve();
+  function logEvent(...args) { logQueue = logQueue.then(() => writeEvent(...args)).catch(() => {}); return logQueue; }
+  async function writeEvent(type, itemId, title, date, from) {
     if (!dbNs || !state.me || !state.canWrite) return;
-    const now = Date.now(), last = recentEvents.get(itemId);
-    try {
-      // Undoing something straight away takes it back out of the log.
-      if (last && INVERSE[last.type] === type && now - last.at < 60000) {
-        recentEvents.delete(itemId);
-        await dbNs.collection("events").doc(last.id).delete();
-        return;
-      }
-      // Picking the date right after planning updates that one entry instead of adding another.
-      if (last && last.type === "plan" && (type === "plan" || type === "move") && date && now - last.at < 600000) {
-        await dbNs.collection("events").doc(last.id).update({ date, at: now });
-        last.at = now;
-        return;
-      }
+    const now = Date.now(), recent = myRecent(now);
+    const events = dbNs.collection("events");
+    const drop = async (e) => { goneEvents.add(e.id); await events.doc(e.id).delete(); };
+    const write = async (t, extra) => {
       const id = "e" + now.toString(36) + Math.random().toString(36).slice(2, 7);
-      await dbNs.collection("events").doc(id).set({ type, itemId, title: String(title || "").slice(0, 200), by: state.me, at: now, ...(date ? { date } : {}) });
-      recentEvents.set(itemId, { id, type, at: now });
-    } catch {}
+      const ev = { type: t, itemId, title: String(title || "").slice(0, 200), by: state.me, at: now, ...extra };
+      await events.doc(id).set(ev);
+      myLog.push({ id, ...ev });
+    };
+    const last = recent.find((e) => e.itemId === itemId);
+    if (last) {
+      // Reversed: take the earlier entry back out instead of logging this one.
+      if (INVERSE[last.type] === type) {
+        await drop(last);
+        // Planned again, but for a different day than before it was cancelled: that's a date change
+        // (which may itself undo an earlier move).
+        if (type === "plan" && date && validISO(last.from) && date !== last.from) return writeEvent("move", itemId, title, date, last.from);
+        return;
+      }
+      // Moved back to the day it was on before.
+      if (type === "move" && last.type === "move" && date === last.from) { await drop(last); return; }
+      // Another date soon after planning or moving: update that one entry.
+      if ((last.type === "plan" || last.type === "move") && (type === "plan" || type === "move") && date) {
+        await events.doc(last.id).update({ date, at: now });
+        myLog.push({ ...last, date, at: now });
+        return;
+      }
+    }
+    // Deleted something and typed it back in.
+    if (type === "add") {
+      const key = String(title || "").trim().toLowerCase();
+      const del = key && recent.find((e) => e.type === "delete" && String(e.title || "").trim().toLowerCase() === key);
+      if (del) { await drop(del); return; }
+    }
+    await write(type, { ...(date ? { date } : {}), ...(from ? { from } : {}) });
   }
   function markSeen() {
     if (dbNs && state.me) Promise.resolve().then(() => dbNs.collection("seen").doc(state.me).set({ at: Date.now() })).catch(() => {});
