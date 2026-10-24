@@ -602,7 +602,8 @@
     document.addEventListener("keydown", onPeopleKey);
     const msg = (t, err) => { const m = $("fb-add-msg"); m.textContent = t; m.classList.toggle("err", !!err); };
     el.addEventListener("click", async (ev) => {
-      if (ev.target === el || ev.target.closest("[data-fb-close]")) { closePeople(); return; }
+      // Tapping the dimmed area closes it on a computer, but not on a phone, where it's easy to touch by accident.
+      if ((ev.target === el && !matchMedia("(max-width: 600px)").matches) || ev.target.closest("[data-fb-close]")) { closePeople(); return; }
       if (ev.target.closest("[data-fb-signout]")) { await S.F.signOut(S.auth); location.reload(); return; }
       if (ev.target.closest("[data-fb-lists]")) { location.href = "/?lists"; return; }
       const own = $("fb-owner");
