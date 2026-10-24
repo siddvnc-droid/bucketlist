@@ -220,7 +220,6 @@ h1 em { font-style: italic; color: var(--ink-2); }
   font-family: var(--font-display); font-weight: 400; font-size: clamp(32px, 6vw, 46px); line-height: 1; letter-spacing: -0.015em;
   margin: 0; text-wrap: balance; overflow-wrap: anywhere;
 }
-.doc p.lede { margin: 0; color: var(--doc-ink-2); font-size: 15px; overflow-wrap: anywhere; }
 .fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 14px 22px; margin: 8px 0 0; }
 .fields div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .fields dt { font-family: var(--font-mono); font-size: 9.5px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--doc-muted); }
@@ -894,6 +893,14 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   const seenIds = new Set();
   let seenReady = false;
   // Snow only for ids never seen before, so loading the page or undoing a delete stays quiet.
+  // Activities used to have a separate plan note. Move any that are left into Notes so nothing is lost.
+  function foldPlanNotes(list) {
+    if (!state.canWrite) return;
+    for (const it of list) {
+      const plan = String(it.planNote || "").trim();
+      if (plan) updateItem(it.id, { notes: [plan, it.notes].filter(Boolean).join("\n").slice(0, 1000), planNote: "" });
+    }
+  }
   function checkNew(list, fromCache) {
     let added = 0;
     for (const x of list) if (x && x.id && !seenIds.has(x.id)) { seenIds.add(x.id); added++; }
@@ -1110,7 +1117,6 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
                     : `<div class="doc-date tbd"><span class="dd-dow">No date</span><span class="dd-day">–</span><span class="dd-mon">To be set</span></div>`}
             <div class="doc-main">
               <h2><button type="button" class="doc-title-btn" data-act="open-sheet" data-id="${esc(next.id)}">${esc(next.title)}</button></h2>
-              ${next.planNote ? `<p class="lede">${esc(next.planNote)}</p>` : ""}
               <dl class="fields">
                 <div><dt>Departs</dt><dd><span>${dated ? esc(fmtDate(next.plannedFor, { day: true })) : "To be decided"}</span></dd></div>
                 ${dated ? `<div><dt>Countdown</dt><dd class="${late ? "late" : "time"}"><span>${countdown(next.plannedFor)}</span></dd></div>` : ""}
@@ -1272,9 +1278,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
         ${st === "planned" ? `
         <dt class="top">Date</dt>
         <dd><div class="date-row">${dpHTML("plannedFor", item.plannedFor, "Planned date", !w)}
-          ${w ? `<button type="button" class="qd" data-act="quick-date" data-v="weekend">This weekend</button><button type="button" class="qd" data-act="quick-date" data-v="month">In a month</button>${validISO(item.plannedFor) ? `<button type="button" class="qd" data-act="quick-date" data-v="clear">No date</button>` : ""}` : ""}</div><div class="dp-cal" data-cal-for="plannedFor" hidden></div></dd>
-        <dt class="top">Plan</dt>
-        <dd><textarea class="fp autogrow" rows="1" maxlength="300" data-key="s:planNote" data-field="planNote" placeholder="Where, who books what…" aria-label="Plan notes" ${ro}>${esc(item.planNote || "")}</textarea></dd>` : ""}
+          ${w ? `<button type="button" class="qd" data-act="quick-date" data-v="weekend">This weekend</button><button type="button" class="qd" data-act="quick-date" data-v="month">In a month</button>${validISO(item.plannedFor) ? `<button type="button" class="qd" data-act="quick-date" data-v="clear">No date</button>` : ""}` : ""}</div><div class="dp-cal" data-cal-for="plannedFor" hidden></div></dd>` : ""}
         ${st === "done" ? `
         <dt class="top">Done on</dt>
         <dd><div class="date-row">${dpHTML("doneOn", item.doneOn, "Done on", !w, todayISO())}</div><div class="dp-cal" data-cal-for="doneOn" hidden></div></dd>
@@ -1543,7 +1547,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     toast("Pick a category to add it.");
   }
   function baseItem(title, categoryId, i = 0) {
-    return { title, categoryId: categoryId || null, category: "", notes: "", status: "todo", plannedFor: null, planNote: "", doneOn: null, doneAt: null, memory: "", createdAt: Date.now() + i, addedBy: state.me || null, doneBy: null };
+    return { title, categoryId: categoryId || null, category: "", notes: "", status: "todo", plannedFor: null, doneOn: null, doneAt: null, memory: "", createdAt: Date.now() + i, addedBy: state.me || null, doneBy: null };
   }
   async function complete(item, from) {
     const prev = { status: item.status || "todo", doneOn: item.doneOn ?? null, doneAt: item.doneAt ?? null, doneBy: item.doneBy ?? null };
@@ -1976,7 +1980,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     }
     dbNs = db;
     subscribe("categories", (list) => { state.cats = list; state.catsLoaded = true; render(); });
-    subscribe("activities", (list, meta) => { state.items = list; if (state.mode === "loading") state.mode = "db"; render(); checkNew(list, !!meta.fromCache); });
+    subscribe("activities", (list, meta) => { state.items = list; if (state.mode === "loading") state.mode = "db"; render(); checkNew(list, !!meta.fromCache); if (!meta.fromCache) foldPlanNotes(list); });
   }
   boot();
 })();
