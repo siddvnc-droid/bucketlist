@@ -18,24 +18,33 @@ service cloud.firestore {
       return isMemberOf(get(/databases/$(database)/documents/lists/$(listId)).data);
     }
     function validList(d) {
-      return d.keys().hasOnly(['emails', 'phones', 'createdBy', 'createdAt'])
+      return d.keys().hasOnly(['emails', 'phones', 'createdBy', 'createdAt', 'deletedAt'])
         && d.emails is list && d.phones is list
         && d.emails.size() <= 25 && d.phones.size() <= 25;
     }
+    // The person who made a list owns it. Only they can delete it.
+    function isOwnerOf(data) { return isMemberOf(data) && data.createdBy == request.auth.uid; }
+    // A deleted list keeps an empty marker, so its link stays dead instead of starting a new list.
+    function isDeleted(data) { return data.get('deletedAt', 0) != 0; }
 
     // Each list lives at lists/<id>, the part of the link after "#".
     // Nobody can browse other people's lists. The home screen app may only ask
     // for the lists that hold your own confirmed email.
     match /lists/{listId} {
-      // Signed-in people may check whether a list exists, and members may read it.
-      allow get: if signedIn() && (resource == null || isMemberOf(resource.data));
+      // Signed-in people may check whether a list exists or was deleted, and members may read it.
+      allow get: if signedIn() && (resource == null || isMemberOf(resource.data) || isDeleted(resource.data));
       allow list: if signedIn() && myEmail() != '' && myEmail() in resource.data.emails;
       // The first person to open a new list becomes its first member.
       allow create: if listId.size() >= 20 && validList(request.resource.data)
-        && isMemberOf(request.resource.data) && request.resource.data.createdBy == request.auth.uid;
+        && isMemberOf(request.resource.data) && request.resource.data.createdBy == request.auth.uid
+        && !isDeleted(request.resource.data);
       // Members can add or remove people, but can't remove themselves.
-      allow update: if isMemberOf(resource.data) && validList(request.resource.data)
-        && isMemberOf(request.resource.data);
+      // The owner can delete the list: everyone is removed and it's marked deleted.
+      allow update: if isMemberOf(resource.data) && validList(request.resource.data) && (
+        (isMemberOf(request.resource.data) && !isDeleted(request.resource.data))
+        || (isOwnerOf(resource.data) && isDeleted(request.resource.data)
+            && request.resource.data.emails.size() == 0 && request.resource.data.phones.size() == 0
+            && request.resource.data.createdBy == resource.data.createdBy));
 
       match /{coll}/{docId} {
         allow read, delete: if coll in ['activities', 'categories'] && member(listId);
@@ -45,7 +54,10 @@ service cloud.firestore {
       // Each member keeps their own name and photo here so others can see who did what.
       match /people/{uid} {
         allow read: if member(listId);
-        allow write: if member(listId) && request.auth.uid == uid;
+        allow create, update: if member(listId) && request.auth.uid == uid;
+        // You can remove your own entry; the owner clears everyone's when deleting the list.
+        allow delete: if member(listId) && (request.auth.uid == uid
+          || get(/databases/$(database)/documents/lists/$(listId)).data.createdBy == request.auth.uid);
       }
     }
   }

@@ -74,6 +74,10 @@
   const LAST_KEY = "bucketlist.lastList", KNOWN_KEY = "bucketlist.knownLists";
   const knownLists = () => { try { return JSON.parse(saved.get(KNOWN_KEY) || "[]").filter((x) => typeof x === "string"); } catch { return []; } };
   function rememberList(id) { saved.set(LAST_KEY, id); saved.set(KNOWN_KEY, JSON.stringify([id, ...knownLists().filter((x) => x !== id)].slice(0, 10))); }
+  function forgetList(id) {
+    saved.set(KNOWN_KEY, JSON.stringify(knownLists().filter((x) => x !== id)));
+    if (saved.get(LAST_KEY) === id) saved.set(LAST_KEY, "");
+  }
   function openList(id) { saved.set(LAST_KEY, id); location.replace(`/#${id}`); }
   let installPrompt = null;
   addEventListener("beforeinstallprompt", (e) => { installPrompt = e; });
@@ -208,22 +212,32 @@
     const failed = (e) => showGate(e && e.code === "permission-denied" ? "denied" : "offline");
     let snap;
     try { snap = await F.getDoc(S.listRef); } catch (e) { failed(e); return; }
+    if (snap.exists() && snap.data().deletedAt) { listDeleted(); return; }
     if (!snap.exists()) {
+      const fresh = { emails: myEmail() ? [myEmail()] : [], phones: myPhone() ? [myPhone()] : [], createdBy: user.uid, createdAt: Date.now() };
       try {
-        await F.setDoc(S.listRef, { emails: myEmail() ? [myEmail()] : [], phones: myPhone() ? [myPhone()] : [], createdBy: user.uid, createdAt: Date.now() });
+        await F.setDoc(S.listRef, fresh);
+        S.members = fresh;
       } catch (e) {
         // Someone else may have created the list a moment ago: look again.
         try {
           const again = await F.getDoc(S.listRef);
           if (!again.exists()) { failed(e); return; }
+          if (again.data().deletedAt) { listDeleted(); return; }
           if (!isMember(again.data())) { showGate("denied"); return; }
+          S.members = again.data();
         } catch (e2) { failed(e2); return; }
       }
     } else if (!isMember(snap.data())) { showGate("denied"); return; }
+    else S.members = snap.data();
     // Saving your name and photo for others can happen in the background.
     F.setDoc(F.doc(S.db, "lists", listId, "people", user.uid), { name: user.displayName || "", photo: user.photoURL || "", email: myEmail(), phone: myPhone() }, { merge: true }).catch(() => {});
     F.onSnapshot(F.collection(S.db, "lists", listId, "people"), (snap) => { S.people = {}; snap.forEach((d) => (S.people[d.id] = d.data())); renderPeople(); }, () => {});
-    F.onSnapshot(S.listRef, (snap) => { if (snap.exists()) { S.members = snap.data(); renderPeople(); } }, () => {});
+    F.onSnapshot(S.listRef, (snap) => {
+      if (!snap.exists()) return;
+      if (snap.data().deletedAt) { listDeleted(); return; }
+      S.members = snap.data(); renderPeople();
+    }, () => {});
     S.ready = true;
     rememberList(listId);
     hideGate();
@@ -282,6 +296,7 @@
       .fb-member .fb-sub { font-size: 12.5px; color: var(--muted); }
       .fb-tag { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
       .fb-section { border-top: 1px solid var(--line); padding-top: 18px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+      .fb-section:empty { display: none; }
     `;
     document.head.appendChild(st);
   }
@@ -301,6 +316,16 @@
       </div>`;
       $("fb-retry").onclick = () => location.reload();
       $("fb-switch").onclick = () => S.F.signOut(S.auth).then(() => location.reload());
+      return;
+    }
+    if (kind === "deleted") {
+      g.innerHTML = `<div class="fb-card" role="dialog" aria-labelledby="fb-title">
+        <span class="label">${esc(LIST_NAME)}</span>
+        <h2 id="fb-title">This list was deleted</h2>
+        <p>The person who made it deleted it, along with everything on it.</p>
+        <button type="button" class="btn primary fb-wide" id="fb-lists">See your lists</button>
+      </div>`;
+      $("fb-lists").onclick = () => { location.href = "/?lists"; };
       return;
     }
     if (kind === "denied") {
@@ -477,15 +502,56 @@
     const me = kind === "email" ? value === myEmail() : value === myPhone();
     const name = found && found[1].name;
     const img = found ? avatarFor(found[0]) : initialsAvatar(kind === "email" ? value : value.slice(-2), colorFor(value));
+    const owner = !!(found && S.members && found[0] === S.members.createdBy);
+    const tag = [owner && "Owner", me && "You"].filter(Boolean).join(" · ");
     return `<li class="fb-member"><img src="${esc(img)}" alt="">
       <span class="fb-who"><span>${esc(name || value)}</span>${name ? `<span class="fb-sub">${esc(value)}</span>` : found ? "" : `<span class="fb-sub">Hasn't signed in yet</span>`}</span>
-      ${me ? `<span class="fb-tag">You</span>` : `<button type="button" class="icon-btn sm danger" data-fb-remove="${esc(kind)}:${esc(value)}" aria-label="Remove ${esc(value)}"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>`}
+      ${me || owner ? `<span class="fb-tag">${tag}</span>` : `<button type="button" class="icon-btn sm danger" data-fb-remove="${esc(kind)}:${esc(value)}" aria-label="Remove ${esc(value)}"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>`}
     </li>`;
   }
   function renderPeople() {
     const list = $("fb-members"); if (!list) return;
     const m = S.members;
     list.innerHTML = (m.emails || []).map((e) => memberRow("email", e)).join("") + (m.phones || []).map((p) => memberRow("phone", p)).join("");
+    const own = $("fb-owner");
+    if (own && !own.dataset.state) own.innerHTML = isOwner() ? ownerSection() : "";
+  }
+
+  /* ---------- deleting a list (owner only) ---------- */
+  const isOwner = () => !!(S.user && S.members && S.members.createdBy === S.user.uid);
+  function ownerSection(confirming, count) {
+    if (!confirming) return `<span class="label">Delete this list</span>
+      <p class="dlg-sub">Deletes the list and everything on it for everyone. Its link stops working. This can't be undone.</p>
+      <button type="button" class="btn sm danger-text" data-fb-delete>Delete list…</button>`;
+    const what = count == null ? "everything on it" : count === 1 ? "its 1 activity" : `its ${count} activities`;
+    return `<span class="label">Delete this list</span>
+      <p class="dlg-sub"><b>Delete ${esc(LIST_NAME)} and ${what} for everyone?</b> This can't be undone.</p>
+      <div class="fb-foot-links"><button type="button" class="btn sm ghost" data-fb-delete-cancel>Cancel</button><button type="button" class="btn sm danger" data-fb-delete-confirm>Delete list</button></div>
+      <p class="fb-hint" id="fb-delete-msg" role="status"></p>`;
+  }
+  async function deleteList() {
+    const { F } = S;
+    S.deleting = true;
+    // Empty the list first (the rules check membership on the list itself), then mark it deleted.
+    // A second pass catches anything added while the first one ran.
+    for (let pass = 0; pass < 2; pass++) {
+      const refs = [];
+      for (const c of ["activities", "categories", "people"]) (await F.getDocs(F.collection(S.db, "lists", listId, c))).forEach((d) => refs.push(d.ref));
+      if (!refs.length) break;
+      for (let i = 0; i < refs.length; i += 400) {
+        const batch = F.writeBatch(S.db);
+        refs.slice(i, i + 400).forEach((r) => batch.delete(r));
+        await batch.commit();
+      }
+    }
+    await F.setDoc(S.listRef, { emails: [], phones: [], createdBy: S.members.createdBy, createdAt: S.members.createdAt || Date.now(), deletedAt: Date.now() });
+    forgetList(listId);
+  }
+  function listDeleted() {
+    if (S.deleting) return;
+    forgetList(listId);
+    if ($("fb-people")) closePeople();
+    showGate("deleted");
   }
   function homeScreenHelp() {
     if (STANDALONE) return "";
@@ -521,6 +587,7 @@
           <label class="btn sm">Choose file<input type="file" id="fb-import" accept=".json,application/json" hidden></label>
         </div>
         ${homeScreenHelp()}
+        <div class="fb-section" id="fb-owner"></div>
       </div>
       <footer class="sheet-foot"><span>Signed in as ${esc(me)}</span><span class="fb-foot-links"><button type="button" class="btn sm ghost" data-fb-lists>All lists</button><button type="button" class="btn sm ghost" data-fb-signout>Sign out</button></span></footer>
     </div>`;
@@ -534,6 +601,26 @@
       if (ev.target === el || ev.target.closest("[data-fb-close]")) { closePeople(); return; }
       if (ev.target.closest("[data-fb-signout]")) { await S.F.signOut(S.auth); location.reload(); return; }
       if (ev.target.closest("[data-fb-lists]")) { location.href = "/?lists"; return; }
+      const own = $("fb-owner");
+      if (ev.target.closest("[data-fb-delete]") && isOwner()) {
+        own.dataset.state = "confirm"; own.innerHTML = ownerSection(true);
+        try { const n = (await S.F.getCountFromServer(S.F.collection(S.db, "lists", listId, "activities"))).data().count; if (own.dataset.state === "confirm") own.innerHTML = ownerSection(true, n); } catch {}
+        return;
+      }
+      if (ev.target.closest("[data-fb-delete-cancel]")) { delete own.dataset.state; own.innerHTML = ownerSection(); return; }
+      if (ev.target.closest("[data-fb-delete-confirm]") && isOwner()) {
+        own.dataset.state = "deleting";
+        own.querySelectorAll("button").forEach((b) => (b.disabled = true));
+        $("fb-delete-msg").textContent = "Deleting…";
+        try { await deleteList(); location.href = "/?lists"; }
+        catch (e) {
+          console.warn("Couldn't delete the list", e);
+          S.deleting = false; own.dataset.state = "confirm";
+          own.querySelectorAll("button").forEach((b) => (b.disabled = false));
+          const m = $("fb-delete-msg"); m.textContent = "Couldn't delete the list. Check your connection and try again."; m.classList.add("err");
+        }
+        return;
+      }
       if (ev.target.closest("[data-fb-install]")) {
         if (!installPrompt) return;
         installPrompt.prompt();
