@@ -654,7 +654,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     catFilter: safeGet("bucketlist.cat") || "",     // "" all, "none" uncategorized, or a category id
     composerCat: "",
     paste: null,               // lines waiting to be added from a paste
-    sheet: null, sheetConfirm: false,
+    sheet: null,
     manager: false, managerReturn: null, catConfirm: null,
     dialogFresh: false,
     pop: null,                 // { kind, anchor, cat }
@@ -1284,9 +1284,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       : st === "done" ? `<button type="button" class="btn sm ghost" data-act="unstamp" data-id="${id}">${ICON.undo} Remove stamp</button>` : "";
     const foot = `${who}${w ? (state.sheetLeave
       ? `<span class="foot-confirm">Save your changes?<button type="button" class="btn sm ghost" data-act="sheet-discard">Discard</button><button type="button" class="btn sm primary" data-act="sheet-save" data-close="1">Save</button></span>`
-      : state.sheetConfirm
-      ? `<span class="foot-confirm">Delete for both of you?<button type="button" class="btn sm ghost" data-act="sheet-delete-cancel">Cancel</button><button type="button" class="btn sm danger" data-act="sheet-delete-confirm" data-id="${id}">Delete</button></span>`
-      : `<span class="foot-actions">${reverse}<button type="button" class="btn sm ghost danger-text" data-act="sheet-delete">${ICON.trash} Delete</button><span class="save-hint" id="save-hint" hidden>Unsaved changes</span><button type="button" class="btn sm primary" id="sheet-save" data-act="sheet-save" disabled>Save</button></span>`) : ""}`;
+      : `<span class="foot-actions">${reverse}<span class="save-hint" id="save-hint" hidden>Unsaved changes</span><button type="button" class="btn sm primary" id="sheet-save" data-act="sheet-save" disabled>Save</button></span>`) : ""}`;
     return { head, body, foot, status: st };
   }
   function managerParts(c) {
@@ -1311,7 +1309,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   }
   function renderDialog(c) {
     const root = $("#dialog-root");
-    if (state.sheet && !find(state.sheet)) { state.sheet = null; state.sheetConfirm = false; }
+    if (state.sheet && !find(state.sheet)) state.sheet = null;
     const open = !!(state.sheet || state.manager);
     $("#app").inert = open;
     document.documentElement.style.overflow = open ? "hidden" : "";
@@ -1351,16 +1349,16 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     closePop(); closeSwipe();
     state.cal.open = null;
     if (focusField === "plannedFor") { const it = find(id); openCal("plannedFor", it && it.plannedFor); }
-    state.sheet = id; state.sheetFocus = focusField || null; state.sheetConfirm = false; state.sheetLeave = false; state.manager = false; state.dialogFresh = true; render(); }
+    state.sheet = id; state.sheetFocus = focusField || null; state.sheetLeave = false; state.manager = false; state.dialogFresh = true; render(); }
   function openManager() { closePop(); state.managerReturn = state.sheet; state.sheet = null; state.manager = true; state.catConfirm = null; state.dialogFresh = true; render(); }
   function closeDialog(force) {
     if (!state.sheet && !state.manager) return;
     // Ask before throwing away typed changes.
-    if (!force && state.sheet && state.canWrite && Object.keys(sheetChanges()).length) { state.sheetLeave = true; state.sheetConfirm = false; render(); return; }
+    if (!force && state.sheet && state.canWrite && Object.keys(sheetChanges()).length) { state.sheetLeave = true; render(); return; }
     state.sheetLeave = false;
     if (state.manager && state.managerReturn && find(state.managerReturn)) { const back = state.managerReturn; state.managerReturn = null; openSheet(back); return; }
     const backSel = state.sheet ? `[data-act="open-sheet"][data-id="${CSS.escape(state.sheet)}"]` : "#filter-cat";
-    state.sheet = null; state.manager = false; state.managerReturn = null; state.catConfirm = null; state.sheetConfirm = false;
+    state.sheet = null; state.manager = false; state.managerReturn = null; state.catConfirm = null;
     closePop();
     const root = $("#dialog-root"), scrim = $(".scrim", root);
     if (scrim) {
@@ -1726,14 +1724,6 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       }
       case "sheet-save": saveSheet(b.dataset.close === "1"); break;
       case "sheet-discard": closeDialog(true); break;
-      case "sheet-delete": state.sheetConfirm = true; render(); break;
-      case "sheet-delete-cancel": state.sheetConfirm = false; render(); break;
-      case "sheet-delete-confirm": {
-        if (!item) break;
-        closeDialog(true);
-        await deleteWithUndo(item);
-        break;
-      }
       case "paste-cancel": state.paste = null; render(); $("#new-title").focus(); break;
       case "paste-add": {
         if (needsCategory()) { askForCategory("paste"); break; }
@@ -1790,7 +1780,6 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       if (state.swipeOpen && !state.sheet && !state.manager) { closeSwipe(); return; }
       if (state.pop) { ev.preventDefault(); closePop(true); }
       else if (state.catConfirm) { state.catConfirm = null; render(); }
-      else if (state.sheetConfirm) { state.sheetConfirm = false; render(); }
       else if (state.sheetLeave) { state.sheetLeave = false; render(); }
       else if (state.sheet || state.manager) closeDialog();
       else if (state.paste) { state.paste = null; render(); }
