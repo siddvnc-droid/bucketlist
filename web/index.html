@@ -2165,6 +2165,60 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     writeLocal("activities", items, true);
     render();
   }
+  /* ---------- pull a sheet down to close it (phones) ---------- */
+  // Drag the handle or header, or pull down on the content once it's scrolled to the top.
+  // Closing goes through the sheet's own close button, so unsaved changes still ask first.
+  const pull = { sheet: null };
+  const phoneLayout = () => window.matchMedia && matchMedia("(max-width: 600px)").matches;
+  document.addEventListener("touchstart", (e) => {
+    pull.sheet = null;
+    if (e.touches.length !== 1 || !phoneLayout()) return;
+    const sheet = e.target.closest && e.target.closest(".scrim.open > .sheet");
+    if (!sheet) return;
+    const body = sheet.querySelector(".sheet-body");
+    const fromHandle = !!e.target.closest(".grab, .sheet-head");
+    if (!fromHandle && !(body && body.contains(e.target) && body.scrollTop <= 0)) return;
+    // Leave text selection alone in a field that's being typed in.
+    if (!fromHandle && e.target === document.activeElement && e.target.matches("input, textarea")) return;
+    const t = e.touches[0];
+    Object.assign(pull, { sheet, scrim: sheet.parentElement, body, fromHandle, x0: t.clientX, y0: t.clientY, dy: 0, on: false, samples: [[performance.now(), t.clientY]] });
+  }, { passive: true });
+  document.addEventListener("touchmove", (e) => {
+    const d = pull; if (!d.sheet) return;
+    const t = e.touches[0], dx = t.clientX - d.x0, dy = t.clientY - d.y0;
+    if (!d.on) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      // Only a downward pull, and only while the content is at its top.
+      if (dy <= 0 || Math.abs(dx) > Math.abs(dy) || (!d.fromHandle && d.body.scrollTop > 0)) { d.sheet = null; return; }
+      d.on = true;
+      d.sheet.style.transition = "none"; d.scrim.style.transition = "none";
+    }
+    e.preventDefault();
+    d.dy = Math.max(0, t.clientY - d.y0);
+    d.sheet.style.transform = `translateY(${d.dy}px)`;
+    d.scrim.style.opacity = String(Math.max(0.3, 1 - d.dy / (d.sheet.offsetHeight * 1.4)));
+    d.samples.push([performance.now(), t.clientY]); if (d.samples.length > 5) d.samples.shift();
+  }, { passive: false });
+  function endPull() {
+    const d = pull, sheet = d.sheet; pull.sheet = null;
+    if (!sheet || !d.on) return;
+    const [[t1, y1], [t2, y2]] = [d.samples[0], d.samples[d.samples.length - 1]];
+    const speed = t2 > t1 ? (y2 - y1) / (t2 - t1) : 0;  // px per ms, downward is positive
+    const close = d.dy > Math.min(140, sheet.offsetHeight * 0.25) || (speed > 0.5 && d.dy > 20);
+    sheet.style.transition = ""; d.scrim.style.transition = "";
+    const btn = close && sheet.querySelector('[data-act="close-dialog"], [data-fb-close]');
+    if (btn && btn.matches("[data-fb-close]")) {
+      // This panel closes without its own animation, so slide it away first.
+      sheet.style.transform = "translateY(100%)"; d.scrim.style.opacity = "0";
+      setTimeout(() => btn.click(), 220);
+      return;
+    }
+    sheet.style.transform = ""; d.scrim.style.opacity = "";
+    if (btn) btn.click();  // slides away, or springs back while asking to save changes
+  }
+  document.addEventListener("touchend", endPull);
+  document.addEventListener("touchcancel", endPull);
+
   function subscribe(coll, onData, retried) {
     dbNs.collection(coll).onSnapshot((snap) => onData(snap.docs.map((d) => ({ id: d.id, ...d.data() })), snap.metadata || {}), (err) => {
       if (err && err.code === "unavailable" && !retried) { setTimeout(() => subscribe(coll, onData, true), 2000); return; }
