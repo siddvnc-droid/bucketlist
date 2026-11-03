@@ -314,8 +314,28 @@ h1 em { font-style: italic; color: var(--ink-2); }
 #list .card { overflow: hidden; }
 .rows { list-style: none; margin: 0; padding: 6px 0; }
 .row { position: relative; touch-action: pan-y; }
-.row-inner { position: relative; z-index: 1; display: flex; align-items: flex-start; gap: 4px; padding: 0 10px 0 16px; background: var(--surface); transition: transform .34s var(--ease); }
-.row + .row::before { content: ""; position: absolute; z-index: 2; pointer-events: none; top: 0; left: 60px; right: 18px; height: 1px; background: var(--line); transition: opacity .12s; }
+.row-inner { position: relative; z-index: 1; display: flex; align-items: center; gap: 4px; padding: 0 10px 0 16px; background: var(--surface); transition: transform .34s var(--ease); }
+.row + .row::before { content: ""; position: absolute; z-index: 2; pointer-events: none; top: 0; left: 76px; right: 18px; height: 1px; background: var(--line); transition: opacity .12s; }
+.rows.grips .row + .row::before { left: 110px; }
+/* category icons: a soft tile on each row, a small colored icon elsewhere */
+.cat-tile { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: var(--dot); background: color-mix(in srgb, var(--dot) 12%, transparent); }
+.cat-tile svg { width: 20px; height: 20px; }
+.cat-tile.none { --dot: var(--faint); }
+.row.is-done .cat-tile { opacity: .7; }
+.cat-ic { display: inline-grid; place-items: center; flex: none; color: var(--dot); }
+.cat-ic svg, .opt .cat-ic svg, .fields .cat-ic svg { width: 15px; height: 15px; color: var(--dot); }
+/* the grip: drag it to put To do in priority order */
+.grip { flex: none; align-self: center; width: 28px; height: 44px; margin-right: 2px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 8px; background: none; color: var(--faint); cursor: grab; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.grip svg { width: 16px; height: 16px; }
+.grip:hover { color: var(--muted); background: var(--surface-2); }
+.rows.reordering .row:not(.dragging) { transition: transform .2s var(--ease); }
+.rows.reordering .row::before { opacity: 0; }
+.row.dragging { z-index: 5; -webkit-user-select: none; user-select: none; }
+.row.dragging .row-inner { border-radius: 14px; box-shadow: var(--shadow-2); transform: scale(1.02); }
+.row.dragging .grip { cursor: grabbing; color: var(--ink-2); }
+.row.dragging .swipe-actions { visibility: hidden; }
+.row.settling { transition: transform .2s var(--ease); }
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 /* swipe left to delete, like Apple's lists */
 .swipe-actions { position: absolute; inset: 0; display: flex; justify-content: flex-end; background: var(--swipe-red); visibility: hidden; }
 .row.swiping .swipe-actions, .row.swiped .swipe-actions, .row.swipe-gone .swipe-actions { visibility: visible; }
@@ -334,20 +354,6 @@ h1 em { font-style: italic; color: var(--ink-2); }
 .row-plan svg:first-child { color: var(--muted); }
 .row-plan:hover { background: var(--surface-2); border-color: var(--line-2); color: var(--ink); }
 .row:hover + .row::before, .row:hover::before { opacity: 0; }
-.cb { flex: none; width: 34px; height: 34px; margin-top: 8px; display: grid; place-items: center; border: 0; padding: 0; background: none; border-radius: 50%; color: var(--line-2); }
-.cb svg { width: 23px; height: 23px; overflow: visible; }
-.cb .ring { fill: transparent; stroke: currentColor; stroke-width: 1.5; transition: fill .2s, stroke .2s; }
-.cb .tick { fill: none; stroke: var(--done); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 14; stroke-dashoffset: 14; transition: stroke-dashoffset .25s var(--ease), stroke .2s; }
-.cb:hover { color: var(--done); }
-.cb:hover .tick { stroke-dashoffset: 0; stroke: color-mix(in srgb, var(--done) 55%, transparent); }
-.cb.on { color: var(--done); }
-.cb.on .ring { fill: var(--done); }
-.cb.on .tick { stroke: var(--on-done); stroke-dashoffset: 0; }
-.cb.pop { animation: cbPop .45s cubic-bezier(.2, 1.6, .4, 1) var(--t, 0ms) both; }
-.cb.pop .tick { animation: tickDraw .3s var(--ease) calc(var(--t, 0ms) + 90ms) both; }
-.cb[disabled] { cursor: default; }
-@keyframes cbPop { 0% { transform: scale(.82); } 55% { transform: scale(1.14); } 100% { transform: scale(1); } }
-@keyframes tickDraw { from { stroke-dashoffset: 14; } to { stroke-dashoffset: 0; } }
 .row-open {
   flex: 1; min-width: 0; display: flex; align-items: center; gap: 14px; text-align: left; border: 0; background: none;
   padding: 14px 8px 14px 6px; border-radius: 12px; color: inherit; transition: background .12s;
@@ -507,10 +513,18 @@ textarea.fp { resize: none; overflow: hidden; line-height: 1.5; }
 
 /* category manager */
 .mgr { list-style: none; margin: 0 -8px; padding: 0; display: flex; flex-direction: column; }
-.mgr-row { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto 28px; align-items: center; gap: 6px 10px; padding: 4px 8px; border-radius: 12px; }
+.mgr-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto 28px; align-items: center; gap: 6px 10px; padding: 4px 8px; border-radius: 12px; }
 .mgr-row:hover { background: var(--surface-2); }
 .mgr-row .fp:hover:not([readonly]) { background: var(--surface); }
 .swatch { width: 34px; height: 34px; border-radius: 10px; border: 0; background: transparent; display: grid; place-items: center; padding: 0; }
+button.cat-tile { border: 0; padding: 0; cursor: pointer; transition: box-shadow .15s; }
+button.cat-tile[aria-expanded="true"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--dot); }
+button.cat-tile[disabled] { cursor: default; }
+.icon-grid { display: grid; grid-template-columns: repeat(6, 36px); gap: 4px; padding: 4px 6px 6px; }
+.icon-opt { width: 36px; height: 36px; border: 0; border-radius: 10px; background: none; color: var(--ink-2); display: grid; place-items: center; padding: 0; }
+.icon-opt svg { width: 18px; height: 18px; }
+.icon-opt:hover, .icon-opt:focus-visible { background: var(--surface-2); outline: none; }
+.icon-opt[aria-pressed="true"] { color: var(--dot); background: color-mix(in srgb, var(--dot) 14%, transparent); }
 .swatch::before { content: ""; width: 14px; height: 14px; border-radius: 50%; background: var(--dot); box-shadow: 0 0 0 3px color-mix(in srgb, var(--dot) 18%, transparent); }
 .swatch:hover { background: var(--surface); }
 .swatch[disabled] { cursor: default; background: transparent; }
@@ -588,9 +602,13 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   .toolbar .seg button { flex: 1 1 0; padding: 0 6px; }
   .toolbar .picker { align-self: flex-start; }
   .row-inner { padding: 0 6px 0 8px; }
+  .rows.grips .row-inner { padding-left: 2px; }
+  .grip { width: 26px; margin-right: 0; }
+  .row-open { gap: 12px; padding-left: 4px; }
+  .rows.grips .row + .row::before { left: 88px; }
   .row-plan svg:last-child { display: none; }
   .row-plan { padding: 0 10px; }
-  .row + .row::before { left: 52px; right: 12px; }
+  .row + .row::before { left: 64px; right: 12px; }
   .row-meta .note { max-width: 100%; }
   .stamps { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 6px; }
   .stamp-card { padding: 16px 12px 14px; }
@@ -671,6 +689,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
 <div id="dialog-root"></div>
 <div id="pop" hidden></div>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<div id="sr-live" class="sr-only" aria-live="polite"></div>
 
 <script>
 (() => {
@@ -688,6 +707,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     x: `<svg viewBox="0 0 16 16" ${S}><path d="M4 4l8 8M12 4l-8 8"/></svg>`,
     chev: `<svg viewBox="0 0 16 16" ${S}><path d="M4.5 6.5L8 10l3.5-3.5"/></svg>`,
     right: `<svg viewBox="0 0 16 16" ${S}><path d="M6.5 4L10.5 8l-4 4"/></svg>`,
+    grip: `<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="6" cy="4" r="1.15"/><circle cx="10" cy="4" r="1.15"/><circle cx="6" cy="8" r="1.15"/><circle cx="10" cy="8" r="1.15"/><circle cx="6" cy="12" r="1.15"/><circle cx="10" cy="12" r="1.15"/></svg>`,
     left: `<svg viewBox="0 0 16 16" ${S}><path d="M9.5 4L5.5 8l4 4"/></svg>`,
     plus: `<svg viewBox="0 0 16 16" ${S}><path d="M8 3.5v9M3.5 8h9"/></svg>`,
     trash: `<svg viewBox="0 0 16 16" ${S}><path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 8.5h5.8l.6-8.5"/></svg>`,
@@ -699,7 +719,6 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     info: `<svg viewBox="0 0 16 16" ${S}><circle cx="8" cy="8" r="6.25"/><path d="M8 7.2V11M8 5v.01"/></svg>`,
     undo: `<svg viewBox="0 0 16 16" ${S}><path d="M5.5 3.5l-3 3 3 3"/><path d="M2.5 6.5h7a3.5 3.5 0 010 7H7"/></svg>`,
   };
-  const CB_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle class="ring" cx="12" cy="12" r="10.25"/><path class="tick" d="M7.6 12.4l3 2.9 5.9-6.2"/></svg>';
 
   const state = {
     mode: "loading",          // loading | db | local | unavailable
@@ -716,6 +735,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     pop: null,                 // { kind, anchor, cat }
     suggestion: null,
     linger: new Map(),         // id -> { from, t0 }: just-completed rows that stay a moment before leaving
+    drag: false,               // a row is being dragged: the list waits to redraw
     fresh: new Map(),          // id -> t0: just-completed, for the check and stamp animations
     heroStamp: null, heroT0: 0,
     cal: { open: null, y: 0, m: 0 },  // month calendar open in the details panel
@@ -752,6 +772,9 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   function cleanLine(l) { return l.replace(/^\s*(?:[-*•–—]|\d+[.)]|\[[ xX]?\])\s*/, "").replace(/^\[[ xX]?\]\s*/, "").trim(); }
   function statusOf(x) { return x.status === "done" ? "done" : x.status === "planned" ? "planned" : "todo"; }
   function byCreated(a, b) { return (a.createdAt || 0) - (b.createdAt || 0); }
+  // To do order: a dragged activity keeps its place in `rank`; others sit by when they were added.
+  const rankOf = (x) => (typeof x.rank === "number" && isFinite(x.rank) ? x.rank : x.createdAt || 0);
+  function byRank(a, b) { return rankOf(a) - rankOf(b) || (a.createdAt || 0) - (b.createdAt || 0); }
   function byPlanned(a, b) {
     const ap = validISO(a.plannedFor), bp = validISO(b.plannedFor);
     if (ap && bp) return a.plannedFor.localeCompare(b.plannedFor) || byCreated(a, b);
@@ -1291,8 +1314,48 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   }
 
   /* ---------- small builders ---------- */
+  /* ---------- category icons ---------- */
+  // Each category shows an icon. One picked in Manage categories is kept in its `icon`;
+  // until then one is guessed from the name.
+  const CAT_ICONS = {
+    sun: ["Sun", '<circle cx="8" cy="8" r="2.8"/><path d="M8 1.6v1.5M8 12.9v1.5M1.6 8h1.5M12.9 8h1.5M3.5 3.5l1.05 1.05M11.45 11.45l1.05 1.05M3.5 12.5l1.05-1.05M11.45 4.55l1.05-1.05"/>'],
+    moon: ["Moon", '<path d="M13.4 9.7A5.6 5.6 0 0 1 6.3 2.6a5.6 5.6 0 1 0 7.1 7.1z"/>'],
+    drink: ["Drinks", '<path d="M3 2.5h10L8 8.2 3 2.5zM8 8.2v5.3M5.4 13.5h5.2"/>'],
+    food: ["Food", '<path d="M4 1.8v4.4a1.6 1.6 0 0 0 3.2 0V1.8M5.6 1.8v12.4M11.6 14.2V1.8c-1.6.6-2.6 2.6-2.6 5v2.2h2.6"/>'],
+    travel: ["Travel", '<path d="M14 2 2.5 7l4.2 1.3L8 12.5l1.8-2.8 2.7 2.1L14 2zM6.7 8.3 14 2"/>'],
+    outdoors: ["Outdoors", '<path d="M1.5 13.5 6 5l3 5.2 1.6-2.4 3.9 5.7z"/>'],
+    tickets: ["Tickets", '<path d="M2 5h12v2a1.5 1.5 0 0 0 0 3v2H2v-2a1.5 1.5 0 0 0 0-3V5zM10 5v7"/>'],
+    music: ["Music", '<path d="M6 12V3.2l7-1.4V10.6"/><circle cx="4.4" cy="12" r="1.6"/><circle cx="11.4" cy="10.6" r="1.6"/>'],
+    photos: ["Photos", '<path d="M2 5.5h2.6L6 3.8h4l1.4 1.7H14v7.2H2z"/><circle cx="8" cy="9" r="2.3"/>'],
+    love: ["Love", '<path d="M8 13.5S2 10 2 6a3 3 0 0 1 6-1 3 3 0 0 1 6 1c0 4-6 7.5-6 7.5z"/>'],
+    special: ["Special", '<path d="m8 1.8 1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6l-3.8 2 .7-4.3-3.1-3 4.3-.6z"/>'],
+    places: ["Places", '<path d="M8 14.5s4.5-4.2 4.5-8a4.5 4.5 0 0 0-9 0c0 3.8 4.5 8 4.5 8z"/><circle cx="8" cy="6.5" r="1.6"/>'],
+    learn: ["Learn", '<path d="M2.5 3h4A1.5 1.5 0 0 1 8 4.5V13a1.2 1.2 0 0 0-1.2-1.2H2.5zM13.5 3h-4A1.5 1.5 0 0 0 8 4.5V13a1.2 1.2 0 0 1 1.2-1.2h4.3z"/>'],
+    world: ["World", '<circle cx="8" cy="8" r="6"/><path d="M2 8h12M8 2c2 1.8 2 10.2 0 12M8 2c-2 1.8-2 10.2 0 12"/>'],
+    gifts: ["Gifts", '<path d="M2.5 6h11v2.5h-11zM3.5 8.5h9V14h-9zM8 6v8M8 6S6.6 2.5 5 3.2 6 6 8 6zm0 0s1.4-3.5 3-2.8S10 6 8 6z"/>'],
+    camping: ["Camping", '<path d="M1.5 13.5 8 2.5l6.5 11zM8 2.5v11M6 13.5 8 9.5l2 4"/>'],
+    fitness: ["Fitness", '<path d="M1.5 6.5v3M4 4.5v7M4 8h8M12 4.5v7M14.5 6.5v3"/>'],
+    relax: ["Relax", '<path d="M2 10.5h12M3 10.5V8.8A2.3 2.3 0 0 1 5.3 6.5h5.4A2.3 2.3 0 0 1 13 8.8v1.7M4 10.5V13M12 10.5V13M5.5 4c0-1 1-1 1-2M8.5 4c0-1 1-1 1-2"/>'],
+  };
+  const ICON_GUESSES = [
+    [/night|evening|late|club|party/, "moon"], [/day|sun|morning|beach/, "sun"],
+    [/drink|bar|wine|cocktail|beer|coffee/, "drink"], [/food|eat|dinner|lunch|brunch|restaurant|cook/, "food"],
+    [/travel|trip|flight|abroad|vacation|road/, "travel"], [/outdoor|hike|nature|mountain|park/, "outdoors"],
+    [/adventure|camp/, "camping"], [/culture|event|show|theat|museum|ticket/, "tickets"], [/music|concert|gig/, "music"],
+    [/learn|class|course|book|read|study/, "learn"], [/photo|camera/, "photos"], [/fitness|sport|gym|run/, "fitness"],
+    [/relax|spa|massage|chill/, "relax"], [/gift/, "gifts"], [/date|love|romant/, "love"], [/place|city|visit/, "places"],
+  ];
+  function catIconKey(k) {
+    if (k && CAT_ICONS[k.icon]) return k.icon;
+    const name = String((k && k.name) || "").toLowerCase();
+    const hit = ICON_GUESSES.find(([re]) => re.test(name));
+    return hit ? hit[1] : "special";
+  }
+  const iconSVG = (key) => `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CAT_ICONS[key][1]}</svg>`;
+  const catMini = (k) => `<i class="cat-ic" style="--dot:${catVar(k)}">${iconSVG(catIconKey(k))}</i>`;
+  const catTile = (k) => (k ? `<span class="cat-tile" style="--dot:${catVar(k)}">${iconSVG(catIconKey(k))}</span>` : `<span class="cat-tile none">${iconSVG("special")}</span>`);
   function catLabel(c, fallback) {
-    return c ? `<i class="dot" style="--dot:${catVar(c)}"></i><span class="pl">${esc(c.name)}</span>`
+    return c ? `${catMini(c)}<span class="pl">${esc(c.name)}</span>`
              : `<i class="dot hollow"></i><span class="pl placeholder">${esc(fallback)}</span>`;
   }
   function stampHTML(item, opts = {}) {
@@ -1364,7 +1427,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
               <dl class="fields">
                 <div><dt>Departs</dt><dd><span>${dated ? esc(fmtDate(next.plannedFor, { day: true })) : "To be decided"}</span></dd></div>
                 ${dated ? `<div><dt>Countdown</dt><dd class="${late ? "late" : "time"}"><span>${countdown(next.plannedFor)}</span></dd></div>` : ""}
-                ${cat ? `<div><dt>Category</dt><dd><i class="dot" style="--dot:${catVar(cat)}"></i><span>${esc(cat.name)}</span></dd></div>` : ""}
+                ${cat ? `<div><dt>Category</dt><dd>${catMini(cat)}<span>${esc(cat.name)}</span></dd></div>` : ""}
                 ${tasks.length ? `<div><dt>Prepared</dt><dd><span>${td} of ${plural(tasks.length, "step", "steps")}</span></dd></div>` : ""}
               </dl>
             </div>
@@ -1391,7 +1454,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
             <div class="doc-idle">
               ${state.shuffle ? `<h2 class="reel" aria-label="${esc(sug.title)}"><span class="reel-track" style="--n:${state.shuffle.names.length - 2}" aria-hidden="true">${state.shuffle.names.map((n) => `<span>${esc(n)}</span>`).join("")}</span></h2>` : `<h2>${esc(sug.title)}</h2>`}
               ${sug.notes ? `<p>${esc(sug.notes)}</p>` : ""}
-              ${cat ? `<dl class="fields"><div><dt>Category</dt><dd><i class="dot" style="--dot:${catVar(cat)}"></i><span>${esc(cat.name)}</span></dd></div></dl>` : ""}
+              ${cat ? `<dl class="fields"><div><dt>Category</dt><dd>${catMini(cat)}<span>${esc(cat.name)}</span></dd></div></dl>` : ""}
             </div>
             ${w ? `<div class="doc-actions">
               <button type="button" class="btn primary" data-act="plan-pick" data-id="${esc(sug.id)}">${ICON.cal} Plan this one</button>
@@ -1443,7 +1506,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     const t0 = lg ? lg.t0 : state.fresh.get(item.id);
     const cat = resolveCat(item), tasks = tasksOf(item), td = tasks.filter((x) => x.done).length;
     const meta = [];
-    if (cat) meta.push(`<span><i class="dot" style="--dot:${catVar(cat)}"></i>${esc(cat.name)}</span>`);
+    if (cat) meta.push(`<span>${esc(cat.name)}</span>`);
     if (st === "planned" && tasks.length) meta.push(`<span>${ICON.steps}${td}/${tasks.length}</span>`);
     if (st === "done" && item.memory) meta.push(`<span class="note">“${esc(item.memory)}”</span>`);
     else if (item.notes) meta.push(`<span class="note">${esc(item.notes.split("\n")[0])}</span>`);
@@ -1457,12 +1520,15 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     } else if (item.addedBy) end = avatar(item.addedBy, "Added by {name}");
     const leaving = lg && state.filter !== "all";
     const planBtn = w && st === "todo" && !lg;
+    // To do is the priority list: its rows can be dragged into order.
+    const grip = w && st === "todo" && state.filter === "todo";
     const cls = `row${checked ? " is-done" : ""}${leaving ? " leaving" : ""}${state.swipeOpen === item.id ? " swiped" : ""}${state.swipeGone.has(item.id) ? " swipe-gone" : ""}`;
     return `<li class="${cls}" data-row="${id}" style="--t:-${t0 ? Date.now() - t0 : 0}ms">
       ${w ? `<div class="swipe-actions"><button type="button" class="swipe-del" data-act="swipe-delete" data-id="${id}" tabindex="-1" aria-label="Delete ${esc(item.title)}">${ICON.trash}Delete</button></div>` : ""}
       <div class="row-inner">
-        <button type="button" class="cb${checked ? " on" : ""}${t0 ? " pop" : ""}" ${w ? "" : "disabled"} data-act="${checked ? "uncomplete" : "complete"}" data-id="${id}" aria-label="${checked ? "Mark as not done" : "Mark as done"}: ${esc(item.title)}">${CB_SVG}</button>
+        ${grip ? `<button type="button" class="grip" data-act="grip" data-id="${id}" aria-roledescription="drag handle" aria-label="Move ${esc(item.title)}. Drag, or use the up and down arrow keys.">${ICON.grip}</button>` : ""}
         <button type="button" class="row-open" data-act="open-sheet" data-id="${id}">
+          ${catTile(cat)}
           <span class="row-main"><span class="row-title">${esc(item.title)}</span>${meta.length ? `<span class="row-meta">${meta.join("")}</span>` : ""}</span>
           <span class="row-end">${end}${planBtn ? "" : ICON.right}</span>
         </button>
@@ -1481,8 +1547,9 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   }
   function renderList(c) {
     const el = $("#list");
+    if (state.drag) return;  // redrawn when the drag ends
     if (state.mode === "loading") {
-      el.innerHTML = `<div class="card"><ul class="rows">${[62, 48, 56].map((w) => `<li class="row" style="display:flex;padding:18px 20px;gap:16px"><span class="sk" style="width:22px;height:22px;border-radius:50%"></span><span class="sk" style="height:14px;width:${w}%;margin-top:4px"></span></li>`).join("")}</ul></div>`;
+      el.innerHTML = `<div class="card"><ul class="rows">${[62, 48, 56].map((w) => `<li class="row" style="display:flex;padding:18px 20px;gap:16px"><span class="sk" style="width:40px;height:40px;border-radius:12px;flex:none"></span><span class="sk" style="height:14px;width:${w}%;margin-top:13px"></span></li>`).join("")}</ul></div>`;
       return;
     }
     const inTab = (x, tab) => (statusOf(x) === tab || (state.linger.get(x.id) || {}).from === tab) && matchesCat(x);
@@ -1492,10 +1559,10 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       const list = c.by.done.filter(matchesCat);
       body = list.length ? `<ul class="stamps">${list.map(stampCardHTML).join("")}</ul>` : emptyHTML(c);
     } else {
-      const list = f === "todo" ? c.items.filter((x) => inTab(x, "todo")).sort(byCreated)
+      const list = f === "todo" ? c.items.filter((x) => inTab(x, "todo")).sort(byRank)
         : f === "planned" ? c.items.filter((x) => inTab(x, "planned")).sort(byPlanned)
         : [...c.by.planned, ...c.by.todo, ...c.by.done].filter(matchesCat);
-      body = list.length ? `<ul class="rows">${list.map(rowHTML).join("")}</ul>` : emptyHTML(c);
+      body = list.length ? `<ul class="rows${f === "todo" && state.canWrite ? " grips" : ""}">${list.map(rowHTML).join("")}</ul>` : emptyHTML(c);
     }
     el.innerHTML = `<div class="card">${body}</div>`;
   }
@@ -1543,8 +1610,9 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
         <dd><textarea class="fp autogrow" rows="1" maxlength="1000" data-key="s:notes" data-field="notes" placeholder="Ideas, links, costs…" aria-label="Notes" ${ro}>${esc(item.notes || "")}</textarea></dd>
       </dl>
       ${st === "planned" || tasks.length ? `<section class="sheet-cl">${checklistHTML(item, "sheet")}</section>` : ""}`;
-    const reverse = st === "todo" ? `<button type="button" class="btn sm ghost" data-act="set-status" data-v="planned">${ICON.cal} Plan this</button>`
-      : st === "planned" ? `<button type="button" class="btn sm ghost" data-act="cancel-plan" data-id="${id}">${ICON.x} Cancel plan</button>`
+    const didIt = `<button type="button" class="btn sm ghost" data-act="set-status" data-v="done">${ICON.check} We did it</button>`;
+    const reverse = st === "todo" ? `<button type="button" class="btn sm ghost" data-act="set-status" data-v="planned">${ICON.cal} Plan this</button>${didIt}`
+      : st === "planned" ? `<button type="button" class="btn sm ghost" data-act="cancel-plan" data-id="${id}">${ICON.x} Cancel plan</button>${didIt}`
       : st === "done" ? `<button type="button" class="btn sm ghost" data-act="unstamp" data-id="${id}">${ICON.undo} Remove stamp</button>` : "";
     const foot = `${who}${w ? (state.sheetLeave
       ? `<span class="foot-confirm">Save your changes?<button type="button" class="btn sm ghost" data-act="sheet-discard">Discard</button><button type="button" class="btn sm primary" data-act="sheet-save" data-close="1">Save</button></span>`
@@ -1558,14 +1626,14 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     const rows = cats.map((k) => {
       const id = esc(k.id), n = counts[k.id] || 0;
       return `<li class="mgr-row">
-        <button type="button" class="swatch" style="--dot:${catVar(k)}" data-act="pop" data-kind="color" data-pop-anchor="color:${id}" data-cat="${id}" aria-haspopup="listbox" aria-expanded="false" aria-label="Change color of ${esc(k.name)}" ${w ? "" : "disabled"}></button>
+        <button type="button" class="cat-tile" style="--dot:${catVar(k)}" data-act="pop" data-kind="color" data-pop-anchor="color:${id}" data-cat="${id}" aria-haspopup="dialog" aria-expanded="false" aria-label="Change icon and color of ${esc(k.name)}" ${w ? "" : "disabled"}>${iconSVG(catIconKey(k))}</button>
         <input class="fp" data-key="cat:${id}" data-cat-name="${id}" value="${esc(k.name)}" maxlength="40" aria-label="Category name" ${w ? "" : "readonly"}>
         <span class="mgr-count">${plural(n, "activity", "activities")}</span>
         ${w ? `<button type="button" class="icon-btn sm danger" data-act="cat-del" data-cat="${id}" aria-label="Delete ${esc(k.name)}">${ICON.trash}</button>` : "<span></span>"}
         ${state.catConfirm === k.id ? `<div class="mgr-confirm">Delete “${esc(k.name)}”?${n ? ` ${plural(n, "activity", "activities")} will have no category.` : ""}<button type="button" class="btn sm ghost" data-act="cat-keep">Keep</button><button type="button" class="btn sm danger" data-act="cat-confirm-del" data-cat="${id}">Delete</button></div>` : ""}
       </li>`;
     }).join("");
-    const head = `<div><h2 class="dlg-title" id="dlg-title">Categories</h2><p class="dlg-sub">Shared by both of you. Click a color to change it, or a name to rename it.</p></div>
+    const head = `<div><h2 class="dlg-title" id="dlg-title">Categories</h2><p class="dlg-sub">Shared by both of you. Tap an icon to change it or its color, or a name to rename it.</p></div>
       <button type="button" class="icon-btn" data-act="close-dialog" aria-label="Close">${ICON.x}</button>`;
     const body = `${cats.length ? `<ul class="mgr">${rows}</ul>` : `<p class="dlg-sub">No categories yet. Add your first one below.</p>`}
       ${w ? `<label class="step-add">${ICON.plus}<input id="cat-new" data-key="cat:new" maxlength="40" placeholder="New category, e.g. Road Trips" aria-label="New category name"><button type="button" class="btn sm ghost" data-act="cat-add">Add</button></label>` : ""}`;
@@ -1639,10 +1707,10 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     if (kind === "filter-cat") {
       const counts = {}; let none = 0;
       for (const it of c.items) { const k = resolveCat(it); if (k && k.id) counts[k.id] = (counts[k.id] || 0) + 1; else if (!k) none++; }
-      return { cur: state.catFilter, opts: [{ v: "", label: "All categories", count: c.total, all: true }, ...cats.map((k) => ({ v: k.id, label: k.name, dot: catVar(k), count: counts[k.id] || 0 })), ...(none || state.catFilter === "none" ? [{ v: "none", label: "No category", count: none }] : [])] };
+      return { cur: state.catFilter, opts: [{ v: "", label: "All categories", count: c.total, all: true }, ...cats.map((k) => ({ v: k.id, label: k.name, dot: catVar(k), cat: k, count: counts[k.id] || 0 })), ...(none || state.catFilter === "none" ? [{ v: "none", label: "No category", count: none }] : [])] };
     }
     const cur = kind === "composer-cat" ? state.composerCat : ((resolveCat(find(state.sheet)) || {}).id || "");
-    return { cur, opts: cats.map((k) => ({ v: k.id, label: k.name, dot: catVar(k) })) };
+    return { cur, opts: cats.map((k) => ({ v: k.id, label: k.name, dot: catVar(k), cat: k })) };
   }
   function popHTML(c) {
     const p = state.pop;
@@ -1655,12 +1723,13 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       </div>${ics ? `<div class="pop-note">Apple Calendar also works with Outlook. Reminds you the day before.</div>` : ""}`;
     }
     if (p.kind === "color") {
-      const k = catById(p.cat), cur = k ? colorIndex(k) : 0;
-      return `<div class="pop-head label">Color</div><div class="swatches" role="listbox" aria-label="Category color">${Array.from({ length: COLORS }, (_, i) => `<button type="button" class="swatch-opt" role="option" data-act="color" data-v="${i + 1}" style="--dot:var(--k${i + 1})" aria-selected="${cur === i + 1}" aria-label="Color ${i + 1}"></button>`).join("")}</div>`;
+      const k = catById(p.cat), cur = k ? colorIndex(k) : 0, icon = catIconKey(k);
+      return `<div class="pop-head label">Icon</div><div class="icon-grid" role="group" aria-label="Category icon" style="--dot:${k ? catVar(k) : "var(--ink-2)"}">${Object.keys(CAT_ICONS).map((key) => `<button type="button" class="icon-opt" data-act="cat-icon" data-v="${key}" aria-pressed="${key === icon}" aria-label="${CAT_ICONS[key][0]}" title="${CAT_ICONS[key][0]}">${iconSVG(key)}</button>`).join("")}</div>
+        <div class="pop-sep"></div><div class="pop-head label">Color</div><div class="swatches" role="listbox" aria-label="Category color">${Array.from({ length: COLORS }, (_, i) => `<button type="button" class="swatch-opt" role="option" data-act="color" data-v="${i + 1}" style="--dot:var(--k${i + 1})" aria-selected="${cur === i + 1}" aria-label="Color ${i + 1}"></button>`).join("")}</div>`;
     }
     const { cur, opts } = popOptions(p.kind, c);
     return `<div role="listbox" aria-label="Categories">${opts.map((o) => `<button type="button" class="opt" role="option" data-act="opt" data-v="${esc(o.v)}" aria-selected="${o.v === cur}">
-        ${o.all ? `<i class="dot" style="--dot:var(--faint)"></i>` : `<i class="dot${o.dot ? "" : " hollow"}" style="--dot:${o.dot || "transparent"}"></i>`}
+        ${o.all ? `<i class="cat-ic" style="--dot:var(--faint)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1.2"/><rect x="9" y="2.5" width="4.5" height="4.5" rx="1.2"/><rect x="2.5" y="9" width="4.5" height="4.5" rx="1.2"/><rect x="9" y="9" width="4.5" height="4.5" rx="1.2"/></svg></i>` : o.cat ? catMini(o.cat) : `<i class="dot${o.dot ? "" : " hollow"}" style="--dot:${o.dot || "transparent"}"></i>`}
         <span class="ol">${esc(o.label)}</span>${o.count != null ? `<span class="oc">${o.count}</span>` : ""}${o.v === cur ? ICON.check : ""}
       </button>`).join("")}</div>
       <div class="pop-sep"></div>
@@ -1737,7 +1806,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     const items = state.items.filter((x) => x && typeof x.title === "string");
     const by = { todo: [], planned: [], done: [] };
     for (const it of items) by[statusOf(it)].push(it);
-    by.todo.sort(byCreated); by.planned.sort(byPlanned); by.done.sort(byDone);
+    by.todo.sort(byRank); by.planned.sort(byPlanned); by.done.sort(byDone);
     return { items, by, total: items.length };
   }
   function render() {
@@ -1932,14 +2001,14 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
         else if (p.kind === "sheet-cat") { const it = find(state.sheet); if (it) await updateItem(it.id, { categoryId: v || null, category: "" }); }
         break;
       }
-      case "color": { const p = state.pop; if (!p) break; closePop(true); await update("categories", p.cat, { color: Number(b.dataset.v) }); break; }
+      // Icon and color share one picker, which stays open so both can be changed.
+      case "color": { const p = state.pop; if (!p) break; await update("categories", p.cat, { color: Number(b.dataset.v) }); refreshPop(compute()); break; }
+      case "cat-icon": { const p = state.pop; if (!p || !CAT_ICONS[b.dataset.v]) break; await update("categories", p.cat, { icon: b.dataset.v }); refreshPop(compute()); break; }
       case "open-manager": openManager(); break;
       case "open-sheet": if (item) openSheet(id); break;
       case "changes-seen": state.changes.dismissed = true; markSeen(); render(); break;
       case "changes-more": state.changes.all = true; render(); break;
       case "close-dialog": closeDialog(); break;
-      case "complete": if (item) complete(item, state.filter === "all" ? null : statusOf(item)); break;
-      case "uncomplete": if (item) { state.linger.delete(id); uncomplete(item); } break;
       case "unstamp": if (item && statusOf(item) === "done") uncomplete(item); break;
       case "cancel-plan": if (item && statusOf(item) === "planned") cancelPlan(item); break;
       case "reschedule": if (item) openSheet(id, "plannedFor"); break;
@@ -1980,7 +2049,12 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
         // Keep anything typed but not yet saved (a date, plan notes) by saving it with the status.
         const edits = sheetChanges();
         if ("title" in edits && !edits.title) delete edits.title;
-        if (v === "done") { state.fresh.set(it.id, Date.now()); setTimeout(() => state.fresh.delete(it.id), 2000); await updateItem(it.id, { ...edits, status: "done", doneOn: edits.doneOn || it.doneOn || todayISO(), doneAt: Date.now(), doneBy: state.me || null }); }
+        if (v === "done") {
+          const prev = { status: it.status || "todo", doneOn: it.doneOn ?? null, doneAt: it.doneAt ?? null, doneBy: it.doneBy ?? null };
+          state.fresh.set(it.id, Date.now()); setTimeout(() => state.fresh.delete(it.id), 2000);
+          if (await updateItem(it.id, { ...edits, status: "done", doneOn: edits.doneOn || it.doneOn || todayISO(), doneAt: Date.now(), doneBy: state.me || null }))
+            toast(`Ticked off “${it.title}”`, () => updateItem(it.id, prev));
+        }
         else await updateItem(it.id, { ...edits, ...(statusOf(it) === "done" ? { status: v, doneOn: null, doneAt: null, doneBy: null } : { status: v }) });
         break;
       }
@@ -2193,7 +2267,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   listEl.addEventListener("pointerdown", (e) => {
     if (!state.canWrite || (e.pointerType === "mouse" && e.button !== 0)) return;
     const li = e.target.closest("li.row[data-row]");
-    if (!li || e.target.closest(".swipe-del") || state.swipeGone.has(li.dataset.row)) return;
+    if (!li || e.target.closest(".swipe-del, .grip") || state.swipeGone.has(li.dataset.row) || state.drag) return;
     sw = { li, x0: e.clientX, y0: e.clientY, pid: e.pointerId, s: null };
   });
   listEl.addEventListener("pointermove", (e) => {
@@ -2233,6 +2307,128 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     if (suppressClick) { suppressClick = false; e.stopPropagation(); e.preventDefault(); return; }
     if (state.swipeOpen && !e.target.closest(".swipe-del")) { closeSwipe(); e.stopPropagation(); e.preventDefault(); }
   }, true);
+
+  /* ---------- drag the grip to put To do in priority order ---------- */
+  function todoOrder() {
+    return state.items.filter((x) => x && typeof x.title === "string" && statusOf(x) === "todo" && matchesCat(x)).sort(byRank);
+  }
+  // Moves an activity to position `to` in the To do list. Only the moved activity's rank
+  // changes (it takes a value between its new neighbours), so the other person's edits are safe.
+  async function moveItem(id, to) {
+    const list = todoOrder(), from = list.findIndex((x) => x.id === id);
+    if (from < 0 || to === from || to < 0 || to >= list.length) return false;
+    const rest = list.filter((x) => x.id !== id);
+    const before = rest[to - 1], after = rest[to];
+    let patches;
+    const lo = before ? rankOf(before) : null, hi = after ? rankOf(after) : null;
+    const rank = lo == null ? hi - 1000 : hi == null ? lo + 1000 : (lo + hi) / 2;
+    if ((lo == null || rank > lo) && (hi == null || rank < hi)) patches = [[id, rank]];
+    else {
+      // No room left between the neighbours: space the whole list out again.
+      const order = [...rest]; order.splice(to, 0, list[from]);
+      const base = rankOf(order[0]);
+      patches = order.map((x, i) => [x.id, base + i * 1000]).filter(([xid, r]) => rankOf(find(xid)) !== r);
+    }
+    const old = new Map(patches.map(([xid]) => [xid, find(xid).rank]));
+    state.items = state.items.map((x) => { const pt = patches.find(([xid]) => xid === x.id); return pt ? { ...x, rank: pt[1] } : x; });
+    render();
+    const ok = (await Promise.all(patches.map(([xid, r]) => updateItem(xid, { rank: r })))).every(Boolean);
+    if (!ok) { state.items = state.items.map((x) => (old.has(x.id) ? { ...x, rank: old.get(x.id) } : x)); render(); }
+    return ok;
+  }
+  function announce(msg) { const el = $("#sr-live"); if (el) { el.textContent = ""; setTimeout(() => (el.textContent = msg), 30); } }
+
+  let rd = null;  // the drag in progress
+  const docY = (clientY) => clientY + window.scrollY;
+  function startReorder(li, e) {
+    const ul = li.parentElement;
+    const rows = [...ul.querySelectorAll(":scope > li.row[data-row]")].filter((r) => !r.classList.contains("swipe-gone"));
+    if (rows.length < 2) return null;
+    closeSwipe();
+    const slots = rows.map((r) => { const b = r.getBoundingClientRect(); return { top: b.top + window.scrollY, h: b.height }; });
+    const from = rows.indexOf(li);
+    state.drag = true;
+    ul.classList.add("reordering"); li.classList.add("dragging");
+    try { navigator.vibrate && navigator.vibrate(8); } catch {}
+    return { li, ul, rows, slots, from, to: from, pid: e.pointerId, y0: docY(e.clientY), y: e.clientY, raf: 0, moved: false };
+  }
+  function layoutReorder(r) {
+    const { slots, from } = r, me = slots[from], last = slots[slots.length - 1];
+    const dy = Math.max(slots[0].top - me.top, Math.min(last.top + last.h - (me.top + me.h), docY(r.y) - r.y0));
+    if (Math.abs(dy) > 3) r.moved = true;
+    r.li.style.transform = `translateY(${dy}px)`;
+    // A row makes way once the dragged row covers half of it.
+    const upper = me.top + dy, lower = me.top + me.h + dy;
+    let to = from;
+    for (let i = 0; i < from; i++) if (upper < slots[i].top + slots[i].h / 2) { to = i; break; }
+    for (let i = slots.length - 1; i > from; i--) if (lower > slots[i].top + slots[i].h / 2) { to = i; break; }
+    r.to = to;
+    r.rows.forEach((row, i) => {
+      if (i === from) return;
+      const shift = from < i && i <= to ? -me.h : to <= i && i < from ? me.h : 0;
+      row.style.transform = shift ? `translateY(${shift}px)` : "";
+    });
+  }
+  // Near the top or bottom of the screen, the page scrolls so a row can go anywhere.
+  function autoScroll() {
+    const r = rd; if (!r) return;
+    const edge = 72, vh = window.innerHeight;
+    const v = r.y < edge ? -(edge - r.y) / 4 : r.y > vh - edge ? (r.y - (vh - edge)) / 4 : 0;
+    if (v) { window.scrollBy(0, Math.max(-18, Math.min(18, v))); layoutReorder(r); }
+    r.raf = requestAnimationFrame(autoScroll);
+  }
+  function endReorder(cancel) {
+    const r = rd; if (!r) return;
+    rd = null; cancelAnimationFrame(r.raf);
+    const { li, ul, rows, slots, from } = r, to = cancel ? from : r.to;
+    const me = slots[from];
+    const offset = to > from ? slots[to].top + slots[to].h - me.h - me.top : to < from ? slots[to].top - me.top : 0;
+    li.classList.add("settling");
+    li.style.transform = `translateY(${offset}px)`;
+    if (cancel) rows.forEach((row) => { if (row !== li) row.style.transform = ""; });
+    li.classList.remove("dragging");
+    if (r.moved) { suppressClick = true; setTimeout(() => (suppressClick = false), 80); }
+    setTimeout(() => {
+      state.drag = false;
+      ul.classList.remove("reordering");
+      rows.forEach((row) => { row.style.transform = ""; row.classList.remove("settling"); });
+      const id = li.dataset.row, list = todoOrder();
+      if (to !== from && list[from] && list[from].id === id) {
+        moveItem(id, to);
+        announce(`Moved to position ${to + 1} of ${list.length}.`);
+      } else render();
+    }, reduceMotion() ? 0 : 200);
+  }
+  listEl.addEventListener("pointerdown", (e) => {
+    const g = e.target.closest(".grip");
+    if (!g || rd || state.drag || !state.canWrite || (e.pointerType === "mouse" && e.button !== 0)) return;
+    const li = g.closest("li.row[data-row]"); if (!li) return;
+    e.preventDefault();
+    rd = startReorder(li, e); if (!rd) return;
+    try { g.setPointerCapture(e.pointerId); } catch {}
+    rd.raf = requestAnimationFrame(autoScroll);
+  });
+  listEl.addEventListener("pointermove", (e) => {
+    if (!rd || e.pointerId !== rd.pid) return;
+    e.preventDefault();
+    rd.y = e.clientY; layoutReorder(rd);
+  });
+  listEl.addEventListener("pointerup", (e) => { if (rd && e.pointerId === rd.pid) endReorder(false); });
+  listEl.addEventListener("pointercancel", (e) => { if (rd && e.pointerId === rd.pid) endReorder(true); });
+  window.addEventListener("keydown", (e) => { if (rd && e.key === "Escape") endReorder(true); });
+  // Keyboard: the up and down arrows move the focused activity one place.
+  listEl.addEventListener("keydown", async (e) => {
+    const g = e.target.closest && e.target.closest(".grip");
+    if (!g || rd || !state.canWrite || (e.key !== "ArrowUp" && e.key !== "ArrowDown")) return;
+    e.preventDefault();
+    const id = g.dataset.id, list = todoOrder(), from = list.findIndex((x) => x.id === id);
+    const to = from + (e.key === "ArrowUp" ? -1 : 1);
+    if (from < 0 || to < 0 || to >= list.length) return;
+    const moving = moveItem(id, to);
+    const again = $(`#list .grip[data-id="${CSS.escape(id)}"]`); if (again) again.focus();
+    announce(`Moved to position ${to + 1} of ${list.length}.`);
+    await moving;
+  });
 
   /* ---------- boot ---------- */
   function startLocal() {

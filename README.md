@@ -7,17 +7,19 @@ A shared bucket list for two people, styled like a passport.
 - **Plan from the list**: every To do row has a **Plan** button on its right. It moves the activity to Planned and opens its planning view with the calendar showing.
 - **Swipe to delete**: swipe a row left (or drag it with the mouse, or two-finger swipe on a trackpad) to reveal **Delete**; swipe all the way to delete straight away. This is the only way to delete, and every delete can be undone. Done activities can be swiped from the **All** tab.
 - **Calendar**: dates are picked from a month calendar styled after Apple Calendar, and the Next up card shows the date like Apple's Calendar icon.
-- **Tick things off**: tap the circle on any row. It animates, moves to your Stamps page, and the message at the bottom lets you undo.
+- **Priority order**: in the **To do** tab, drag the dotted handle on the left of a row to move it up or down. The other rows slide out of the way, and the page scrolls when you drag near the top or bottom. With a keyboard, focus the handle and use the up and down arrow keys. The order is shared, so you both see the same list, and the **All** tab uses it too. New activities go to the bottom. Planned stays in date order and Stamps in the order you did them.
+- **Category icons**: each row shows its category as a small colored icon tile, with the category name under the title. Icons are guessed from the name (a sun for Day, a moon for Night, a glass for Food & Drinks, and so on) until you pick one.
+- **Tick things off**: open an activity and tap **We did it**, or use **We did it** on the Next up card. It moves to your Stamps page, and the message at the bottom lets you undo.
 - **Stamps**: every completed activity becomes an ink stamp in its category's color, with the date and the line you wrote to remember it by.
 - **Reschedule or undo**: on the Next up card, "Reschedule" opens the date and "Cancel plan" moves the activity back to To do (its notes and checklist are kept). Each stamp has an undo button to remove it if you ticked something off by mistake; the activity goes back to Planned if it had a date, otherwise To do. The same "Cancel plan" and "Remove stamp" buttons are at the bottom of every activity's details, and each one can be undone from the message that appears.
-- **Details**: tap any activity to open its details. A line above the name says where it stands ("To Do", "Plan" or "Completed"), and the bottom bar has **Plan this**, **Cancel plan** or **Remove stamp** to move it along. Change its name, category, date, notes, memory and checklist. Typed changes (name, notes, memory, dates) are saved with the **Save** button (or Ctrl/Cmd+S), and closing with unsaved changes asks first. Status, category and checklist changes save right away.
+- **Details**: tap any activity to open its details. A line above the name says where it stands ("To Do", "Plan" or "Completed"), and the bottom bar has **Plan this**, **Cancel plan**, **We did it** or **Remove stamp** to move it along. Change its name, category, date, notes, memory and checklist. Typed changes (name, notes, memory, dates) are saved with the **Save** button (or Ctrl/Cmd+S), and closing with unsaved changes asks first. Status, category and checklist changes save right away.
 - **Pull down to close**: on a phone, details (and the other panels) close by dragging the handle at the top down. Only a pull that starts right at the handle counts, so scrolling or touching the content never moves the panel. A short pull springs back, and unsaved changes still ask first. On a phone, tapping the dimmed area above a panel doesn't close it (on a computer, clicking outside still does).
 - **No zooming on phones**: pinch and double-tap zoom are turned off (the layout already fits the screen), which also stops iPhones zooming in when a text box is tapped. On the Firebase site this is set in the page's viewport; Safari ignores that, so the app also blocks the pinch gesture itself.
 - **Motion**: "We did it" thumps the stamp onto the Next up card, which takes the hit before the next adventure slides in. "Pick one for us" spins through names like a slot reel before landing. In the calendar, changing months slides the dates left or right, and the picked day pops before the calendar folds away. Both are off for people who turn on reduced motion.
 - **While you were away**: when you open the list, a card above Next up lists what the other person did since your last visit (added, planned, moved, ticked off, cancelled, deleted), newest first. Tap a line to open that activity. **Got it** hides it.
 - **Add to calendar**: a planned activity with a date has **Add to calendar** on the Next up card and in its details. **Google Calendar** opens a new event already filled in. **Apple Calendar** gives a calendar file (also opens in Outlook and others): an all-day event on the planned date with a reminder at 9am the day before, plus the notes, category, checklist and a link back to the list. On the Firebase site the offline helper (`sw.js`) serves that file at `/event.ics`, which Safari on iPhone needs to offer "Add to Calendar"; elsewhere it downloads. Inside claude.ai only Google Calendar is offered, because calendar files can't be handed over from there.
 - **Planning checklist**: planned activities have steps you can tick off, plus quick-add suggestions.
-- **Categories**: a shared list you pick from. Use "Manage categories…" in any category menu to add, rename, recolor or delete them. Filter the list by category from the toolbar.
+- **Categories**: a shared list you pick from. Use "Manage categories…" in any category menu to add, rename or delete them. Tap a category's icon there to choose a different icon or color. Filter the list by category from the toolbar.
 
 ## How it works
 
@@ -37,9 +39,10 @@ Each activity is one document in the `activities` collection:
 | `doneOn`, `memory` | Date it was done and a short memory |
 | `addedBy`, `doneBy` | Who added it / ticked it off |
 | `createdAt`, `doneAt` | Timestamps used for ordering |
+| `rank` | Position in To do, set when someone drags the activity. Activities without one are placed by `createdAt` |
 | `checklist` | Planning steps, keyed by step id: `{ text, done, order, who, doneBy }`. A removed step is set to `null`. |
 
-Each category is one document in the `categories` collection: `{ name, color, order }`, where `color` is 1–8.
+Each category is one document in the `categories` collection: `{ name, color, order, icon }`, where `color` is 1–8 and `icon` is one of the icon names in the app (`sun`, `moon`, `drink`, `food`, `travel` and so on). Without `icon`, one is guessed from the name.
 
 The **While you were away** card reads two more collections:
 
