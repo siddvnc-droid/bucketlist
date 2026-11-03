@@ -519,6 +519,9 @@ textarea.fp { resize: none; overflow: hidden; line-height: 1.5; }
 .date-row .fp { margin-right: 0; }
 .qd { height: 28px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); font-size: 12.5px; color: var(--ink-2); }
 .qd:hover { border-color: var(--line-2); background: var(--surface); color: var(--ink); }
+.qd.qd-cal { display: inline-flex; align-items: center; gap: 6px; background: var(--surface); }
+.qd.qd-cal svg { width: 14px; height: 14px; color: var(--cal-red); }
+.pop-note { padding: 2px 10px 8px; font-size: 12px; color: var(--muted); }
 .sheet-cl { border-top: 1px solid var(--line); padding-top: 20px; }
 
 /* category manager */
@@ -708,6 +711,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     plus: `<svg viewBox="0 0 16 16" ${S}><path d="M8 3.5v9M3.5 8h9"/></svg>`,
     trash: `<svg viewBox="0 0 16 16" ${S}><path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 8.5h5.8l.6-8.5"/></svg>`,
     cal: `<svg viewBox="0 0 16 16" ${S}><rect x="2.5" y="3.5" width="11" height="10" rx="2"/><path d="M2.5 7h11M5.5 2v3M10.5 2v3"/></svg>`,
+    calAdd: `<svg viewBox="0 0 16 16" ${S}><rect x="2.5" y="3.5" width="11" height="10" rx="2"/><path d="M2.5 7h11M5.5 2v3M10.5 2v3M8 9v3.2M6.4 10.6h3.2"/></svg>`,
     steps: `<svg viewBox="0 0 16 16" ${S}><path d="M2.5 4.5l1.2 1.2L6 3.5M2.5 10.5l1.2 1.2L6 9.5M8.5 4.8h5M8.5 10.8h5"/></svg>`,
     dice: `<svg viewBox="0 0 16 16" ${S}><rect x="2.5" y="2.5" width="11" height="11" rx="3"/><circle cx="5.8" cy="5.8" r=".6" fill="currentColor"/><circle cx="10.2" cy="10.2" r=".6" fill="currentColor"/><circle cx="8" cy="8" r=".6" fill="currentColor"/></svg>`,
     gear: `<svg viewBox="0 0 16 16" ${S}><path d="M2.5 4.5h7M12.5 4.5h1M2.5 11.5h1M6.5 11.5h7"/><circle cx="11" cy="4.5" r="1.5"/><circle cx="5" cy="11.5" r="1.5"/></svg>`,
@@ -1384,9 +1388,10 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
               </dl>
             </div>
           </div>
-          ${(w && !stamped) || more ? `<div class="doc-actions">
+          ${(w && !stamped) || more || (dated && !stamped) ? `<div class="doc-actions">
             ${w && !stamped ? `<button type="button" class="btn primary" data-act="hero-done" data-id="${esc(next.id)}">${ICON.check} We did it</button>
             <button type="button" class="btn" data-act="reschedule" data-id="${esc(next.id)}">${ICON.cal} ${dated ? "Reschedule" : "Pick a date"}</button>` : ""}
+            ${dated && !stamped ? `<button type="button" class="btn" data-act="pop" data-kind="add-cal" data-pop-anchor="add-cal:hero" data-cat="${esc(next.id)}" aria-haspopup="menu" aria-expanded="false">${ICON.calAdd} Add to calendar</button>` : ""}
             ${more ? `<button type="button" class="btn ghost" data-act="tab" data-v="planned">${plural(more, "more plan", "more plans")}</button>` : ""}
           </div>` : ""}
           <div class="mrz" aria-hidden="true">${mrzLines("BL " + next.title, `${pad(no)} ${dated ? `${pad(d.getDate())}${MON[d.getMonth()]}${String(d.getFullYear()).slice(2)}` : "TBD"} ${cat ? cat.name : ""}`)}</div>
@@ -1547,7 +1552,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
         ${st === "planned" ? `
         <dt class="top">Date</dt>
         <dd><div class="date-row">${dpHTML("plannedFor", item.plannedFor, "Planned date", !w)}
-          ${w ? `<button type="button" class="qd" data-act="quick-date" data-v="weekend">This weekend</button><button type="button" class="qd" data-act="quick-date" data-v="month">In a month</button>${validISO(item.plannedFor) ? `<button type="button" class="qd" data-act="quick-date" data-v="clear">No date</button>` : ""}` : ""}</div><div class="dp-cal" data-cal-for="plannedFor" hidden></div></dd>` : ""}
+          ${w ? `<button type="button" class="qd" data-act="quick-date" data-v="weekend">This weekend</button><button type="button" class="qd" data-act="quick-date" data-v="month">In a month</button>${validISO(item.plannedFor) ? `<button type="button" class="qd" data-act="quick-date" data-v="clear">No date</button>` : ""}` : ""}${validISO(item.plannedFor) ? `<button type="button" class="qd qd-cal" data-act="pop" data-kind="add-cal" data-pop-anchor="add-cal:sheet" data-cat="${id}" aria-haspopup="menu" aria-expanded="false">${ICON.calAdd} Add to calendar</button>` : ""}</div><div class="dp-cal" data-cal-for="plannedFor" hidden></div></dd>` : ""}
         ${st === "done" ? `
         <dt class="top">Done on</dt>
         <dd><div class="date-row">${dpHTML("doneOn", item.doneOn, "Done on", !w, todayISO())}</div><div class="dp-cal" data-cal-for="doneOn" hidden></div></dd>
@@ -1660,6 +1665,14 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   }
   function popHTML(c) {
     const p = state.pop;
+    if (p.kind === "add-cal") {
+      // Calendar files can't be handed over from inside claude.ai, so there it's Google only.
+      const ics = !inFrame();
+      return `<div role="menu" aria-label="Add to calendar">
+        ${ics ? `<button type="button" class="opt" role="menuitem" data-act="cal-apple" data-id="${esc(p.cat)}">${ICON.calAdd}<span class="ol">Apple Calendar</span></button>` : ""}
+        <button type="button" class="opt" role="menuitem" data-act="cal-google" data-id="${esc(p.cat)}">${ICON.calAdd}<span class="ol">Google Calendar</span></button>
+      </div>${ics ? `<div class="pop-note">Apple Calendar also works with Outlook. Reminds you the day before.</div>` : ""}`;
+    }
     if (p.kind === "color") {
       const k = catById(p.cat), cur = k ? colorIndex(k) : 0;
       return `<div class="pop-head label">Color</div><div class="swatches" role="listbox" aria-label="Category color">${Array.from({ length: COLORS }, (_, i) => `<button type="button" class="swatch-opt" role="option" data-act="color" data-v="${i + 1}" style="--dot:var(--k${i + 1})" aria-selected="${cur === i + 1}" aria-label="Color ${i + 1}"></button>`).join("")}</div>`;
@@ -1915,6 +1928,14 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       case "pop":
         if (state.pop && state.pop.anchor === b.dataset.popAnchor) closePop(true); else openPop(b.dataset.kind, b.dataset.popAnchor, b.dataset.cat);
         break;
+      case "cal-apple": case "cal-google": {
+        closePop(true);
+        if (!item) break;
+        const date = plannedDateOf(item);
+        if (!date) { toast("Pick a date first."); break; }
+        if (act === "cal-google") openGoogleCalendar(item, date); else openIcs(item, date);
+        break;
+      }
       case "opt": {
         const p = state.pop, v = b.dataset.v; if (!p) break;
         const pending = state.pendingAdd;
@@ -2252,6 +2273,84 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     render();
   }
   const reduceMotion = () => !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  /* ---------- add to calendar ---------- */
+  const inFrame = () => { try { return window.top !== window; } catch { return true; } };
+  // The date shown in the details panel (even before Save), else the saved one.
+  function plannedDateOf(item) {
+    const inp = state.sheet === item.id && $('#dialog-root [data-field="plannedFor"]');
+    const v = inp ? inp.value : item.plannedFor;
+    return validISO(v) ? v : null;
+  }
+  // A link back to this list, on the site that has one (not inside claude.ai).
+  const listLink = () => (!inFrame() && /^https?:$/.test(location.protocol) && location.hash ? location.origin + "/" + location.hash : "");
+  function calDetails(item) {
+    const cat = resolveCat(item), tasks = tasksOf(item), lines = [];
+    if (item.notes && item.notes.trim()) lines.push(item.notes.trim());
+    if (cat) lines.push(`Category: ${cat.name}`);
+    if (tasks.length) lines.push("", "Before we go:", ...tasks.map((t) => `${t.done ? "✓" : "○"} ${t.text}`));
+    const link = listLink(); if (link) lines.push("", `Our list: ${link}`);
+    return lines.join("\n").trim();
+  }
+  const dayAfter = (date) => { const d = parseISO(date); return iso(new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1)); };
+  const compact = (date) => date.replace(/-/g, "");
+  function icsText(item, date) {
+    const t = (v) => String(v).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+    const enc = new TextEncoder();
+    // Lines longer than 75 bytes are folded onto continuation lines, as the calendar format requires.
+    const fold = (line) => {
+      const out = []; let cur = "", bytes = 0;
+      for (const ch of line) {
+        const n = enc.encode(ch).length;
+        if (bytes + n > 74 && cur) { out.push(cur); cur = " " + ch; bytes = 1 + n; } else { cur += ch; bytes += n; }
+      }
+      out.push(cur); return out.join("\r\n");
+    };
+    const details = calDetails(item), link = listLink();
+    const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
+    const lines = [
+      "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Bucket List//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
+      "BEGIN:VEVENT",
+      `UID:${item.id}@bucketlist`, `DTSTAMP:${stamp}`,
+      `DTSTART;VALUE=DATE:${compact(date)}`, `DTEND;VALUE=DATE:${compact(dayAfter(date))}`,
+      `SUMMARY:${t(item.title)}`,
+      details ? `DESCRIPTION:${t(details)}` : "",
+      link ? `URL:${link}` : "",
+      // A reminder at 9am the day before.
+      "BEGIN:VALARM", "ACTION:DISPLAY", `DESCRIPTION:${t("Tomorrow: " + item.title)}`, "TRIGGER:-PT15H", "END:VALARM",
+      "END:VEVENT", "END:VCALENDAR",
+    ].filter(Boolean);
+    return lines.map(fold).join("\r\n") + "\r\n";
+  }
+  const fileSlug = (title) => String(title).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60).toLowerCase() || "activity";
+  function openIcs(item, date) {
+    const ics = icsText(item, date), name = fileSlug(item.title);
+    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+      // The site's offline helper serves this as a real calendar file, which is what Safari on iPhone
+      // needs to offer "Add to Calendar".
+      const bytes = new TextEncoder().encode(ics);
+      let bin = ""; for (const x of bytes) bin += String.fromCharCode(x);
+      const b64 = btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+      const url = `/event.ics?name=${encodeURIComponent(name)}&ics=${b64}`;
+      const standalone = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+      if (standalone) window.open(url, "_blank"); else location.href = url;
+      return;
+    }
+    // Elsewhere: download the file; Calendar on a Mac, Outlook and others open it.
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar;charset=utf-8" }));
+    a.download = `${name}.ics`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+  }
+  function openGoogleCalendar(item, date) {
+    const u = new URL("https://calendar.google.com/calendar/render");
+    u.searchParams.set("action", "TEMPLATE");
+    u.searchParams.set("text", item.title);
+    u.searchParams.set("dates", `${compact(date)}/${compact(dayAfter(date))}`);
+    const details = calDetails(item); if (details) u.searchParams.set("details", details);
+    window.open(u.toString(), "_blank", "noopener");
+  }
 
   /* ---------- no pinch zoom on phones ---------- */
   // The layout already fits the screen. Safari ignores the page's no-zoom setting, so the
