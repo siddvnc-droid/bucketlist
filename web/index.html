@@ -393,6 +393,7 @@ h1 em { font-style: italic; color: var(--ink-2); }
 .row { position: relative; touch-action: pan-y; }
 .row-inner { position: relative; z-index: 1; display: flex; align-items: center; gap: 4px; padding: 0 10px 0 16px; background: var(--surface); transition: transform .34s var(--ease); }
 .row + .row::before { content: ""; position: absolute; z-index: 2; pointer-events: none; top: 0; left: 98px; right: 18px; height: 1px; background: var(--line); transition: opacity .12s; }
+.rows.plain .row + .row::before { left: 76px; }
 /* the arrow: tap the row to open its details */
 .row-chev { flex: none; width: 14px; margin-right: -6px; display: grid; place-items: center; color: var(--faint); transition: color .15s, transform .2s var(--ease); }
 .row-chev svg { width: 14px; height: 14px; }
@@ -737,6 +738,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   .grip { width: 30px; margin-left: 0; }
   .row-open { gap: 12px; padding-left: 4px; }
   .row + .row::before { left: 84px; right: 12px; }
+  .rows.plain .row + .row::before { left: 64px; }
   .row-meta .note { max-width: 100%; }
   .stamps { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 6px; }
   .stamp-card { padding: 16px 12px 14px; }
@@ -1657,6 +1659,8 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     const leaving = !!lg;
     // To do rows can be swiped right to plan them.
     const canPlan = w && st === "todo" && !lg;
+    // The Planned tab is a calm list: no arrow and no swipe to delete.
+    const plain = state.filter === "planned";
     // To do is the priority list: its rows can be dragged into order.
     const grip = w && st === "todo" && state.filter === "todo";
     const open = state.swipeOpen === item.id ? (state.swipeSide === "r" ? " swiped-r swipe-r" : " swiped") : "";
@@ -1664,10 +1668,10 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     const cls = `row${checked ? " is-done" : ""}${leaving ? " leaving" : ""}${open}${peek}${state.swipeGone.has(item.id) ? " swipe-gone" : ""}`;
     return `<li class="${cls}" data-row="${id}"${canPlan ? ' data-plan="1"' : ""} style="--t:-${t0 ? Date.now() - t0 : 0}ms${peek ? `;--pt:-${Date.now() - state.hintT0}ms` : ""}">
       ${canPlan ? `<div class="swipe-actions plan"><button type="button" class="swipe-plan" data-act="plan-row" data-id="${id}" tabindex="-1" aria-label="Plan ${esc(item.title)}">${ICON.cal}<span class="sp-short">Plan</span><span class="sp-long">Let go to plan</span></button></div>` : ""}
-      ${w ? `<div class="swipe-actions del"><button type="button" class="swipe-del" data-act="swipe-delete" data-id="${id}" tabindex="-1" aria-label="Delete ${esc(item.title)}">${ICON.trash}Delete</button></div>` : ""}
+      ${w && !plain ? `<div class="swipe-actions del"><button type="button" class="swipe-del" data-act="swipe-delete" data-id="${id}" tabindex="-1" aria-label="Delete ${esc(item.title)}">${ICON.trash}Delete</button></div>` : ""}
       <div class="row-inner">
         <button type="button" class="row-open" data-act="open-sheet" data-id="${id}">
-          <span class="row-chev" aria-hidden="true">${ICON.right}</span>
+          ${plain ? "" : `<span class="row-chev" aria-hidden="true">${ICON.right}</span>`}
           ${catTile(cat)}
           <span class="row-main"><span class="row-title">${esc(item.title)}</span>${meta.length ? `<span class="row-meta">${meta.join("")}</span>` : ""}</span>
           ${end ? `<span class="row-end">${end}</span>` : ""}
@@ -1713,7 +1717,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
         : [...c.by.planned, ...c.by.todo, ...c.by.done].filter(matchesCat);
       const hint = f === "todo" && list.length && showSwipeHint();
       if (hint && !state.hintT0) state.hintT0 = Date.now();
-      body = list.length ? `<ul class="rows${f === "todo" && state.canWrite ? " grips" : ""}">${list.map((x, i) => rowHTML(x, i, list, { peek: hint && i === 0 })).join("")}</ul>` : emptyHTML(c);
+      body = list.length ? `<ul class="rows${f === "todo" && state.canWrite ? " grips" : ""}${f === "planned" ? " plain" : ""}">${list.map((x, i) => rowHTML(x, i, list, { peek: hint && i === 0 })).join("")}</ul>` : emptyHTML(c);
       if (hint) { el.innerHTML = `${SWIPE_HINT}<div class="card">${body}</div>`; return; }
     }
     el.innerHTML = `<div class="card">${body}</div>`;
@@ -2495,7 +2499,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   listEl.addEventListener("pointerdown", (e) => {
     if (!state.canWrite || (e.pointerType === "mouse" && e.button !== 0)) return;
     const li = e.target.closest("li.row[data-row]");
-    if (!li || e.target.closest(".swipe-del, .swipe-plan, .grip") || state.swipeGone.has(li.dataset.row) || state.drag) return;
+    if (!li || !li.querySelector(".swipe-actions") || e.target.closest(".swipe-del, .swipe-plan, .grip") || state.swipeGone.has(li.dataset.row) || state.drag) return;
     sw = { li, x0: e.clientX, y0: e.clientY, pid: e.pointerId, s: null };
   });
   listEl.addEventListener("pointermove", (e) => {
@@ -2522,7 +2526,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   listEl.addEventListener("wheel", (e) => {
     if (!state.canWrite || Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
     const li = e.target.closest("li.row[data-row]");
-    if (!li || state.swipeGone.has(li.dataset.row)) return;
+    if (!li || !li.querySelector(".swipe-actions") || state.swipeGone.has(li.dataset.row)) return;
     e.preventDefault();
     if (!wh || wh.li !== li) { if (wh) { clearTimeout(wh.t); settleSwipe(wh); } wh = startSwipe(li); wh.acc = 0; }
     wh.acc += e.deltaX;
