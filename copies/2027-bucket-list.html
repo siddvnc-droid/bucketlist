@@ -70,9 +70,9 @@
     --glass-rim: rgba(0, 0, 0, .45); --glass-edge: rgba(255, 255, 255, .16); --glass-under: rgba(255, 255, 255, .05);
     --glass-lens: rgba(255, 255, 255, .13); --glass-sheen: .22;
     --glass-shadow: 0 16px 36px -14px rgba(0, 0, 0, .7), 0 2px 8px -3px rgba(0, 0, 0, .4);
-    --fab-bg: linear-gradient(180deg, color-mix(in srgb, var(--primary) 82%, transparent), color-mix(in srgb, var(--primary) 96%, transparent));
-    --fab-ink: var(--on-primary); --fab-rim: rgba(255, 255, 255, .24); --fab-blur: blur(18px) saturate(1.7); --fab-sheen: block;
-    --fab-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), inset 0 -12px 18px -10px rgba(0, 0, 0, .35), 0 16px 32px -12px rgba(15, 25, 50, .55), 0 4px 10px -4px rgba(15, 25, 50, .3);
+    --fab-bg: radial-gradient(120% 90% at 30% 0%, #3A5994 0%, #223A6A 45%, #162749 100%);
+    --fab-ink: #F7F8FB; --fab-rim: transparent; --fab-blur: none; --fab-sheen: none;
+    --fab-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), inset 0 0 0 1px rgba(255, 255, 255, .1), 0 1px 2px rgba(0, 0, 0, .5), 0 10px 22px -8px rgba(0, 0, 0, .65), 0 22px 40px -22px rgba(0, 0, 0, .7);
     --k1: #86A6F5; --k2: #B99CF0; --k3: #F09A6E; --k4: #62CFA2; --k5: #F08DB4; --k6: #B9D162; --k7: #62CBE3; --k8: #9AA3AE;
     --shadow-1: 0 1px 2px rgba(0, 0, 0, .5); --shadow-2: 0 16px 40px -10px rgba(0, 0, 0, .7); --shadow-3: 0 30px 80px -20px rgba(0, 0, 0, .8);
     --doc-shadow: 0 24px 48px -28px rgba(0, 0, 0, .8);
@@ -90,9 +90,9 @@
     --glass-rim: rgba(0, 0, 0, .45); --glass-edge: rgba(255, 255, 255, .16); --glass-under: rgba(255, 255, 255, .05);
     --glass-lens: rgba(255, 255, 255, .13); --glass-sheen: .22;
     --glass-shadow: 0 16px 36px -14px rgba(0, 0, 0, .7), 0 2px 8px -3px rgba(0, 0, 0, .4);
-    --fab-bg: linear-gradient(180deg, color-mix(in srgb, var(--primary) 82%, transparent), color-mix(in srgb, var(--primary) 96%, transparent));
-    --fab-ink: var(--on-primary); --fab-rim: rgba(255, 255, 255, .24); --fab-blur: blur(18px) saturate(1.7); --fab-sheen: block;
-    --fab-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), inset 0 -12px 18px -10px rgba(0, 0, 0, .35), 0 16px 32px -12px rgba(15, 25, 50, .55), 0 4px 10px -4px rgba(15, 25, 50, .3);
+    --fab-bg: radial-gradient(120% 90% at 30% 0%, #3A5994 0%, #223A6A 45%, #162749 100%);
+    --fab-ink: #F7F8FB; --fab-rim: transparent; --fab-blur: none; --fab-sheen: none;
+    --fab-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), inset 0 0 0 1px rgba(255, 255, 255, .1), 0 1px 2px rgba(0, 0, 0, .5), 0 10px 22px -8px rgba(0, 0, 0, .65), 0 22px 40px -22px rgba(0, 0, 0, .7);
   --k1: #86A6F5; --k2: #B99CF0; --k3: #F09A6E; --k4: #62CFA2; --k5: #F08DB4; --k6: #B9D162; --k7: #62CBE3; --k8: #9AA3AE;
   --shadow-1: 0 1px 2px rgba(0, 0, 0, .5); --shadow-2: 0 16px 40px -10px rgba(0, 0, 0, .7); --shadow-3: 0 30px 80px -20px rgba(0, 0, 0, .8);
   --doc-shadow: 0 24px 48px -28px rgba(0, 0, 0, .8);
@@ -745,7 +745,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   .tabbar svg { display: block; width: 24px; height: 24px; }
   .tabbar button[aria-selected="true"] { color: var(--ink); font-weight: 600; }
   .tabbar button[aria-selected="true"] svg { stroke-width: 1.7; }
-  /* the add button: satin navy in light mode, tinted glass in dark mode */
+  /* the add button: satin navy, a touch brighter in dark mode */
   .fab {
     position: fixed; z-index: 30; right: max(16px, env(safe-area-inset-right, 0px));
     bottom: calc(var(--tab-bottom) + var(--tabbar-h) + 14px);
