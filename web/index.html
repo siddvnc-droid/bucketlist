@@ -1372,7 +1372,8 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   }
   const iconSVG = (key) => `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CAT_ICONS[key][1]}</svg>`;
   const catMini = (k) => `<i class="cat-ic" style="--dot:${catVar(k)}">${iconSVG(catIconKey(k))}</i>`;
-  const catTile = (k) => (k ? `<span class="cat-tile" style="--dot:${catVar(k)}">${iconSVG(catIconKey(k))}</span>` : `<span class="cat-tile none">${iconSVG("special")}</span>`);
+  // On rows the icon stands in for the category name, which is still there as a tooltip and for screen readers.
+  const catTile = (k) => (k ? `<span class="cat-tile" style="--dot:${catVar(k)}" title="${esc(k.name)}"><span class="sr-only">${esc(k.name)}: </span>${iconSVG(catIconKey(k))}</span>` : `<span class="cat-tile none">${iconSVG("special")}</span>`);
   function catLabel(c, fallback) {
     return c ? `${catMini(c)}<span class="pl">${esc(c.name)}</span>`
              : `<i class="dot hollow"></i><span class="pl placeholder">${esc(fallback)}</span>`;
@@ -1525,7 +1526,6 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     const t0 = lg ? lg.t0 : state.fresh.get(item.id);
     const cat = resolveCat(item), tasks = tasksOf(item), td = tasks.filter((x) => x.done).length;
     const meta = [];
-    if (cat) meta.push(`<span>${esc(cat.name)}</span>`);
     if (st === "planned" && tasks.length) meta.push(`<span>${ICON.steps}${td}/${tasks.length}</span>`);
     if (st === "done" && item.memory) meta.push(`<span class="note">“${esc(item.memory)}”</span>`);
     else if (item.notes) meta.push(`<span class="note">${esc(item.notes.split("\n")[0])}</span>`);
