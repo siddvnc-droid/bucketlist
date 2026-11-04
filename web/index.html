@@ -57,7 +57,7 @@
   --toast-ink: #F2F4F1;
   --toast-act: #E2C27A;
   --snow: rgba(112, 142, 184, 0.72);
-  --cal-bg: #FFFFFF; --cal-ink: #111111; --cal-red: #FF3B30; --swipe-red: #FF3B30; --swipe-plan: #15233F;
+  --cal-bg: #FFFFFF; --cal-ink: #111111; --cal-red: #FF3B30; --swipe-red: #FF3B30; --swipe-plan: #15233F; --plan-gold: #E2C27A;
   /* passport pages on the Stamps tab */
   --paper: #F5F1E6; --paper-line: #E2DBC6; --paper-ink: #2B2A26; --paper-ink-2: #4A4536; --paper-muted: #7E6E48; --paper-guill: rgba(143, 110, 40, .12);
   /* liquid glass (tab bar on phones) */
@@ -448,21 +448,72 @@ h1 em { font-style: italic; color: var(--ink-2); }
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 /* swipe left to delete, like Apple's lists; swipe right to plan */
 .swipe-actions { position: absolute; inset: 0; display: flex; justify-content: flex-end; background: var(--swipe-red); visibility: hidden; }
-.swipe-actions.plan { justify-content: flex-start; background: var(--swipe-plan); }
 .row.swiping:not(.swipe-r) .swipe-actions.del, .row.swiped .swipe-actions.del, .row.swipe-gone .swipe-actions.del { visibility: visible; }
 .row.swipe-r .swipe-actions.plan, .row.swiped-r .swipe-actions.plan, .row.planning .swipe-actions.plan, .row.peek .swipe-actions.plan { visibility: visible; }
-.swipe-plan { width: max(88px, var(--reveal, 88px)); height: 100%; border: 0; background: none; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12.5px; font-weight: 600; padding: 0; }
-.swipe-plan svg { width: 19px; height: 19px; }
-.swipe-plan .sp-long { display: none; }
-.row.swipe-full .swipe-plan, .row.planning .swipe-plan { flex-direction: row; justify-content: flex-end; gap: 8px; padding-right: 22px; font-size: 14px; }
-.row.swipe-full .swipe-plan .sp-long, .row.planning .swipe-plan .sp-long { display: inline; }
-.row.swipe-full .swipe-plan .sp-short, .row.planning .swipe-plan .sp-short { display: none; }
+/* Swipe right to plan. The calendar grows in with the finger, a ring fills toward the point
+   of no return, then it seals into a white disc with a pop. Letting go sends the row off,
+   turns the calendar into a tick with a gold flourish, and the details open on the calendar. */
+@property --reveal { syntax: "<length>"; inherits: true; initial-value: 88px; }
+@property --q { syntax: "<number>"; inherits: true; initial-value: 1; }
+@property --p { syntax: "<number>"; inherits: true; initial-value: 0; }
+:where(.row[data-plan]) { transition: --reveal .34s var(--ease), --q .34s var(--ease), --p .34s var(--ease); }
+.row.tracking { transition: none; }
+.row.planning { transition: --reveal .3s cubic-bezier(.3, 0, .2, 1); }
+.row.peek { --reveal: 48px; }
+.swipe-actions.plan { justify-content: flex-start; overflow: hidden; background: var(--swipe-plan); --cx: max(calc(var(--reveal) / 2), calc(var(--reveal) - 44px)); }
+.swipe-actions.plan::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle 120px at var(--cx) 50%, rgba(255, 255, 255, .17), transparent 72%); opacity: calc(var(--q) * .45 + var(--p) * .55); }
+.swipe-actions.plan::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, .2) 50%, transparent 65%); transform: translateX(-110%); }
+.row.swipe-full .swipe-actions.plan::after { animation: spSheen .8s cubic-bezier(.3, 0, .2, 1) both; }
+.row.swipe-r .row-inner { box-shadow: -12px 0 22px -16px rgba(0, 0, 0, .55); }
+.swipe-plan { position: relative; z-index: 1; width: max(88px, var(--reveal)); height: 100%; border: 0; background: none; color: #fff; padding: 0; font: inherit; }
+.sp-anchor { position: absolute; left: 0; top: 50%; width: 0; height: 0; transform: translateX(var(--cx)); pointer-events: none; }
+.sp-badge { position: absolute; left: -17px; top: -17px; width: 34px; height: 34px; translate: 0 -9px; scale: calc(.5 + .5 * var(--q)); rotate: calc((1 - var(--q)) * -24deg); opacity: calc(var(--q) * 1.6 - .3); transition: translate .42s cubic-bezier(.34, 1.4, .5, 1); }
+.sp-badge > * { position: absolute; left: 50%; top: 50%; }
+.sp-ring { width: 34px; height: 34px; margin: -17px; overflow: visible; rotate: -90deg; opacity: min(1, calc(var(--p) * 5)); transition: opacity .2s, scale .2s; }
+.sp-ring circle { fill: none; stroke-width: 1.6; }
+.sp-ring .sp-track { stroke: rgba(255, 255, 255, .2); }
+.sp-ring .sp-prog { stroke: #fff; stroke-linecap: round; stroke-dasharray: 100.6; stroke-dashoffset: calc(100.6 * (1 - var(--p))); }
+.sp-disc { width: 34px; height: 34px; margin: -17px; border-radius: 50%; background: #fff; box-shadow: 0 6px 16px -6px rgba(0, 0, 0, .6); scale: 0; transition: scale .26s cubic-bezier(.3, 0, .2, 1); }
+.sp-cal, .sp-tick { width: 19px; height: 19px; margin: -9.5px; display: grid; }
+.sp-cal { color: #fff; transition: color .18s; }
+.sp-cal svg, .sp-tick svg { width: 19px; height: 19px; overflow: visible; }
+.sp-tick { color: var(--swipe-plan); opacity: 0; }
+.sp-tick path { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 13; stroke-dashoffset: 13; }
+.sp-burst { width: 34px; height: 34px; margin: -17px; border-radius: 50%; }
+.sp-rays { width: 64px; height: 64px; margin: -32px; overflow: visible; fill: none; stroke: var(--plan-gold); stroke-width: 1.8; stroke-linecap: round; opacity: 0; }
+.sp-label { position: absolute; top: 0; white-space: nowrap; font-weight: 600; letter-spacing: .01em; transition: opacity .18s, translate .32s var(--ease); }
+.sp-short { left: 0; transform: translate(-50%, 11px); font-size: 12.5px; opacity: calc(var(--q) * 2.2 - 1.2); }
+.sp-long, .sp-done { right: 28px; transform: translateY(-50%); font-size: 14px; opacity: 0; translate: 10px 0; }
+/* armed: past the point of no return */
+.row.swipe-full .sp-badge, .row.planning .sp-badge { translate: 0 0; }
+.row.swipe-full .sp-badge { animation: spPop .5s cubic-bezier(.3, .7, .3, 1) both; }
+.row.swipe-full .sp-ring, .row.planning .sp-ring { opacity: 0; scale: 1.5; transition: opacity .34s ease-out, scale .34s ease-out; }
+.row.swipe-full .sp-disc, .row.planning .sp-disc { scale: 1; transition: scale .46s cubic-bezier(.34, 1.56, .64, 1); }
+.row.swipe-full .sp-cal, .row.planning .sp-cal { color: var(--swipe-plan); }
+.row.swipe-full .sp-short, .row.planning .sp-short { opacity: 0; translate: 0 4px; }
+.row.swipe-full .sp-long { opacity: 1; translate: 0 0; }
+/* let go: the calendar turns into a tick, with a gold flourish */
+.row.planning .sp-long { opacity: 0; translate: -6px 0; transition-duration: .14s; }
+.row.planning .sp-done { animation: spDone .36s var(--ease) calc(var(--pl, 0ms) + 200ms) both; }
+.row.planning .sp-cal { animation: spCalOut .2s cubic-bezier(.4, 0, 1, 1) calc(var(--pl, 0ms) + 60ms) both; }
+.row.planning .sp-disc { animation: spSeal .46s cubic-bezier(.3, .7, .3, 1) calc(var(--pl, 0ms) + 150ms) both; }
+.row.planning .sp-tick { opacity: 1; transition: opacity 0s calc(var(--pl, 0ms) + 170ms); }
+.row.planning .sp-tick path { animation: spDraw .34s cubic-bezier(.65, 0, .35, 1) calc(var(--pl, 0ms) + 170ms) both; }
+.row.planning .sp-burst { animation: spBurst .6s cubic-bezier(.2, .7, .3, 1) calc(var(--pl, 0ms) + 180ms) both; }
+.row.planning .sp-rays { animation: spRays .6s cubic-bezier(.2, .7, .3, 1) calc(var(--pl, 0ms) + 230ms) both; }
+@keyframes spSheen { to { transform: translateX(110%); } }
+@keyframes spPop { 0% { transform: scale(.86); } 38% { transform: scale(1.14); } 70% { transform: scale(.97); } 100% { transform: none; } }
+@keyframes spSeal { 0% { transform: none; } 35% { transform: scale(1.16); } 100% { transform: none; } }
+@keyframes spCalOut { to { transform: scale(.3) rotate(-25deg); opacity: 0; } }
+@keyframes spDraw { to { stroke-dashoffset: 0; } }
+@keyframes spBurst { 0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, .42); } 100% { box-shadow: 0 0 0 14px rgba(255, 255, 255, 0); } }
+@keyframes spRays { 0% { opacity: 0; transform: scale(.9); } 22% { opacity: 1; } 100% { opacity: 0; transform: scale(1.5); } }
+@keyframes spDone { from { opacity: 0; translate: 10px 0; } to { opacity: 1; translate: 0 0; } }
 .row.swiped-r .row-inner { transform: translateX(88px); }
 .row.swiping::before, .row.swiped::before, .row.swiped-r::before, .row.planning::before, .row.peek::before,
 .row.swiping + .row::before, .row.swiped + .row::before, .row.swiped-r + .row::before, .row.planning + .row::before, .row.peek + .row::before { opacity: 0; }
-.row.planning .row-inner { transform: translateX(100%) !important; transition: transform .2s ease-in; }
+.row.planning .row-inner { transform: translateX(100%) !important; transition: transform .3s cubic-bezier(.3, 0, .2, 1); }
 /* first-time hint: the top row nudges right to show the Plan action underneath */
-.row.peek .swipe-plan { width: 48px; }
 .row.peek .row-inner { animation: peek 2.4s var(--ease) calc(700ms + var(--pt, 0ms)) 2 both; }
 @keyframes peek { 0%, 14% { transform: none; } 32%, 56% { transform: translateX(48px); } 76%, 100% { transform: none; } }
 .swipe-hint {
@@ -1000,7 +1051,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     fresh: new Map(),          // id -> t0: just-completed, for the check and stamp animations
     heroStamp: null, heroT0: 0,
     cal: { open: null, y: 0, m: 0 },  // month calendar open in the details panel
-    swipeOpen: null, swipeSide: "l", swipeGone: new Set(),
+    swipeOpen: null, swipeSide: "l", swipeGone: new Set(), planning: null,
     hintSeen: safeGet("bucketlist.swipeHint") === "1", hintT0: 0,  // the one-time swipe hint
   };
   if (!["todo", "planned", "done"].includes(state.filter)) state.filter = "todo";
@@ -1782,6 +1833,13 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   }
 
   /* ---------- list ---------- */
+  // What sits under a row as it's swiped right: the calendar badge with its progress ring,
+  // the white seal it pops into, the tick it turns into, and the labels.
+  const SP_RAYS = Array.from({ length: 8 }, (_, i) => {
+    const a = (i + 0.5) * Math.PI / 4, c = Math.cos(a), n = Math.sin(a), f = (v) => v.toFixed(1);
+    return `<path d="M${f(c * 22)} ${f(n * 22)}L${f(c * 28)} ${f(n * 28)}"/>`;
+  }).join("");
+  const SP_BODY = `<span class="sp-anchor" aria-hidden="true"><span class="sp-badge"><svg class="sp-rays" viewBox="-32 -32 64 64">${SP_RAYS}</svg><span class="sp-burst"></span><svg class="sp-ring" viewBox="0 0 34 34"><circle class="sp-track" cx="17" cy="17" r="16"/><circle class="sp-prog" cx="17" cy="17" r="16"/></svg><span class="sp-disc"></span><span class="sp-cal">${ICON.cal}</span><span class="sp-tick"><svg viewBox="0 0 16 16"><path d="M3.5 8.5l3 2.8 6-6.3"/></svg></span></span><span class="sp-label sp-short">Plan</span><span class="sp-label sp-long">Let go to plan</span><span class="sp-label sp-done">Planned</span></span>`;
   function rowHTML(item, i, all, opts) {
     const w = state.canWrite, id = esc(item.id), st = statusOf(item);
     const lg = state.linger.get(item.id);
@@ -1807,11 +1865,13 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     const plain = state.filter === "planned";
     // To do is the priority list: its rows can be dragged into order.
     const grip = w && st === "todo" && state.filter === "todo";
-    const open = state.swipeOpen === item.id ? (state.swipeSide === "r" ? " swiped-r swipe-r" : " swiped") : "";
+    // A row that was just swiped to plan keeps playing its send-off if the list redraws.
+    const pl = canPlan && state.planning && state.planning.id === item.id ? state.planning : null;
+    const open = pl ? " swipe-r planning" : state.swipeOpen === item.id ? (state.swipeSide === "r" ? " swiped-r swipe-r" : " swiped") : "";
     const peek = opts && opts.peek ? " peek" : "";
     const cls = `row${checked ? " is-done" : ""}${leaving ? " leaving" : ""}${open}${peek}${state.swipeGone.has(item.id) ? " swipe-gone" : ""}`;
-    return `<li class="${cls}" data-row="${id}"${canPlan ? ' data-plan="1"' : ""} style="--t:-${t0 ? Date.now() - t0 : 0}ms${peek ? `;--pt:-${Date.now() - state.hintT0}ms` : ""}">
-      ${canPlan ? `<div class="swipe-actions plan"><button type="button" class="swipe-plan" data-act="plan-row" data-id="${id}" tabindex="-1" aria-label="Plan ${esc(item.title)}">${ICON.cal}<span class="sp-short">Plan</span><span class="sp-long">Let go to plan</span></button></div>` : ""}
+    return `<li class="${cls}" data-row="${id}"${canPlan ? ' data-plan="1"' : ""} style="--t:-${t0 ? Date.now() - t0 : 0}ms${peek ? `;--pt:-${Date.now() - state.hintT0}ms` : ""}${pl ? `;--pl:-${Date.now() - pl.t0}ms;--reveal:${pl.w}px;--q:1;--p:1` : ""}">
+      ${canPlan ? `<div class="swipe-actions plan"><button type="button" class="swipe-plan" data-act="plan-row" data-id="${id}" tabindex="-1" aria-label="Plan ${esc(item.title)}">${SP_BODY}</button></div>` : ""}
       ${w && !plain ? `<div class="swipe-actions del"><button type="button" class="swipe-del" data-act="swipe-delete" data-id="${id}" tabindex="-1" aria-label="Delete ${esc(item.title)}">${ICON.trash}Delete</button></div>` : ""}
       <div class="row-inner">
         <button type="button" class="row-open" data-act="open-sheet" data-id="${id}">
@@ -2565,7 +2625,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
         }, reduceMotion() ? 0 : 280);
         break;
       }
-      case "plan-row": if (item) { hintSeen(); planFromRow(item); } break;
+      case "plan-row": if (item) swipePlan(item.id, b.closest("li.row")); break;
       case "hint-done": hintSeen(); render(); break;
       case "swipe-delete": {
         const li = b.closest("li.row"); if (item && li) swipeDelete(id, li);
@@ -2687,20 +2747,42 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     openSheet(id, "plannedFor");
     if (prev !== "planned") toast(`Moved “${item.title}” to Planned`, () => updateItem(id, { status: prev }));
   }
+  // The send-off: the row slides away, the seal turns into a tick, then the details open.
   function swipePlan(id, li) {
-    const item = find(id); if (!item) return;
+    const item = find(id); if (!item || state.planning) return;
     hintSeen();
-    li.classList.add("planning");
-    setTimeout(() => planFromRow(item), reduceMotion() ? 0 : 210);
+    if (reduceMotion() || !li) { planFromRow(item); return; }
+    const W = li.offsetWidth;
+    state.swipeOpen = null;
+    state.planning = { id, t0: Date.now(), w: W };
+    li.classList.remove("swiped-r", "tracking");
+    li.classList.add("swipe-r", "planning");
+    setSwipeVars(li, W, W);
+    setTimeout(() => buzz(12), 190);
+    setTimeout(() => { if (state.planning && state.planning.id === id) { state.planning = null; planFromRow(item); } }, 640);
   }
 
   /* ---------- swipe left to delete, right to plan ---------- */
   const SWIPE_W = 88;
   let sw = null, wh = null, suppressClick = false;
+  const buzz = (ms) => { try { navigator.vibrate && navigator.vibrate(ms); } catch {} };
+  // The swipe's position drives the art underneath: --q grows the calendar in over the first
+  // 88px, then --p fills the ring until the point of no return.
+  function setSwipeVars(li, x, W) {
+    li.style.setProperty("--reveal", `${Math.abs(x)}px`);
+    if (!li.dataset.plan) return;
+    const r = Math.max(0, x), clamp = (v) => Math.max(0, Math.min(1, v));
+    li.style.setProperty("--q", clamp(r / SWIPE_W).toFixed(3));
+    li.style.setProperty("--p", clamp((r - SWIPE_W) / Math.max(1, W * 0.55 - SWIPE_W)).toFixed(3));
+  }
   function closeSwipe() {
     if (!state.swipeOpen) return;
     state.swipeOpen = null;
-    $$("#list li.swiped, #list li.swiped-r").forEach((li) => { li.classList.add("swiping"); li.classList.remove("swiped", "swiped-r"); setTimeout(() => li.classList.remove("swiping", "swipe-r"), 360); });
+    $$("#list li.swiped, #list li.swiped-r").forEach((li) => {
+      if (li.classList.contains("swiped-r")) setSwipeVars(li, 0, li.offsetWidth);
+      li.classList.add("swiping"); li.classList.remove("swiped", "swiped-r");
+      setTimeout(() => li.classList.remove("swiping", "swipe-r"), 360);
+    });
   }
   async function deleteWithUndo(item) {
     const { id, ...data } = item;
@@ -2720,7 +2802,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     if (state.swipeOpen && state.swipeOpen !== id) closeSwipe();
     const inner = li.querySelector(".row-inner");
     inner.style.transition = "none";
-    li.classList.add("swiping");
+    li.classList.add("swiping", "tracking");
     li.classList.remove("peek");
     return { id, li, inner, base: li.classList.contains("swiped") ? -SWIPE_W : li.classList.contains("swiped-r") ? SWIPE_W : 0, x: 0 };
   }
@@ -2728,28 +2810,33 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     const W = s.li.offsetWidth;
     s.x = Math.max(-W, Math.min(s.li.dataset.plan ? W : 0, x));
     s.inner.style.transform = `translateX(${s.x}px)`;
-    s.li.style.setProperty("--reveal", `${Math.abs(s.x)}px`);
+    setSwipeVars(s.li, s.x, W);
     s.li.classList.toggle("swipe-r", s.x > 0);
-    s.li.classList.toggle("swipe-full", Math.abs(s.x) > W * 0.55);
+    const full = Math.abs(s.x) > W * 0.55;
+    if (full !== s.li.classList.contains("swipe-full")) { s.li.classList.toggle("swipe-full", full); if (full) buzz(8); }
   }
   function settleSwipe(s) {
     const { id, li, inner, x } = s, W = li.offsetWidth;
+    li.classList.remove("tracking");
     inner.style.transition = ""; void inner.offsetWidth;
-    inner.style.transform = ""; li.style.removeProperty("--reveal");
+    inner.style.transform = "";
     if (x > W * 0.55) { swipePlan(id, li); return; }
     li.classList.remove("swipe-full");
+    if (x <= 0) li.style.removeProperty("--reveal");
     if (-x > W * 0.55) { swipeDelete(id, li); return; }
     li.classList.remove("swiped", "swiped-r");
     if (-x > SWIPE_W / 2) { state.swipeOpen = id; state.swipeSide = "l"; li.classList.add("swiped"); }
     else if (x > SWIPE_W / 2) { state.swipeOpen = id; state.swipeSide = "r"; li.classList.add("swiped-r"); hintSeen(); }
     else if (state.swipeOpen === id) state.swipeOpen = null;
+    // The calendar glides back with the row instead of jumping.
+    if (x > 0) setSwipeVars(li, li.classList.contains("swiped-r") ? SWIPE_W : 0, W);
     setTimeout(() => { li.classList.remove("swiping"); if (!li.classList.contains("swiped-r")) li.classList.remove("swipe-r"); }, 360);
   }
   const listEl = $("#list");
   listEl.addEventListener("pointerdown", (e) => {
     if (!state.canWrite || (e.pointerType === "mouse" && e.button !== 0)) return;
     const li = e.target.closest("li.row[data-row]");
-    if (!li || !li.querySelector(".swipe-actions") || e.target.closest(".swipe-del, .swipe-plan, .grip") || state.swipeGone.has(li.dataset.row) || state.drag) return;
+    if (!li || !li.querySelector(".swipe-actions") || e.target.closest(".swipe-del, .swipe-plan, .grip") || state.swipeGone.has(li.dataset.row) || li.classList.contains("planning") || state.drag) return;
     sw = { li, x0: e.clientX, y0: e.clientY, pid: e.pointerId, s: null };
   });
   listEl.addEventListener("pointermove", (e) => {
@@ -2776,7 +2863,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   listEl.addEventListener("wheel", (e) => {
     if (!state.canWrite || Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
     const li = e.target.closest("li.row[data-row]");
-    if (!li || !li.querySelector(".swipe-actions") || state.swipeGone.has(li.dataset.row)) return;
+    if (!li || !li.querySelector(".swipe-actions") || state.swipeGone.has(li.dataset.row) || li.classList.contains("planning")) return;
     e.preventDefault();
     if (!wh || wh.li !== li) { if (wh) { clearTimeout(wh.t); settleSwipe(wh); } wh = startSwipe(li); wh.acc = 0; }
     wh.acc += e.deltaX;
