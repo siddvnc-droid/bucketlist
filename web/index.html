@@ -58,6 +58,8 @@
   --toast-act: #E2C27A;
   --snow: rgba(112, 142, 184, 0.72);
   --cal-bg: #FFFFFF; --cal-ink: #111111; --cal-red: #FF3B30; --swipe-red: #FF3B30; --swipe-plan: #15233F;
+  /* passport pages on the Stamps tab */
+  --paper: #F5F1E6; --paper-line: #E2DBC6; --paper-ink: #2B2A26; --paper-ink-2: #4A4536; --paper-muted: #7E6E48; --paper-guill: rgba(143, 110, 40, .12);
   /* liquid glass (tab bar on phones) */
   --glass-fill: linear-gradient(180deg, rgba(255, 255, 255, .66), rgba(255, 255, 255, .42));
   --glass-rim: rgba(15, 19, 17, .09); --glass-edge: rgba(255, 255, 255, .85); --glass-under: rgba(255, 255, 255, .25);
@@ -85,6 +87,7 @@
     --doc: #101A2B; --doc-ink: #EEE8D9; --doc-ink-2: #C9C3B3; --doc-muted: #8D93A1; --doc-line: #243149;
     --guill: rgba(221, 187, 114, 0.085); --guill-2: rgba(221, 187, 114, 0.12); --stamp-blend: normal; --scrim: rgba(0, 0, 0, .6);
     --toast-bg: #ECEEF0; --toast-ink: #111418; --toast-act: #8F6E28; --snow: rgba(255, 255, 255, 0.9); --cal-bg: #1C1C1E; --cal-ink: #FFFFFF; --cal-red: #FF453A; --swipe-red: #FF453A; --swipe-plan: #2B4A82;
+    --paper: #1A1B1E; --paper-line: #2C2D2B; --paper-ink: #ECE6D6; --paper-ink-2: #CFC6B0; --paper-muted: #A89A74; --paper-guill: rgba(221, 187, 114, .09);
     --glass-fill: linear-gradient(180deg, rgba(44, 50, 60, .62), rgba(24, 28, 35, .5));
     --glass-rim: rgba(0, 0, 0, .45); --glass-edge: rgba(255, 255, 255, .16); --glass-under: rgba(255, 255, 255, .05);
     --glass-lens: rgba(255, 255, 255, .13); --glass-sheen: .22;
@@ -105,6 +108,7 @@
   --doc: #101A2B; --doc-ink: #EEE8D9; --doc-ink-2: #C9C3B3; --doc-muted: #8D93A1; --doc-line: #243149;
   --guill: rgba(221, 187, 114, 0.085); --guill-2: rgba(221, 187, 114, 0.12); --stamp-blend: normal; --scrim: rgba(0, 0, 0, .6);
   --toast-bg: #ECEEF0; --toast-ink: #111418; --toast-act: #8F6E28; --snow: rgba(255, 255, 255, 0.9); --cal-bg: #1C1C1E; --cal-ink: #FFFFFF; --cal-red: #FF453A; --swipe-red: #FF453A; --swipe-plan: #2B4A82;
+    --paper: #1A1B1E; --paper-line: #2C2D2B; --paper-ink: #ECE6D6; --paper-ink-2: #CFC6B0; --paper-muted: #A89A74; --paper-guill: rgba(221, 187, 114, .09);
     --glass-fill: linear-gradient(180deg, rgba(44, 50, 60, .62), rgba(24, 28, 35, .5));
     --glass-rim: rgba(0, 0, 0, .45); --glass-edge: rgba(255, 255, 255, .16); --glass-under: rgba(255, 255, 255, .05);
     --glass-lens: rgba(255, 255, 255, .13); --glass-sheen: .22;
@@ -509,6 +513,34 @@ h1 em { font-style: italic; color: var(--ink-2); }
 @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 
 /* ---------- stamps (done page) ---------- */
+/* ---------- the Stamps tab: pages of a passport, one per month ---------- */
+.pp-book { display: flex; flex-direction: column; gap: 18px; }
+.pp-page {
+  position: relative; isolation: isolate; overflow: hidden; border-radius: 18px; border: 1px solid var(--paper-line); background: var(--paper); color: var(--paper-ink);
+  padding: 16px 18px 16px; box-shadow: 0 1px 2px rgba(60, 50, 20, .06), 0 18px 40px -28px rgba(60, 50, 20, .35);
+}
+.pp-lines { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; color: var(--paper-guill); pointer-events: none; }
+.pp-top { display: flex; justify-content: space-between; gap: 12px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--paper-muted); }
+.pp-month { margin: 8px 0 0; font-family: var(--font-display); font-style: italic; font-weight: 400; font-size: 26px; line-height: 1.1; color: var(--paper-ink); }
+.pp-grid { list-style: none; margin: 18px -6px 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 10px 12px; }
+.pp-grid > li:nth-child(even) { margin-top: 30px; }
+.pp-item { transform: translate(var(--dx, 0px), var(--dy, 0px)); }
+.pp-stamp {
+  box-sizing: border-box; width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 18px; padding: 10px 8px; border: 0; border-radius: 14px;
+  background: none; color: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background .15s;
+}
+.pp-stamp:hover { background: color-mix(in srgb, var(--paper-ink) 5%, transparent); }
+.pp-cap { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pp-title { font-size: 13.5px; font-weight: 600; line-height: 1.3; color: var(--paper-ink); overflow-wrap: anywhere; }
+.pp-memory { font-family: var(--font-display); font-style: italic; font-size: 16px; line-height: 1.25; color: var(--paper-ink-2); overflow-wrap: anywhere; }
+.pp-next {
+  width: 108px; height: 108px; margin: 6px 0 0 10px; box-sizing: border-box; border-radius: 50%; border: 1.5px dashed color-mix(in srgb, var(--paper-muted) 70%, transparent);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 10px; text-align: center; transform: rotate(6deg);
+}
+.pp-next .k { font-family: var(--font-mono); font-size: 8px; letter-spacing: .18em; text-transform: uppercase; color: var(--paper-muted); }
+.pp-next .t { font-family: var(--font-display); font-size: 16px; line-height: 1.1; color: var(--paper-ink-2); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.pp-mrz { margin-top: 16px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .16em; color: var(--paper-muted); opacity: .55; white-space: nowrap; overflow: hidden; user-select: none; }
+.pp-empty { padding: 10px 0 4px; font-size: 14px; color: var(--paper-ink-2); }
 .stamps { list-style: none; margin: 0; padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(208px, 1fr)); gap: 4px; }
 .stamp-card { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; text-align: left; border: 0; background: none; border-radius: 14px; padding: 20px 18px 18px; color: inherit; transition: background .15s; }
 .stamp-card:hover { background: var(--surface-2); }
@@ -563,13 +595,54 @@ h1 em { font-style: italic; color: var(--ink-2); }
 .sheet-body { overflow: auto; overscroll-behavior: contain; padding: 14px 26px 26px; display: flex; flex-direction: column; gap: 22px; }
 /* scroll instead of squeezing: without this the title shrinks to a sliver when the calendar makes the sheet taller than the screen */
 .sheet-body > * { flex-shrink: 0; }
-.sheet-foot { border-top: 1px solid var(--line); padding: 12px 16px 12px 26px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--muted); min-height: 57px; }
+.sheet-foot { border-top: 1px solid var(--line); padding: 12px 18px 14px 26px; display: flex; flex-direction: column; align-items: stretch; gap: 10px; font-size: 13px; color: var(--muted); }
 .sheet-foot .who { display: inline-flex; align-items: center; gap: 8px; }
 .foot-confirm { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-left: auto; color: var(--ink-2); }
 .foot-actions { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; margin-left: auto; }
 .foot-actions #sheet-save { margin-left: 6px; }
 .save-hint { font-size: 12.5px; color: var(--gold); margin-left: 8px; }
 .sheet-cta { display: flex; gap: 8px; margin-top: -8px; }
+/* details: what it is, in one grouped card (Date, then Category, then Notes) */
+.prop-card { display: flex; flex-direction: column; border-radius: 16px; background: var(--surface-2); border: 1px solid var(--line); margin-top: -6px; }
+.prop-row {
+  position: relative; display: flex; align-items: center; gap: 12px; min-height: 58px; box-sizing: border-box; padding: 8px 12px 8px 14px;
+  width: 100%; border: 0; background: none; text-align: left; color: inherit; font: inherit; border-radius: 16px;
+}
+.prop-card > .prop-row:not(:first-child)::before, .prop-card > .dp-cal + .prop-row::before { content: ""; position: absolute; top: 0; left: 58px; right: 0; height: 1px; background: var(--line); }
+button.prop-row { cursor: pointer; }
+button.prop-row:hover:not([disabled]) { background: color-mix(in srgb, var(--ink) 3%, transparent); }
+button.prop-row[disabled] { cursor: default; }
+.prop-row > svg { width: 16px; height: 16px; color: var(--faint); flex: none; }
+.prop-ic { flex: none; width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; color: var(--dot, var(--ink-2)); background: color-mix(in srgb, var(--dot, var(--ink)) 12%, transparent); }
+.prop-ic svg { width: 17px; height: 17px; }
+.prop-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.prop-l { font-size: 12px; color: var(--muted); }
+.prop-v { font-size: 15px; font-weight: 500; overflow-wrap: anywhere; }
+.prop-row .dp-trigger { margin: 0; padding: 0; border: 0; width: auto; min-height: 0; background: none; font-size: 15px; font-weight: 500; color: var(--ink); justify-content: flex-start; }
+.prop-row .dp-trigger:hover, .prop-row .dp-trigger[aria-expanded="true"], .prop-row .dp-trigger:focus { background: none; box-shadow: none; }
+.prop-row .dp-trigger:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 6px; }
+.prop-row .dp-trigger svg { display: none; }
+.prop-row .dp-trigger .dp-count { font-weight: 400; color: var(--gold); }
+.prop-row .dp-trigger.late .dp-count { color: var(--danger); }
+.prop-row .dp-trigger.is-empty { color: var(--muted); font-weight: 400; }
+.prop-row .icon-btn { width: 44px; height: 44px; border-radius: 12px; color: var(--ink-2); }
+.prop-input { display: block; width: 100%; margin: 0; padding: 2px 0 0; border: 0; background: none; resize: none; overflow: hidden; font: inherit; font-size: 15px; line-height: 1.45; color: var(--ink); outline: none; }
+.prop-input::placeholder { color: var(--faint); }
+.prop-input.memory { font-family: var(--font-display); font-style: italic; font-size: 19px; line-height: 1.3; color: var(--ink-2); }
+.prop-card .dp-cal { margin: 0 10px 10px; border-radius: 14px; background: var(--surface); }
+.cal-quick { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 4px 2px; border-top: 1px solid var(--line); margin-top: 8px; }
+/* a stamped activity shows its stamp on a strip of passport paper */
+.sheet-stamp { position: relative; isolation: isolate; overflow: hidden; height: 150px; margin-top: -6px; display: grid; place-items: center; border-radius: 16px; border: 1px solid var(--paper-line); background: var(--paper); }
+.sheet-stamp .stamp { scale: 1.3; }
+/* footer: how saving is going, who added it, and the big moves */
+.foot-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: var(--muted); }
+.save-state { display: inline-flex; align-items: center; gap: 5px; }
+.foot-meta .who { flex-basis: auto !important; }
+.save-state svg { width: 13px; height: 13px; }
+.save-state[data-s="error"] { color: var(--danger); }
+.foot-btns { display: flex; gap: 8px; width: 100%; }
+.foot-btns .btn { flex: 1 1 0; height: 46px; border-radius: 13px; font-size: 15px; }
+.foot-btns .btn.ghost:only-child { flex: none; margin-left: -12px; }
 .sheet-cta .btn { flex: 1 1 0; height: 44px; border-radius: 12px; font-size: 15px; }
 .dlg-title { font-family: var(--font-display); font-weight: 400; font-size: 30px; line-height: 1; margin: 0 0 6px; }
 .dlg-sub { margin: 0; color: var(--muted); font-size: 13.5px; }
@@ -891,6 +964,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     x: `<svg viewBox="0 0 16 16" ${S}><path d="M4 4l8 8M12 4l-8 8"/></svg>`,
     chev: `<svg viewBox="0 0 16 16" ${S}><path d="M4.5 6.5L8 10l3.5-3.5"/></svg>`,
     right: `<svg viewBox="0 0 16 16" ${S}><path d="M6.5 4L10.5 8l-4 4"/></svg>`,
+    notes: `<svg viewBox="0 0 16 16" ${S}><path d="M3.5 4h9M3.5 7.5h9M3.5 11h5.5"/></svg>`,
     grip: `<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="6" cy="4" r="1.15"/><circle cx="10" cy="4" r="1.15"/><circle cx="6" cy="8" r="1.15"/><circle cx="10" cy="8" r="1.15"/><circle cx="6" cy="12" r="1.15"/><circle cx="10" cy="12" r="1.15"/></svg>`,
     left: `<svg viewBox="0 0 16 16" ${S}><path d="M9.5 4L5.5 8l4 4"/></svg>`,
     plus: `<svg viewBox="0 0 16 16" ${S}><path d="M8 3.5v9M3.5 8h9"/></svg>`,
@@ -912,6 +986,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     catFilter: safeGet("bucketlist.cat") || "",     // "" all, "none" uncategorized, or a category id
     composerCat: "",
     paste: null,               // lines waiting to be added from a paste
+    saveState: "idle",         // details: idle | pending | saving | saved | error
     adding: false, addNeedsCat: false, addPrefill: "",  // the add sheet
     nextOpen: false,           // Next up opened in place
     sheet: null,
@@ -1464,17 +1539,20 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       cells += `<button type="button" class="cal-day${day === value ? " sel" : ""}${day === value && day === state.cal.popped ? " pop" : ""}${day === today ? " today" : ""}" data-act="cal-pick" data-for="${field}" data-v="${day}" aria-pressed="${day === value}" aria-label="${esc(fmtDate(day, { day: true, year: true }))}"${off ? " disabled" : ""}>${d}</button>`;
     }
     const slide = state.cal.slide > 0 ? " cal-in from-right" : state.cal.slide < 0 ? " cal-in from-left" : "";
+    const quick = field === "plannedFor" && state.canWrite ? `<div class="cal-quick"><button type="button" class="qd" data-act="quick-date" data-v="weekend">This weekend</button><button type="button" class="qd" data-act="quick-date" data-v="month">In a month</button>${validISO(value) ? `<button type="button" class="qd" data-act="quick-date" data-v="clear">No date</button>` : ""}</div>` : "";
     return `<div class="cal-head"><span class="cal-title${slide}">${esc(first.toLocaleDateString(undefined, { month: "long" }))} <span>${y}</span></span>
       <span class="cal-nav"><button type="button" data-act="cal-today">Today</button><button type="button" data-act="cal-prev" aria-label="Previous month">${ICON.left}</button><button type="button" data-act="cal-next" aria-label="Next month">${ICON.right}</button></span></div>
       <div class="cal-grid">${head}</div>
-      <div class="cal-pages"><div class="cal-grid${slide}">${cells}</div></div>`;
+      <div class="cal-pages"><div class="cal-grid${slide}">${cells}</div></div>${quick}`;
   }
   function renderCalendars() {
     $$("#dialog-root input.dp-value").forEach((inp) => {
       const f = inp.dataset.field, v = inp.value, open = state.cal.open === f;
       const trig = $(`#dialog-root .dp-trigger[data-for="${f}"]`), cal = $(`#dialog-root .dp-cal[data-cal-for="${f}"]`);
       if (trig) {
-        trig.innerHTML = `${ICON.cal}<span>${validISO(v) ? esc(fmtDate(v, { day: true, year: true })) : trig.disabled ? "No date" : "Pick a date"}</span>`;
+        const count = f === "plannedFor" && validISO(v) && trig.closest(".prop-row") ? ` <span class="dp-count">· ${esc(countdown(v).toLowerCase())}</span>` : "";
+        trig.innerHTML = `${ICON.cal}<span>${validISO(v) ? esc(fmtDate(v, { day: true, year: !count })) : trig.disabled ? "No date" : "Pick a date"}${count}</span>`;
+        trig.classList.toggle("late", !!count && daysUntil(v) < 0);
         trig.classList.toggle("is-empty", !validISO(v));
         trig.setAttribute("aria-expanded", String(open));
       }
@@ -1568,7 +1646,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     const tasks = tasksOf(item), done = tasks.filter((t) => t.done).length;
     if (!w && !tasks.length) return "";
     const have = new Set(tasks.map((t) => t.text.trim().toLowerCase()));
-    const ideas = STEP_IDEAS.filter((s) => !have.has(s.toLowerCase()));
+    const ideas = STEP_IDEAS.filter((s) => !have.has(s.toLowerCase()) && !(s === "Pick a Date" && validISO(item.plannedFor)));
     const steps = tasks.map((t) => {
       const tid = esc(t.id);
       return `<li class="step${t.done ? " done" : ""}">
@@ -1746,15 +1824,45 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       </div>
     </li>`;
   }
-  function stampCardHTML(item) {
-    const who = item.doneBy ? avatar(item.doneBy, "Ticked off by {name}") : "";
-    return `<li><button type="button" class="stamp-card" data-act="open-sheet" data-id="${esc(item.id)}">
-      ${stampHTML(item)}
-      <span class="sc-title">${esc(item.title)}</span>
-      ${item.memory ? `<span class="sc-memory">“${esc(item.memory)}”</span>` : ""}
-      <span class="sc-meta">${who}${validISO(item.doneOn) ? esc(fmtDate(item.doneOn, { year: true })) : ""}</span>
-    </button>${state.canWrite ? `<button type="button" class="sc-undo" data-act="unstamp" data-id="${esc(item.id)}" title="Remove stamp" aria-label="Remove stamp from ${esc(item.title)}">${ICON.undo}</button>` : ""}</li>`;
+  // The Stamps tab is a passport: a page per month, newest first, stamps scattered as if
+  // stamped by hand. The newest page leaves room for the next stamp.
+  const PAPER_LINES = `<svg class="pp-lines" viewBox="0 0 360 420" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width=".8">${[0, 8, 16, 24].map((o) => `<path d="M-10 ${120 + o} C 60 ${96 + o}, 120 ${146 + o}, 190 ${120 + o} S 310 ${96 + o}, 370 ${120 + o}"/><path d="M-10 ${300 + o} C 70 ${276 + o}, 140 ${326 + o}, 210 ${300 + o} S 320 ${276 + o}, 370 ${300 + o}"/>`).join("")}<circle cx="300" cy="64" r="44"/><circle cx="300" cy="64" r="32"/></g></svg>`;
+  const LIST_WORD = () => { const em = document.querySelector("h1 em"); return (em ? em.textContent : "") || "Bucket"; };
+  function passportHTML(list, c) {
+    const key = (x) => (validISO(x.doneOn) ? x.doneOn.slice(0, 7) : x.doneAt ? iso(new Date(x.doneAt)).slice(0, 7) : "undated");
+    const months = [];
+    for (const x of list) { const k = key(x); let m = months.find((g) => g.k === k); if (!m) months.push(m = { k, items: [] }); m.items.push(x); }
+    // the newest page keeps a spot for the next stamp
+    const next = c.by.planned.filter(matchesCat)[0];
+    const pages = months.map((m) => ({ ...m }));
+    if (next && pages.length) pages[0].next = next;
+    const total = pages.length, word = LIST_WORD();
+    const mrz = esc(`P<${word}<BUCKET<LIST`.toUpperCase().replace(/[^A-Z<]+/g, "<").padEnd(44, "<").slice(0, 44));
+    const label = (k) => {
+      if (k === "undated") return { month: "Undated", year: "" };
+      const d = new Date(Number(k.slice(0, 4)), Number(k.slice(5, 7)) - 1, 1);
+      return { month: d.toLocaleDateString(undefined, { month: "long" }), year: String(d.getFullYear()) };
+    };
+    return `<div class="pp-book">${pages.map((pg, i) => {
+      const { month, year } = label(pg.k);
+      const stamps = pg.items.map((x) => {
+        const h = hash(x.id + "pp"), dx = (h % 17) - 8, dy = ((h >> 5) % 13) - 4;
+        return `<li class="pp-item" style="--dx:${dx}px;--dy:${dy}px"><button type="button" class="pp-stamp" data-act="open-sheet" data-id="${esc(x.id)}" aria-label="${esc(x.title)}, stamped ${validISO(x.doneOn) ? esc(fmtDate(x.doneOn, { year: true })) : ""}">
+          ${stampHTML(x)}
+          <span class="pp-cap"><span class="pp-title">${esc(x.title)}</span>${x.memory ? `<span class="pp-memory">“${esc(x.memory)}”</span>` : ""}</span>
+        </button></li>`;
+      }).join("");
+      const ghost = pg.next ? `<li class="pp-item"><div class="pp-next" role="note" aria-label="Next stamp: ${esc(pg.next.title)}"><span class="k">Next stamp</span><span class="t">${esc(pg.next.title)}</span>${validISO(pg.next.plannedFor) ? `<span class="k">${esc(stampDate(pg.next.plannedFor))}</span>` : ""}</div></li>` : "";
+      return `<section class="pp-page" aria-label="${esc(month)} ${esc(year)}">
+        ${PAPER_LINES}
+        <div class="pp-top"><span>Page ${pad(total - i)}</span><span>Stamps${year ? ` · ${year}` : ""}</span></div>
+        <h3 class="pp-month">${esc(month)}</h3>
+        <ul class="pp-grid">${stamps}${ghost}</ul>
+        <div class="pp-mrz" aria-hidden="true">${mrz}</div>
+      </section>`;
+    }).join("")}</div>`;
   }
+
   // Shown once on phones until someone taps Got it or swipes a row.
   const SWIPE_HINT = `<div class="swipe-hint" role="note"><p><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h13M13 7l5 5-5 5"/></svg><span>Swipe right on an activity to plan it, or left to delete. Tap it for details.</span></p><button type="button" data-act="hint-done">Got it</button></div>`;
   function showSwipeHint() { return state.canWrite && !state.hintSeen && !!(window.matchMedia && matchMedia("(max-width: 600px)").matches) && state.mode !== "loading"; }
@@ -1776,7 +1884,8 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     let body;
     if (f === "done") {
       const list = c.by.done.filter(matchesCat);
-      body = list.length ? `<ul class="stamps">${list.map(stampCardHTML).join("")}</ul>` : emptyHTML(c);
+      if (list.length) { el.innerHTML = passportHTML(list, c); return; }
+      body = emptyHTML(c);
     } else {
       const list = f === "todo" ? c.items.filter((x) => inTab(x, "todo")).sort(byRank)
         : f === "planned" ? c.items.filter((x) => inTab(x, "planned")).sort(byPlanned)
@@ -1814,32 +1923,48 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       : `<span class="who">${added ? `Added ${esc(added)}` : ""}</span>`;
     const head = `<span class="label sheet-eyebrow" id="sheet-eyebrow" data-st="${st}"><i aria-hidden="true"></i><span>${SHEET_EYEBROW[st]}</span></span>
       <button type="button" class="icon-btn" data-act="close-dialog" aria-label="Close">${ICON.x}</button>`;
+    const dated = validISO(item.plannedFor);
+    const catRow = `<button type="button" class="prop-row" data-act="pop" data-kind="sheet-cat" data-pop-anchor="sheet-cat" aria-haspopup="listbox" aria-expanded="false" ${w ? "" : "disabled"}>
+        ${cat ? `<span class="prop-ic" style="--dot:${catVar(cat)}">${iconSVG(catIconKey(cat))}</span>` : `<span class="prop-ic">${iconSVG("special")}</span>`}
+        <span class="prop-main"><span class="prop-l">Category</span><span class="prop-v">${cat ? esc(cat.name) : "No category"}</span></span>
+        ${w ? ICON.right : ""}
+      </button>`;
+    const notesRow = `<label class="prop-row">
+        <span class="prop-ic">${ICON.notes}</span>
+        <span class="prop-main"><span class="prop-l">Notes</span><textarea class="prop-input autogrow" rows="1" maxlength="1000" data-key="s:notes" data-field="notes" placeholder="Ideas, links, costs…" aria-label="Notes" ${ro}>${esc(item.notes || "")}</textarea></span>
+      </label>`;
+    const rows = st === "planned" ? `
+      <div class="prop-row">
+        <span class="prop-ic" style="--dot:var(--gold)">${ICON.cal}</span>
+        <span class="prop-main"><span class="prop-l">Date</span>${dpHTML("plannedFor", item.plannedFor, "Planned date", !w)}</span>
+        ${dated ? `<button type="button" class="icon-btn" data-act="pop" data-kind="add-cal" data-pop-anchor="add-cal:sheet" data-cat="${id}" aria-haspopup="menu" aria-expanded="false" aria-label="Add to calendar" title="Add to calendar">${ICON.calAdd}</button>` : ""}
+      </div>
+      <div class="dp-cal" data-cal-for="plannedFor" hidden></div>
+      ${catRow}${notesRow}`
+      : st === "done" ? `
+      <label class="prop-row">
+        <span class="prop-ic" style="--dot:var(--gold)">${ICON.check}</span>
+        <span class="prop-main"><span class="prop-l">Our memory</span><textarea class="prop-input memory autogrow" rows="1" maxlength="300" data-key="s:memory" data-field="memory" placeholder="A line to remember it by" aria-label="Memory" ${ro}>${esc(item.memory || "")}</textarea></span>
+      </label>
+      <div class="prop-row">
+        <span class="prop-ic" style="--dot:var(--done)">${ICON.cal}</span>
+        <span class="prop-main"><span class="prop-l">Done on</span>${dpHTML("doneOn", item.doneOn, "Done on", !w, todayISO())}</span>
+      </div>
+      <div class="dp-cal" data-cal-for="doneOn" hidden></div>
+      ${catRow}${notesRow}`
+      : `${catRow}${notesRow}`;
     const body = `
+      ${st === "done" ? `<div class="sheet-stamp">${PAPER_LINES}${stampHTML(item)}</div>` : ""}
       <textarea class="title-input autogrow" rows="1" maxlength="200" data-key="s:title" data-field="title" aria-label="Activity name" ${ro}>${esc(item.title)}</textarea>
       ${w && st === "todo" ? `<div class="sheet-cta"><button type="button" class="btn primary" data-act="set-status" data-v="planned">${ICON.cal} Plan a date</button><button type="button" class="btn" data-act="set-status" data-v="done">${ICON.check} We did it</button></div>` : ""}
-      <dl class="props">
-        <dt>Category</dt>
-        <dd><button type="button" class="picker bare" data-act="pop" data-kind="sheet-cat" data-pop-anchor="sheet-cat" aria-haspopup="listbox" aria-expanded="false" ${w ? "" : "disabled"}>${catLabel(cat, "No category")}${w ? ICON.chev : ""}</button></dd>
-        ${st === "planned" ? `
-        <dt class="top">Date</dt>
-        <dd><div class="date-row">${dpHTML("plannedFor", item.plannedFor, "Planned date", !w)}
-          ${w ? `<button type="button" class="qd" data-act="quick-date" data-v="weekend">This weekend</button><button type="button" class="qd" data-act="quick-date" data-v="month">In a month</button>${validISO(item.plannedFor) ? `<button type="button" class="qd" data-act="quick-date" data-v="clear">No date</button>` : ""}` : ""}${validISO(item.plannedFor) ? `<button type="button" class="qd qd-cal" data-act="pop" data-kind="add-cal" data-pop-anchor="add-cal:sheet" data-cat="${id}" aria-haspopup="menu" aria-expanded="false">${ICON.calAdd} Add to calendar</button>` : ""}</div><div class="dp-cal" data-cal-for="plannedFor" hidden></div></dd>` : ""}
-        ${st === "done" ? `
-        <dt class="top">Done on</dt>
-        <dd><div class="date-row">${dpHTML("doneOn", item.doneOn, "Done on", !w, todayISO())}</div><div class="dp-cal" data-cal-for="doneOn" hidden></div></dd>
-        <dt class="top">Memory</dt>
-        <dd><textarea class="fp autogrow" rows="1" maxlength="300" data-key="s:memory" data-field="memory" placeholder="A line to remember it by" aria-label="Memory" ${ro}>${esc(item.memory || "")}</textarea></dd>` : ""}
-        <dt class="top">Notes</dt>
-        <dd><textarea class="fp autogrow" rows="1" maxlength="1000" data-key="s:notes" data-field="notes" placeholder="Ideas, links, costs…" aria-label="Notes" ${ro}>${esc(item.notes || "")}</textarea></dd>
-      </dl>
+      <div class="prop-card">${rows}</div>
       ${st === "planned" || tasks.length ? `<section class="sheet-cl">${checklistHTML(item, "sheet")}</section>` : ""}`;
-    const didIt = `<button type="button" class="btn sm ghost" data-act="set-status" data-v="done">${ICON.check} We did it</button>`;
-    const reverse = st === "todo" ? ""
-      : st === "planned" ? `<button type="button" class="btn sm ghost" data-act="cancel-plan" data-id="${id}">${ICON.x} Cancel plan</button>${didIt}`
-      : st === "done" ? `<button type="button" class="btn sm ghost" data-act="unstamp" data-id="${id}">${ICON.undo} Remove stamp</button>` : "";
-    const foot = `${who}${w ? (state.sheetLeave
-      ? `<span class="foot-confirm">Save your changes?<button type="button" class="btn sm ghost" data-act="sheet-discard">Discard</button><button type="button" class="btn sm primary" data-act="sheet-save" data-close="1">Save</button></span>`
-      : `<span class="foot-actions">${reverse}<span class="save-hint" id="save-hint" hidden>Unsaved changes</span><button type="button" class="btn sm primary" id="sheet-save" data-act="sheet-save" disabled>Save</button></span>`) : ""}`;
+    const actions = !w ? ""
+      : st === "planned" ? `<button type="button" class="btn primary" data-act="set-status" data-v="done">${ICON.check} We did it</button><button type="button" class="btn" data-act="cancel-plan" data-id="${id}">${ICON.x} Cancel plan</button>`
+      : st === "done" ? `<button type="button" class="btn ghost" data-act="unstamp" data-id="${id}">${ICON.undo} Remove stamp</button>` : "";
+    const foot = `<div class="foot-meta">${w ? `<span class="save-state" id="save-state" data-s="${state.saveState}">${saveStateHTML(state.saveState)}</span>` : ""}${who}</div>
+      ${w && state.sheetLeave ? `<span class="foot-confirm">Couldn't save your changes.<button type="button" class="btn sm ghost" data-act="sheet-discard">Discard</button><button type="button" class="btn sm primary" data-act="sheet-save" data-close="1">Try again</button></span>`
+        : actions ? `<div class="foot-btns">${actions}</div>` : ""}`;
     return { head, body, foot, status: st };
   }
   function managerParts(c) {
@@ -1960,8 +2085,11 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     closePop(); closeSwipe();
     state.cal.open = null;
     if (focusField === "plannedFor") { const it = find(id); openCal("plannedFor", it && it.plannedFor); }
+    state.saveState = "idle";
     state.sheet = id; state.sheetFocus = focusField || null; state.sheetLeave = false; state.manager = false; state.dialogFresh = true; render(); }
   function openManager() {
+    // Leaving the details for the categories: save what was typed first.
+    if (state.sheet && state.canWrite && Object.keys(sheetChanges()).length) saveSheet(false, true);
     // Coming from the add sheet: keep what was typed for when it comes back.
     if (state.adding) { const i = $("#add-title"); state.addPrefill = i ? i.value : ""; }
     closePop(); state.managerReturn = state.sheet; state.managerReturnAdd = state.adding; state.adding = false; state.sheet = null; state.manager = true; state.catConfirm = null; state.dialogFresh = true; render(); }
@@ -1974,7 +2102,11 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   function closeDialog(force) {
     if (!state.sheet && !state.manager && !state.adding) return;
     // Ask before throwing away typed changes.
-    if (!force && state.sheet && state.canWrite && Object.keys(sheetChanges()).length) { state.sheetLeave = true; render(); return; }
+    // Unsaved typing is saved on the way out; only a failed save keeps the panel open to ask.
+    if (!force && state.sheet && state.canWrite && Object.keys(sheetChanges()).length) {
+      saveSheet(true).then((ok) => { if (!ok) { state.sheetLeave = true; render(); } });
+      return;
+    }
     state.sheetLeave = false;
     if (state.manager && state.managerReturn && find(state.managerReturn)) { const back = state.managerReturn; state.managerReturn = null; openSheet(back); return; }
     if (state.manager && state.managerReturnAdd) { state.managerReturnAdd = false; state.manager = false; openAdd(state.addPrefill); return; }
@@ -2220,23 +2352,51 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     });
     return patch;
   }
-  function updateSaveState() {
-    const btn = $("#sheet-save"); if (!btn) return;
-    const dirty = Object.keys(sheetChanges()).length > 0;
-    btn.disabled = !dirty;
-    const hint = $("#save-hint"); if (hint) hint.hidden = !dirty;
+  // Details save as you type: a short pause after the last change, and again on closing.
+  let saveTimer = 0;
+  function saveStateHTML(s) {
+    return s === "pending" || s === "saving" ? "<span>Saving…</span>"
+      : s === "saved" ? `${ICON.check}<span>Saved</span>`
+      : s === "error" ? "<span>Couldn't save. We'll keep trying.</span>"
+      : "<span>Saves as you type</span>";
   }
-  async function saveSheet(closeAfter) {
-    const item = find(state.sheet); if (!item || !state.canWrite) return;
+  function setSaveState(v) {
+    state.saveState = v;
+    const el = $("#save-state"); if (el) { el.dataset.s = v; el.innerHTML = saveStateHTML(v); }
+  }
+  function updateSaveState() {
+    if (!state.sheet || !state.canWrite) return;
+    if (!Object.keys(sheetChanges()).length) return;
+    clearTimeout(saveTimer);
+    if (state.saveState !== "saving") setSaveState("pending");
+    saveTimer = setTimeout(() => saveSheet(false, true), 700);
+  }
+  async function saveSheet(closeAfter, auto) {
+    clearTimeout(saveTimer);
+    const item = find(state.sheet); if (!item || !state.canWrite) return true;
     const patch = sheetChanges();
-    if ("title" in patch && !patch.title) { toast("An activity needs a name."); return; }
-    if (!Object.keys(patch).length) { if (closeAfter) closeDialog(true); return; }
-    if (await updateItem(item.id, patch)) {
-      $$(FIELD_SEL).forEach((el) => { if (el.dataset.field in patch) el.defaultValue = el.value; });
-      toast("Saved");
+    // An empty name isn't saved; the old one comes back.
+    if ("title" in patch && !patch.title) { if (!auto && !closeAfter) toast("An activity needs a name."); delete patch.title; }
+    if (!Object.keys(patch).length) {
+      if (state.saveState === "pending") setSaveState("saved");
       if (closeAfter) closeDialog(true);
-      else { state.sheetLeave = false; render(); }
+      return true;
     }
+    setSaveState("saving");
+    const ok = await updateItem(item.id, patch);
+    if (ok) {
+      $$(FIELD_SEL).forEach((el) => { if (el.dataset.field in patch) el.defaultValue = el.value; });
+      setSaveState("saved");
+      state.sheetLeave = false;
+      if (closeAfter) closeDialog(true);
+      else if (!auto) render();
+      // Typed more while that was saving: save again.
+      else if (Object.keys(sheetChanges()).length) updateSaveState();
+    } else {
+      setSaveState("error");
+      if (auto) saveTimer = setTimeout(() => saveSheet(false, true), 4000);
+    }
+    return ok;
   }
   async function saveCatName(input) {
     const id = input.dataset.catName, k = catById(id); if (!k || !state.canWrite) return;
@@ -2373,8 +2533,10 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
         if (b.dataset.v === "weekend") { const day = dt.getDay(); dt.setDate(dt.getDate() + (day === 0 ? 0 : 6 - day)); input.value = iso(dt); }
         else if (b.dataset.v === "month") { dt.setMonth(dt.getMonth() + 1); input.value = iso(dt); }
         else input.value = "";
-        if (state.cal.open === "plannedFor") openCal("plannedFor", input.value);
-        renderCalendars(); updateSaveState(); break;
+        state.cal.open = null;  // a quick date is a choice: fold the calendar away
+        renderCalendars(); updateSaveState();
+        const trig = $('#dialog-root .dp-trigger[data-for="plannedFor"]'); if (trig) trig.focus({ preventScroll: true });
+        break;
       }
       case "cal-toggle": {
         const f = b.dataset.for, inp = $(`#dialog-root [data-field="${f}"]`);
