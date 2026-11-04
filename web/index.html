@@ -58,6 +58,11 @@
   --toast-act: #E2C27A;
   --snow: rgba(112, 142, 184, 0.72);
   --cal-bg: #FFFFFF; --cal-ink: #111111; --cal-red: #FF3B30; --swipe-red: #FF3B30; --swipe-plan: #15233F;
+  /* liquid glass (tab bar on phones) */
+  --glass-fill: linear-gradient(180deg, rgba(255, 255, 255, .66), rgba(255, 255, 255, .42));
+  --glass-rim: rgba(15, 19, 17, .09); --glass-edge: rgba(255, 255, 255, .85); --glass-under: rgba(255, 255, 255, .25);
+  --glass-lens: rgba(255, 255, 255, .72); --glass-sheen: .7;
+  --glass-shadow: 0 14px 34px -14px rgba(15, 25, 50, .38), 0 2px 8px -3px rgba(15, 25, 50, .14);
   --k1: #2E56B8; --k2: #6D45B0; --k3: #B2552B; --k4: #1E7B5A; --k5: #AE3D69; --k6: #667F1E; --k7: #17809A; --k8: #5F6873;
   --shadow-1: 0 1px 2px rgba(15, 19, 17, .05), 0 1px 1px rgba(15, 19, 17, .03);
   --shadow-2: 0 14px 34px -10px rgba(15, 19, 17, .22), 0 4px 10px -4px rgba(15, 19, 17, .08);
@@ -76,6 +81,10 @@
     --doc: #101A2B; --doc-ink: #EEE8D9; --doc-ink-2: #C9C3B3; --doc-muted: #8D93A1; --doc-line: #243149;
     --guill: rgba(221, 187, 114, 0.085); --guill-2: rgba(221, 187, 114, 0.12); --stamp-blend: normal; --scrim: rgba(0, 0, 0, .6);
     --toast-bg: #ECEEF0; --toast-ink: #111418; --toast-act: #8F6E28; --snow: rgba(255, 255, 255, 0.9); --cal-bg: #1C1C1E; --cal-ink: #FFFFFF; --cal-red: #FF453A; --swipe-red: #FF453A; --swipe-plan: #2B4A82;
+    --glass-fill: linear-gradient(180deg, rgba(44, 50, 60, .62), rgba(24, 28, 35, .5));
+    --glass-rim: rgba(0, 0, 0, .45); --glass-edge: rgba(255, 255, 255, .16); --glass-under: rgba(255, 255, 255, .05);
+    --glass-lens: rgba(255, 255, 255, .13); --glass-sheen: .22;
+    --glass-shadow: 0 16px 36px -14px rgba(0, 0, 0, .7), 0 2px 8px -3px rgba(0, 0, 0, .4);
     --k1: #86A6F5; --k2: #B99CF0; --k3: #F09A6E; --k4: #62CFA2; --k5: #F08DB4; --k6: #B9D162; --k7: #62CBE3; --k8: #9AA3AE;
     --shadow-1: 0 1px 2px rgba(0, 0, 0, .5); --shadow-2: 0 16px 40px -10px rgba(0, 0, 0, .7); --shadow-3: 0 30px 80px -20px rgba(0, 0, 0, .8);
     --doc-shadow: 0 24px 48px -28px rgba(0, 0, 0, .8);
@@ -89,6 +98,10 @@
   --doc: #101A2B; --doc-ink: #EEE8D9; --doc-ink-2: #C9C3B3; --doc-muted: #8D93A1; --doc-line: #243149;
   --guill: rgba(221, 187, 114, 0.085); --guill-2: rgba(221, 187, 114, 0.12); --stamp-blend: normal; --scrim: rgba(0, 0, 0, .6);
   --toast-bg: #ECEEF0; --toast-ink: #111418; --toast-act: #8F6E28; --snow: rgba(255, 255, 255, 0.9); --cal-bg: #1C1C1E; --cal-ink: #FFFFFF; --cal-red: #FF453A; --swipe-red: #FF453A; --swipe-plan: #2B4A82;
+    --glass-fill: linear-gradient(180deg, rgba(44, 50, 60, .62), rgba(24, 28, 35, .5));
+    --glass-rim: rgba(0, 0, 0, .45); --glass-edge: rgba(255, 255, 255, .16); --glass-under: rgba(255, 255, 255, .05);
+    --glass-lens: rgba(255, 255, 255, .13); --glass-sheen: .22;
+    --glass-shadow: 0 16px 36px -14px rgba(0, 0, 0, .7), 0 2px 8px -3px rgba(0, 0, 0, .4);
   --k1: #86A6F5; --k2: #B99CF0; --k3: #F09A6E; --k4: #62CFA2; --k5: #F08DB4; --k6: #B9D162; --k7: #62CBE3; --k8: #9AA3AE;
   --shadow-1: 0 1px 2px rgba(0, 0, 0, .5); --shadow-2: 0 16px 40px -10px rgba(0, 0, 0, .7); --shadow-3: 0 30px 80px -20px rgba(0, 0, 0, .8);
   --doc-shadow: 0 24px 48px -28px rgba(0, 0, 0, .8);
@@ -678,8 +691,8 @@ button.ch-row:hover { background: var(--surface-2); }
 canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 65; }
 
 @media (max-width: 600px) {
-  :root { --tabbar-h: 56px; }
-  body { padding-block: 18px calc(var(--tabbar-h) + 112px + env(safe-area-inset-bottom, 0px)); }
+  :root { --tabbar-h: 64px; --tab-bottom: max(12px, calc(env(safe-area-inset-bottom, 0px) - 6px)); }
+  body { padding-block: 18px calc(var(--tab-bottom) + var(--tabbar-h) + 104px); }
   .app { gap: 24px; }
   .doc-top { padding: 18px 18px 0; }
   .doc-grid { grid-template-columns: 82px minmax(0, 1fr); gap: 16px; padding: 16px 18px 4px; }
@@ -717,30 +730,61 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   }
   .list-title .n { font-family: var(--font-mono); font-size: 12px; color: var(--muted); letter-spacing: 0; }
   .toolbar .picker { height: 40px; flex: 0 1 auto; }
-  /* the tabs become a bar along the bottom of the screen */
+  /* the tabs become a floating bar of liquid glass along the bottom of the screen */
   .tabbar {
-    position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: flex; border-radius: 0;
-    padding: 6px max(8px, env(safe-area-inset-right, 0px)) max(6px, env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px));
-    background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4);
-    border-top: 1px solid var(--line);
+    position: fixed; z-index: 30; display: flex; height: var(--tabbar-h); box-sizing: border-box; padding: 6px; border-radius: 32px;
+    left: max(14px, env(safe-area-inset-left, 0px)); right: max(14px, env(safe-area-inset-right, 0px)); bottom: var(--tab-bottom);
+    background: var(--glass-fill); border: 1px solid var(--glass-rim);
+    box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-edge), inset 0 -1px 1px var(--glass-under);
+    backdrop-filter: blur(22px) saturate(1.9) brightness(1.04); -webkit-backdrop-filter: blur(22px) saturate(1.9) brightness(1.04);
   }
-  .tabbar .seg-ind, .tabbar .n { display: none; }
-  .tabbar button { flex: 1 1 0; flex-direction: column; gap: 2px; height: 50px; padding: 0; border-radius: 12px; font-size: 11.5px; color: var(--muted); }
-  .tabbar svg { display: block; width: 25px; height: 25px; }
+  /* light catching the top edge of the glass */
+  .tabbar::before {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: var(--glass-sheen);
+    background: radial-gradient(120% 100% at 18% -30%, rgba(255, 255, 255, .7), transparent 52%), radial-gradient(70% 80% at 92% 140%, rgba(255, 255, 255, .35), transparent 60%);
+  }
+  .tabbar .n { display: none; }
+  /* the selected tab sits under a glass lens that slides between tabs */
+  .tabbar .seg-ind {
+    display: block; top: 6px; bottom: 6px; border-radius: 26px; background: var(--glass-lens);
+    box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 -1px 2px var(--glass-under), 0 4px 14px -6px rgba(15, 25, 50, .35);
+    transition: transform .42s cubic-bezier(.3, 1.25, .45, 1), width .42s var(--ease);
+  }
+  .tabbar button { flex: 1 1 0; flex-direction: column; gap: 1px; height: 100%; padding: 0; border-radius: 26px; font-size: 11px; color: var(--ink-2); }
+  .tabbar svg { display: block; width: 24px; height: 24px; }
   .tabbar button[aria-selected="true"] { color: var(--ink); font-weight: 600; }
   .tabbar button[aria-selected="true"] svg { stroke-width: 1.7; }
+  /* the add button: a drop of tinted glass */
   .fab {
     position: fixed; z-index: 30; right: max(16px, env(safe-area-inset-right, 0px));
-    bottom: calc(var(--tabbar-h) + max(6px, env(safe-area-inset-bottom, 0px)) + 16px);
-    width: 58px; height: 58px; padding: 0; border-radius: 50%; justify-content: center;
-    box-shadow: 0 14px 30px -10px rgba(15, 25, 50, .55), 0 4px 10px -4px rgba(15, 25, 50, .3);
+    bottom: calc(var(--tab-bottom) + var(--tabbar-h) + 14px);
+    width: 60px; height: 60px; padding: 0; border-radius: 50%; justify-content: center; overflow: hidden;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 82%, transparent), color-mix(in srgb, var(--primary) 96%, transparent));
+    border: 1px solid rgba(255, 255, 255, .24);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), inset 0 -12px 18px -10px rgba(0, 0, 0, .35), 0 16px 32px -12px rgba(15, 25, 50, .55), 0 4px 10px -4px rgba(15, 25, 50, .3);
+    backdrop-filter: blur(18px) saturate(1.7); -webkit-backdrop-filter: blur(18px) saturate(1.7);
   }
-  .fab svg { width: 24px; height: 24px; }
+  .fab:hover { background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 82%, transparent), color-mix(in srgb, var(--primary) 96%, transparent)); }
+  .fab::before {
+    content: ""; position: absolute; left: 9px; right: 9px; top: 3px; height: 46%; border-radius: 50% 50% 45% 45% / 70% 70% 30% 30%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .45), rgba(255, 255, 255, 0)); pointer-events: none;
+  }
+  .fab svg { position: relative; width: 24px; height: 24px; }
+  .fab:active { transform: scale(.93); }
   .fab .fab-l { display: none; }
+  /* phones set to reduce transparency, or without the blur, get solid versions */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .tabbar { background: var(--surface); } .fab, .fab:hover { background: var(--primary); }
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .tabbar { background: var(--surface); backdrop-filter: none; -webkit-backdrop-filter: none; }
+    .tabbar::before { display: none; }
+    .fab, .fab:hover { background: var(--primary); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  }
   /* messages sit beside the add button, above the tab bar */
   .toast {
-    left: max(16px, env(safe-area-inset-left, 0px)); right: 90px; max-width: none;
-    bottom: calc(var(--tabbar-h) + max(6px, env(safe-area-inset-bottom, 0px)) + 16px); transform: translateY(16px);
+    left: max(16px, env(safe-area-inset-left, 0px)); right: 92px; max-width: none;
+    bottom: calc(var(--tab-bottom) + var(--tabbar-h) + 14px); transform: translateY(16px);
   }
   .toast.show { transform: none; }
   .row-inner { padding: 0 6px 0 8px; }
