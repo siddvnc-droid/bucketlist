@@ -736,6 +736,8 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   .stamp.circle { width: 92px; height: 92px; }
   .scrim { align-items: flex-end; padding: 0; }
   .sheet { width: 100%; max-height: 92vh; border-radius: 22px 22px 0 0; border-bottom: 0; transform: translateY(100%); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  /* the keyboard is up: the panel sits just above it and scrolls inside if it's taller than what's left */
+  .scrim.kb .sheet { max-height: calc(100% - 12px); padding-bottom: 0; }
   .sheet.narrow { width: 100%; }
   .grab { display: block; width: 38px; height: 4px; border-radius: 4px; background: var(--line-2); margin: 8px auto 0; flex: none; }
   .sheet-head { padding: 10px 12px 4px 18px; }
@@ -1860,6 +1862,27 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     }
     $$(".autogrow", root).forEach(grow);
     $$(".seg", root).forEach(syncSeg);
+    fitToKeyboard();
+  }
+  // On phones the keyboard covers the bottom of the screen without resizing the page, which
+  // would leave a panel pinned to the bottom hidden behind it. While the keyboard is up, the
+  // dimmed layer (and the panel resting on its bottom edge) is fitted to the part still visible.
+  function fitToKeyboard() {
+    const scrim = $("#dialog-root .scrim"), vv = window.visualViewport;
+    if (!scrim) return;
+    const phone = window.matchMedia && matchMedia("(max-width: 600px)").matches;
+    const covered = vv ? window.innerHeight - vv.height : 0;
+    if (phone && vv && covered > 80) {
+      scrim.style.top = `${Math.round(vv.offsetTop)}px`; scrim.style.height = `${Math.round(vv.height)}px`; scrim.style.bottom = "auto";
+      scrim.classList.add("kb");
+    } else if (scrim.classList.contains("kb")) {
+      scrim.style.top = scrim.style.height = scrim.style.bottom = "";
+      scrim.classList.remove("kb");
+    }
+  }
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", fitToKeyboard);
+    window.visualViewport.addEventListener("scroll", fitToKeyboard);
   }
   function openSheet(id, focusField) {
     closePop(); closeSwipe();
