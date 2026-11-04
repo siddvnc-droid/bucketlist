@@ -285,9 +285,13 @@
       .fb-hint { font-size: 13px; color: var(--muted); margin: 0; }
       .fb-hint.err { color: var(--danger); }
       .fb-right { display: inline-flex; align-items: center; gap: 14px; }
-      .fb-people-btn { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; margin: -12px -8px -12px 0; border: 0; border-radius: 50%; background: none; cursor: pointer; color: var(--ink-2); transition: background .15s, color .15s; }
+      .fb-people-btn { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; margin: 0; border: 1px solid var(--line); border-radius: 50%; background: var(--surface); box-shadow: var(--shadow-1); cursor: pointer; color: var(--ink-2); transition: background .15s, color .15s; }
       .fb-people-btn svg { width: 22px; height: 22px; }
-      .fb-people-btn:hover { background: var(--surface-3); color: var(--ink); }
+      .fb-people-btn:hover { background: var(--surface-2); color: var(--ink); }
+      .fb-title-btn { all: unset; display: inline; cursor: pointer; border-radius: 10px; -webkit-tap-highlight-color: transparent; }
+      .fb-title-btn svg { display: inline-block; width: .42em; height: .42em; margin-left: .14em; vertical-align: .12em; color: var(--muted); transition: transform .2s; }
+      .fb-title-btn:hover svg { transform: translateY(2px); color: var(--ink-2); }
+      .fb-title-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
       .fb-members { list-style: none; margin: 0 -6px; padding: 0; display: flex; flex-direction: column; }
       .fb-member { display: flex; align-items: center; gap: 12px; padding: 8px 6px; border-radius: 12px; }
       .fb-member:hover { background: var(--surface-2); }
@@ -499,6 +503,17 @@
     btn.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.25"/><circle cx="12" cy="10" r="3.25"/><path d="M6.17 18.4a6.5 6.5 0 0 1 11.66 0"/></svg>';
     btn.onclick = openPeople;
     wrapEl.append(pct, btn);
+    // The list's name switches to your other lists.
+    const h1 = document.querySelector(".masthead h1");
+    if (h1 && !h1.querySelector(".fb-title-btn")) {
+      const tb = document.createElement("button");
+      tb.type = "button"; tb.className = "fb-title-btn"; tb.title = "Your lists";
+      tb.append(...h1.childNodes);
+      tb.insertAdjacentHTML("beforeend", '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>');
+      tb.insertAdjacentHTML("beforeend", '<span class="sr-only">, switch list</span>');
+      tb.onclick = () => { location.href = "/?lists"; };
+      h1.append(tb);
+    }
   }
   function personFor(kind, value) { for (const [uid, p] of Object.entries(S.people)) if ((kind === "email" ? p.email : p.phone) === value) return [uid, p]; return null; }
   function memberRow(kind, value) {

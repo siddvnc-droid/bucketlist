@@ -97,9 +97,9 @@ svg { flex: none; }
 
 /* ---------- masthead ---------- */
 .masthead { display: flex; flex-direction: column; gap: 14px; }
-.mh-top { display: flex; justify-content: space-between; gap: 12px; }
+.mh-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 h1 {
-  font-family: var(--font-display); font-weight: 400; font-size: clamp(46px, 10vw, 72px);
+  font-family: var(--font-display); font-weight: 400; font-size: clamp(34px, 7vw, 60px);
   line-height: .92; letter-spacing: -0.02em; margin: 0; text-wrap: balance;
 }
 h1 em { font-style: italic; color: var(--ink-2); }
@@ -230,9 +230,6 @@ h1 em { font-style: italic; color: var(--ink-2); }
 .doc-idle h2 { font-size: clamp(36px, 7vw, 52px); }
 .doc-idle h2 em { font-style: italic; }
 .doc-idle p { margin: 0; color: var(--doc-ink-2); }
-.doc-title-btn { all: unset; cursor: pointer; text-decoration: underline; text-decoration-color: transparent; text-decoration-thickness: 1px; text-underline-offset: 7px; transition: text-decoration-color .2s; }
-.doc-title-btn:hover { text-decoration-color: color-mix(in srgb, var(--doc-ink) 35%, transparent); }
-.doc-title-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; border-radius: 6px; }
 .fp.flash { animation: flash 1.4s ease; }
 @keyframes flash { 0%, 40% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 45%, transparent); border-color: var(--gold); } 100% { box-shadow: 0 0 0 3px transparent; } }
 
@@ -241,6 +238,46 @@ h1 em { font-style: italic; color: var(--ink-2); }
 .stub::before, .stub::after { content: ""; position: absolute; top: -11px; width: 20px; height: 20px; border-radius: 50%; background: var(--bg); border: 1px solid var(--doc-line); }
 .stub::before { left: -11px; } .stub::after { right: -11px; }
 .hero-stamp { position: absolute; right: 30px; top: 52px; z-index: 3; pointer-events: none; }
+
+/* Next up, folded to one row; tapping it opens the rest in place */
+.doc.compact canvas.guill { height: 760px; bottom: auto; }
+.nx-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
+.nx-toggle { all: unset; box-sizing: border-box; flex: 1; min-width: 0; display: flex; align-items: center; gap: 16px; cursor: pointer; border-radius: 12px; }
+.nx-toggle:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
+.doc-date.mini { width: 60px; flex: none; padding: 7px 2px 8px; border-radius: 15px; gap: 0; }
+.doc-date.mini .dd-day { font-size: 29px; letter-spacing: -0.03em; margin: 0; }
+.doc-date.mini .dd-dow, .doc-date.mini .dd-mon { font-size: 10px; }
+.nx-sum { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.nx-label { color: var(--doc-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nx-label .time { color: var(--gold); }
+.nx-label .late { color: var(--danger); }
+.doc .nx-title {
+  font-family: var(--font-display); font-weight: 400; font-size: clamp(25px, 4.6vw, 32px); line-height: 1.08; letter-spacing: -0.01em; margin: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.doc .nx-title em { font-style: italic; }
+.nx-sub { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--doc-ink-2); min-width: 0; }
+.nx-sub > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.doc.idle .nx-sub > span { white-space: normal; }
+.nx-sub svg { width: 13px; height: 13px; transition: transform .32s var(--ease); }
+.doc.open .nx-sub svg { transform: rotate(180deg); }
+.nx-done { flex: none; }
+.doc.open .nx-done { display: none; }
+.nx-more { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .38s var(--ease); }
+.doc.open .nx-more { grid-template-rows: 1fr; }
+.nx-more-in { min-height: 0; overflow: hidden; opacity: 0; transition: opacity .18s ease; }
+.doc.open .nx-more-in { opacity: 1; transition: opacity .3s ease .1s; }
+.nx-more .fields { margin: 0 16px; padding: 16px 0 0; border-top: 1px solid var(--doc-line); }
+.nx-more .doc-actions { padding: 18px 16px 0; }
+.btn.icon-only { width: 38px; padding: 0; }
+.doc-actions .btn.icon-only { flex: none; }
+.nx-links { display: flex; flex-wrap: wrap; gap: 2px; padding: 8px 10px 0; }
+.nx-more .mrz { padding: 14px 16px 12px; }
+.doc.compact .hero-stamp { right: 16px; top: 6px; }
+.doc.compact .stamp.big { width: 86px; height: 86px; padding: 10px; outline-offset: -6px; border-width: 2px; }
+.doc.compact .stamp.big .s1 { font-size: 6.5px; max-width: 66px; }
+.doc.compact .stamp.big .s2 { font-size: 12px; margin: 2px 0 1px; }
+.doc.compact .stamp.big .s3 { font-size: 6.5px; }
 
 /* ---------- checklist ---------- */
 .cl { display: flex; flex-direction: column; gap: 12px; }
@@ -271,34 +308,55 @@ h1 em { font-style: italic; color: var(--ink-2); }
 .idea { height: 28px; padding: 0 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); font-size: 12.5px; color: var(--ink-2); transition: background .15s, border-color .15s; }
 .idea:hover { background: var(--surface); border-color: var(--line-2); color: var(--ink); }
 
-/* ---------- composer ---------- */
-/* two rows: what to add on top, its category and the Add button underneath */
-.composer {
-  display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
-  box-shadow: var(--shadow-1); transition: border-color .15s, box-shadow .2s;
+/* ---------- add sheet ---------- */
+.add-field { display: flex; flex-direction: column; gap: 8px; }
+.add-label { font-size: 13px; font-weight: 500; color: var(--muted); }
+.add-warn { color: var(--danger); margin-left: 8px; }
+.add-input {
+  height: 52px; padding: 0 16px; border-radius: 14px; border: 1px solid var(--line-2); background: var(--surface); font-size: 16px; outline: none;
+  transition: border-color .15s, box-shadow .15s;
 }
-.composer:focus-within { border-color: var(--line-2); box-shadow: 0 0 0 4px color-mix(in srgb, var(--focus) 12%, transparent), var(--shadow-1); }
-.composer-top { display: flex; align-items: center; gap: 10px; padding: 7px 14px 5px 16px; }
-.composer-top > svg { width: 18px; height: 18px; color: var(--muted); }
-.composer input { flex: 1 1 auto; min-width: 0; height: 40px; border: 0; outline: none; background: transparent; font-size: 16px; }
-.composer input::placeholder { color: var(--faint); }
-.composer-bottom { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 10px; border-top: 1px solid var(--line); }
-.composer .picker { flex: 0 1 auto; min-width: 0; max-width: 280px; }
-.composer-hint { flex: 1 1 auto; min-width: 0; font-size: 12.5px; color: var(--faint); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.composer-bottom .btn { flex: none; }
-.composer:focus-within .kbd { display: none; }
-@media (hover: none) { .kbd { display: none; } }
-.paste { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; box-shadow: var(--shadow-1); display: flex; flex-direction: column; gap: 10px; margin-top: -16px; }
+.add-input:focus { border-color: var(--ink-2); box-shadow: 0 0 0 4px color-mix(in srgb, var(--focus) 12%, transparent); }
+.add-input::placeholder { color: var(--faint); }
+.add-cats { display: flex; flex-wrap: wrap; gap: 8px; }
+.add-cat {
+  height: 44px; display: inline-flex; align-items: center; gap: 8px; padding: 0 14px 0 12px; border-radius: 12px; border: 1px solid var(--line-2);
+  background: var(--surface); font-size: 14.5px; font-weight: 500; color: var(--ink-2); transition: background .15s, border-color .15s, color .15s;
+}
+.add-cat:hover { background: var(--surface-2); color: var(--ink); }
+.add-cat[aria-pressed="true"] { border-color: var(--dot); background: color-mix(in srgb, var(--dot) 12%, var(--surface)); color: var(--ink); box-shadow: inset 0 0 0 .5px var(--dot); }
+.add-cat .cat-ic svg { width: 17px; height: 17px; }
+.add-cat.new { border-style: dashed; color: var(--muted); }
+.add-cat.new svg { width: 15px; height: 15px; }
+.add-cats.warn .add-cat:not(.new) { border-color: color-mix(in srgb, var(--danger) 45%, var(--line-2)); }
+.add-go { height: 52px; border-radius: 14px; font-size: 16px; }
+.add-hint { margin: -12px 0 0; text-align: center; font-size: 13px; color: var(--muted); }
+.add-paste { display: flex; flex-direction: column; gap: 10px; }
 .paste-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 .paste-head strong { font-family: var(--font-display); font-weight: 400; font-size: 22px; }
 .paste-head span { font-size: 13px; color: var(--muted); }
-.paste ol { margin: 0; padding-left: 22px; color: var(--ink-2); font-size: 14px; display: grid; gap: 2px; }
-.paste ol li::marker { font-family: var(--font-mono); font-size: 11px; color: var(--faint); }
-.paste .more { list-style: none; margin-left: -22px; color: var(--muted); }
+.add-paste ol { margin: 0; padding-left: 22px; color: var(--ink-2); font-size: 14px; display: grid; gap: 2px; }
+.add-paste ol li::marker { font-family: var(--font-mono); font-size: 11px; color: var(--faint); }
+.add-paste .more { list-style: none; margin-left: -22px; color: var(--muted); }
 .paste-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.paste-actions .btn { height: 44px; }
+@media (hover: none) { .kbd { display: none; } }
 
 /* ---------- toolbar ---------- */
 .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: -12px; scroll-margin-top: 16px; }
+.toolbar .picker { margin-left: auto; }
+.list-title { display: none; }
+.tabbar svg { display: none; }
+/* the add button: a button in the toolbar on computers, a round button above the tab bar on phones */
+.fab {
+  display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 14px 0 11px; border: 0; border-radius: 10px;
+  background: var(--primary); color: var(--on-primary); font-size: 13.5px; font-weight: 500; box-shadow: var(--shadow-1);
+  transition: transform .12s var(--ease), background .15s;
+}
+.fab svg { width: 16px; height: 16px; }
+.fab:hover { background: color-mix(in srgb, var(--primary) 88%, var(--surface)); }
+.fab:active { transform: scale(.96); }
+.fab[hidden] { display: none; }
 .seg { position: relative; display: inline-flex; padding: 3px; border-radius: 12px; background: var(--surface-3); }
 .seg-ind { position: absolute; left: 0; top: 3px; bottom: 3px; width: 0; border-radius: 9px; background: var(--surface); box-shadow: var(--shadow-1), 0 0 0 1px color-mix(in srgb, var(--line) 60%, transparent); transition: transform .38s var(--ease), width .38s var(--ease); }
 .seg.no-anim .seg-ind { transition: none; }
@@ -578,7 +636,8 @@ button.ch-row:hover { background: var(--surface-2); }
 canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 65; }
 
 @media (max-width: 600px) {
-  body { padding-block: 28px 96px; }
+  :root { --tabbar-h: 56px; }
+  body { padding-block: 18px calc(var(--tabbar-h) + 112px + env(safe-area-inset-bottom, 0px)); }
   .app { gap: 24px; }
   .doc-top { padding: 18px 18px 0; }
   .doc-grid { grid-template-columns: 82px minmax(0, 1fr); gap: 16px; padding: 16px 18px 4px; }
@@ -592,15 +651,48 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   .stub { padding: 20px 18px 20px; }
   .hero-stamp { right: 14px; top: 44px; }
   .stamp.big { width: 112px; height: 112px; }
-  .composer-top { padding: 5px 12px 3px 14px; }
-  .composer-top > svg, .composer .kbd, .composer-hint { display: none; }
-  .composer-bottom { padding: 7px; }
-  .composer .picker { flex: 1 1 auto; max-width: none; }
-  .composer-bottom .btn { height: 34px; padding: 0 16px; }
-  .toolbar { flex-direction: column; align-items: stretch; }
-  .toolbar .seg { width: 100%; }
-  .toolbar .seg button { flex: 1 1 0; padding: 0 6px; }
-  .toolbar .picker { align-self: flex-start; }
+  .nx-row { padding: 12px; gap: 10px; }
+  .nx-toggle { gap: 12px; }
+  .nx-label { letter-spacing: .09em; }
+  .doc-date.mini { width: 56px; }
+  .nx-done { height: 40px; padding: 0 12px; gap: 6px; }
+  .nx-more .fields { margin: 0 14px; }
+  .nx-more .doc-actions { padding: 16px 14px 0; }
+  .nx-more .mrz { padding: 14px 14px 12px; }
+  .nx-more .stub { padding: 18px 14px 16px; }
+  .toolbar { flex-wrap: nowrap; }
+  .list-title {
+    display: flex; align-items: baseline; gap: 8px; flex: 1; min-width: 0; margin: 0;
+    font-family: var(--font-display); font-weight: 400; font-size: 30px; line-height: 1; letter-spacing: -0.01em;
+  }
+  .list-title .n { font-family: var(--font-mono); font-size: 12px; color: var(--muted); letter-spacing: 0; }
+  .toolbar .picker { height: 40px; flex: 0 1 auto; }
+  /* the tabs become a bar along the bottom of the screen */
+  .tabbar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: flex; border-radius: 0;
+    padding: 6px max(8px, env(safe-area-inset-right, 0px)) max(6px, env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px));
+    background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    border-top: 1px solid var(--line);
+  }
+  .tabbar .seg-ind, .tabbar .n { display: none; }
+  .tabbar button { flex: 1 1 0; flex-direction: column; gap: 2px; height: 50px; padding: 0; border-radius: 12px; font-size: 11.5px; color: var(--muted); }
+  .tabbar svg { display: block; width: 25px; height: 25px; }
+  .tabbar button[aria-selected="true"] { color: var(--ink); font-weight: 600; }
+  .tabbar button[aria-selected="true"] svg { stroke-width: 1.7; }
+  .fab {
+    position: fixed; z-index: 30; right: max(16px, env(safe-area-inset-right, 0px));
+    bottom: calc(var(--tabbar-h) + max(6px, env(safe-area-inset-bottom, 0px)) + 16px);
+    width: 58px; height: 58px; padding: 0; border-radius: 50%; justify-content: center;
+    box-shadow: 0 14px 30px -10px rgba(15, 25, 50, .55), 0 4px 10px -4px rgba(15, 25, 50, .3);
+  }
+  .fab svg { width: 24px; height: 24px; }
+  .fab .fab-l { display: none; }
+  /* messages sit beside the add button, above the tab bar */
+  .toast {
+    left: max(16px, env(safe-area-inset-left, 0px)); right: 90px; max-width: none;
+    bottom: calc(var(--tabbar-h) + max(6px, env(safe-area-inset-bottom, 0px)) + 16px); transform: translateY(16px);
+  }
+  .toast.show { transform: none; }
   .row-inner { padding: 0 6px 0 8px; }
   .rows.grips .row-inner { padding-left: 2px; }
   .grip { width: 26px; margin-right: 0; }
@@ -645,8 +737,10 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
 
 <div class="app" id="app">
   <header class="masthead">
-    <div class="mh-top"><span class="label" id="since"></span><span class="label" id="pct"></span></div>
-    <h1><em>Winter</em> Bucket List</h1>
+    <div class="mh-row">
+      <h1><em>Winter</em> Bucket List</h1>
+      <span id="pct" hidden></span>
+    </div>
     <div class="gauge" aria-hidden="true"><i class="g-done" id="g-done"></i><i class="g-plan" id="g-plan"></i><i class="g-todo" id="g-todo"></i></div>
     <div class="legend" id="legend"></div>
   </header>
@@ -657,31 +751,18 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
 
   <section id="next" aria-label="Next up"></section>
 
-  <section aria-label="Add an activity" id="add-area" hidden>
-    <form class="composer" id="composer" autocomplete="off">
-      <div class="composer-top">
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>
-        <input id="new-title" maxlength="200" placeholder="Add something to do together…" aria-label="New activity">
-        <span class="kbd" aria-hidden="true" title="Press N to add">N</span>
-      </div>
-      <div class="composer-bottom">
-        <button type="button" class="picker" id="composer-cat" data-act="pop" data-kind="composer-cat" data-pop-anchor="composer-cat" aria-haspopup="listbox" aria-expanded="false" aria-label="Category for new activity"></button>
-        <span class="composer-hint">Press Enter to add · Paste a list to add several</span>
-        <button type="submit" class="btn primary sm">Add</button>
-      </div>
-    </form>
-  </section>
-  <div id="paste" class="paste" hidden></div>
 
   <div class="toolbar" id="toolbar">
-    <div class="seg no-anim" role="tablist" id="tabs" aria-label="Filter by status">
+    <h2 class="list-title" id="list-title"></h2>
+    <!-- On phones these tabs sit in a bar along the bottom of the screen. -->
+    <div class="seg tabbar no-anim" role="tablist" id="tabs" aria-label="Sections">
       <span class="seg-ind" aria-hidden="true"></span>
-      <button type="button" role="tab" data-act="tab" data-v="todo" aria-selected="true">To do <span class="n" data-n="todo"></span></button>
-      <button type="button" role="tab" data-act="tab" data-v="planned" aria-selected="false">Planned <span class="n" data-n="planned"></span></button>
-      <button type="button" role="tab" data-act="tab" data-v="done" aria-selected="false">Stamps <span class="n" data-n="done"></span></button>
-      <button type="button" role="tab" data-act="tab" data-v="all" aria-selected="false">All <span class="n" data-n="all"></span></button>
+      <button type="button" role="tab" data-act="tab" data-v="todo" aria-selected="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4.2l1.2 1.2L5.4 3M2 10.2l1.2 1.2 2.2-2.4M7.5 4.5h6.5M7.5 10.5h6.5"/></svg><span class="tl">To do</span><span class="n" data-n="todo"></span></button>
+      <button type="button" role="tab" data-act="tab" data-v="planned" aria-selected="false"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="3.5" width="11" height="10" rx="2"/><path d="M2.5 7h11M5.5 2v3M10.5 2v3"/></svg><span class="tl">Planned</span><span class="n" data-n="planned"></span></button>
+      <button type="button" role="tab" data-act="tab" data-v="done" aria-selected="false"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.2 2.5h3.6v3.2c0 .8.6 1.3 1.3 1.6l1.4.6c.6.3 1 .9 1 1.6V11H2.5V9.5c0-.7.4-1.3 1-1.6l1.4-.6c.7-.3 1.3-.8 1.3-1.6z"/><path d="M2.5 13.5h11"/></svg><span class="tl">Stamps</span><span class="n" data-n="done"></span></button>
     </div>
     <button type="button" class="picker" id="filter-cat" data-act="pop" data-kind="filter-cat" data-pop-anchor="filter-cat" aria-haspopup="listbox" aria-expanded="false" aria-label="Filter by category"></button>
+    <button type="button" class="fab" id="fab" data-act="open-add" aria-label="Add an activity" title="Add an activity (N)" hidden><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg><span class="fab-l">Add</span></button>
   </div>
 
   <section id="list" aria-label="Activities"></section>
@@ -728,9 +809,11 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     catFilter: safeGet("bucketlist.cat") || "",     // "" all, "none" uncategorized, or a category id
     composerCat: "",
     paste: null,               // lines waiting to be added from a paste
+    adding: false, addNeedsCat: false, addPrefill: "",  // the add sheet
+    nextOpen: false,           // Next up opened in place
     sheet: null,
     changes: { events: [], seenAt: null, dismissed: false, all: false, hiddenAt: 0 },  // "While you were away"
-    manager: false, managerReturn: null, catConfirm: null,
+    manager: false, managerReturn: null, managerReturnAdd: false, catConfirm: null,
     dialogFresh: false,
     pop: null,                 // { kind, anchor, cat }
     suggestion: null,
@@ -741,7 +824,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     cal: { open: null, y: 0, m: 0 },  // month calendar open in the details panel
     swipeOpen: null, swipeGone: new Set(),
   };
-  if (!["todo", "planned", "done", "all"].includes(state.filter)) state.filter = "todo";
+  if (!["todo", "planned", "done"].includes(state.filter)) state.filter = "todo";
   let dbNs = null, userNs = null, toastTimer = null, undoFn = null;
   const profiles = {};
 
@@ -870,7 +953,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       else writeLocal(coll, [...listOf(coll), { id, ...data }]);
     });
     if (ok && coll === "activities") logEvent("add", id, data.title);
-    return ok;
+    return ok ? id : false;
   };
   const setDoc = async (coll, id, data) => {
     const ok = await guarded(async () => {
@@ -1110,7 +1193,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     ctx.lineWidth = 0.65 * dpr;
     // flowing bands across the page
     ctx.strokeStyle = cs.getPropertyValue("--guill").trim() || "rgba(20,30,60,.08)";
-    const n = 30, base = Math.min(H * 0.5, 260 * dpr);
+    const n = 30, base = cv.dataset.band ? Number(cv.dataset.band) * dpr : Math.min(H * 0.5, 260 * dpr);
     for (let i = 0; i < n; i++) {
       ctx.beginPath();
       for (let x = 0; x <= W + 6; x += 3 * dpr) {
@@ -1404,9 +1487,14 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     const w = state.canWrite;
     const no = c.by.done.length + 1;
     const top = (left, right) => `<div class="doc-top"><span class="label">${left}</span><span class="label">${right}</span></div>`;
+    // The folded card's pattern is drawn once at full size, so opening it doesn't redraw it every frame.
+    const guill = `<canvas class="guill" data-band="48" aria-hidden="true"></canvas>`;
+    const miniDate = (d) => d
+      ? `<span class="doc-date mini"><span class="dd-dow">${esc(d.toLocaleDateString(undefined, { weekday: "short" }))}</span><span class="dd-day">${d.getDate()}</span><span class="dd-mon">${esc(d.toLocaleDateString(undefined, d.getFullYear() !== new Date().getFullYear() ? { month: "short", year: "2-digit" } : { month: "short" }))}</span></span>`
+      : `<span class="doc-date mini tbd"><span class="dd-dow">No date</span><span class="dd-day">–</span><span class="dd-mon">TBD</span></span>`;
     let html;
     if (state.mode === "loading") {
-      html = `<article class="doc"><canvas class="guill" aria-hidden="true"></canvas>${top("Next up", "")}<div class="doc-idle"><span class="sk" style="height:44px;width:70%"></span><span class="sk" style="height:14px;width:45%"></span></div><div class="mrz" aria-hidden="true">${mrzLines("", "")}</div></article>`;
+      html = `<article class="doc compact">${guill}<div class="nx-row"><span class="sk" style="width:60px;height:66px;border-radius:15px;flex:none"></span><span class="nx-sum"><span class="sk" style="height:10px;width:40%"></span><span class="sk" style="height:26px;width:70%"></span></span></div></article>`;
     } else {
       const stamped = state.heroStamp && find(state.heroStamp);
       const next = stamped || c.by.planned[0];
@@ -1417,31 +1505,42 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
         const tasks = tasksOf(next), td = tasks.filter((t) => t.done).length;
         const more = c.by.planned.filter((x) => x.id !== next.id).length;
         const cl = stamped ? "" : checklistHTML(next, "hero");
-        html = `<article class="doc">
-          <canvas class="guill" aria-hidden="true"></canvas>
-          ${top("Next up", `Adventure <b>Nº ${pad(stamped ? no - 1 : no)}</b>`)}
-          <div class="doc-grid">
-            ${dated ? `<div class="doc-date"><span class="dd-dow">${esc(d.toLocaleDateString(undefined, { weekday: "long" }))}</span><span class="dd-day">${d.getDate()}</span><span class="dd-mon">${esc(d.toLocaleDateString(undefined, d.getFullYear() !== new Date().getFullYear() ? { month: "short", year: "numeric" } : { month: "long" }))}</span></div>`
-                    : `<div class="doc-date tbd"><span class="dd-dow">No date</span><span class="dd-day">–</span><span class="dd-mon">To be set</span></div>`}
-            <div class="doc-main">
-              <h2><button type="button" class="doc-title-btn" data-act="open-sheet" data-id="${esc(next.id)}">${esc(next.title)}</button></h2>
-              <dl class="fields">
-                <div><dt>Departs</dt><dd><span>${dated ? esc(fmtDate(next.plannedFor, { day: true })) : "To be decided"}</span></dd></div>
-                ${dated ? `<div><dt>Countdown</dt><dd class="${late ? "late" : "time"}"><span>${countdown(next.plannedFor)}</span></dd></div>` : ""}
-                ${cat ? `<div><dt>Category</dt><dd>${catMini(cat)}<span>${esc(cat.name)}</span></dd></div>` : ""}
-                ${tasks.length ? `<div><dt>Prepared</dt><dd><span>${td} of ${plural(tasks.length, "step", "steps")}</span></dd></div>` : ""}
-              </dl>
-            </div>
+        const open = !!state.nextOpen;
+        const sub = tasks.length ? `${td} of ${plural(tasks.length, "step", "steps")} ready` : w ? "Add steps to get ready" : cat ? esc(cat.name) : "Details";
+        const calBtn = (label) => `<button type="button" class="btn${label ? "" : " icon-only"}" data-act="pop" data-kind="add-cal" data-pop-anchor="add-cal:hero" data-cat="${esc(next.id)}" aria-haspopup="menu" aria-expanded="false"${label ? "" : ' aria-label="Add to calendar" title="Add to calendar"'}>${ICON.calAdd}${label ? " Add to calendar" : ""}</button>`;
+        html = `<article class="doc compact${open ? " open" : ""}">
+          ${guill}
+          <div class="nx-row">
+            <button type="button" class="nx-toggle" data-act="next-toggle" aria-expanded="${open}" aria-controls="next-more">
+              ${miniDate(d)}
+              <span class="nx-sum">
+                <span class="label nx-label">Next up · <span class="${late ? "late" : "time"}">${dated ? esc(countdown(next.plannedFor)) : "No date yet"}</span></span>
+                <span class="nx-title">${esc(next.title)}</span>
+                <span class="nx-sub"><span>${sub}</span>${ICON.chev}</span>
+              </span>
+            </button>
+            ${w && !stamped ? `<button type="button" class="btn primary nx-done" data-act="hero-done" data-id="${esc(next.id)}">${ICON.check}<span>We did it</span></button>` : ""}
           </div>
-          ${(w && !stamped) || more || (dated && !stamped) ? `<div class="doc-actions">
-            ${w && !stamped ? `<button type="button" class="btn primary" data-act="hero-done" data-id="${esc(next.id)}">${ICON.check} We did it</button>
-            <button type="button" class="btn" data-act="reschedule" data-id="${esc(next.id)}">${ICON.cal} ${dated ? "Reschedule" : "Pick a date"}</button>` : ""}
-            ${dated && !stamped ? `<button type="button" class="btn" data-act="pop" data-kind="add-cal" data-pop-anchor="add-cal:hero" data-cat="${esc(next.id)}" aria-haspopup="menu" aria-expanded="false">${ICON.calAdd} Add to calendar</button>` : ""}
-            ${more ? `<button type="button" class="btn ghost" data-act="tab" data-v="planned">${plural(more, "more plan", "more plans")}</button>` : ""}
-          </div>` : ""}
-          <div class="mrz" aria-hidden="true">${mrzLines("BL " + next.title, `${pad(no)} ${dated ? `${pad(d.getDate())}${MON[d.getMonth()]}${String(d.getFullYear()).slice(2)}` : "TBD"} ${cat ? cat.name : ""}`)}</div>
+          <div class="nx-more" id="next-more"${open ? "" : " inert"}><div class="nx-more-in">
+            <dl class="fields">
+              <div><dt>Departs</dt><dd><span>${dated ? esc(fmtDate(next.plannedFor, { day: true })) : "To be decided"}</span></dd></div>
+              ${cat ? `<div><dt>Category</dt><dd>${catMini(cat)}<span>${esc(cat.name)}</span></dd></div>` : ""}
+              ${tasks.length ? `<div><dt>Prepared</dt><dd><span>${td} of ${plural(tasks.length, "step", "steps")}</span></dd></div>` : ""}
+              <div><dt>Adventure</dt><dd><span>Nº ${pad(stamped ? no - 1 : no)}</span></dd></div>
+            </dl>
+            ${w && !stamped ? `<div class="doc-actions">
+              <button type="button" class="btn primary" data-act="hero-done" data-id="${esc(next.id)}">${ICON.check} We did it</button>
+              <button type="button" class="btn" data-act="reschedule" data-id="${esc(next.id)}">${ICON.cal} ${dated ? "Reschedule" : "Pick a date"}</button>
+              ${dated ? calBtn(false) : ""}
+            </div>` : dated && !stamped ? `<div class="doc-actions">${calBtn(true)}</div>` : ""}
+            <div class="nx-links">
+              <button type="button" class="btn ghost sm" data-act="open-sheet" data-id="${esc(next.id)}">Notes and details</button>
+              ${more ? `<button type="button" class="btn ghost sm" data-act="tab" data-v="planned">${plural(more, "more plan", "more plans")}</button>` : ""}
+            </div>
+            <div class="mrz" aria-hidden="true">${mrzLines("BL " + next.title, `${pad(no)} ${dated ? `${pad(d.getDate())}${MON[d.getMonth()]}${String(d.getFullYear()).slice(2)}` : "TBD"} ${cat ? cat.name : ""}`)}</div>
+            ${cl ? `<div class="stub">${cl}</div>` : ""}
+          </div></div>
           ${stamped ? `<div class="hero-stamp" style="--ring:${cat ? catVar(cat) : "var(--done)"}">${stampHTML(next, { big: true, shape: "circle", rot: -12, t0: state.heroT0 })}</div>` : ""}
-          ${cl ? `<div class="stub">${cl}</div>` : ""}
         </article>`;
       } else {
         const todo = c.by.todo.filter(matchesCat);
@@ -1466,20 +1565,20 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
           </article>`;
         } else {
           let title, msg, action = "";
-          if (!c.total) { title = "Start <em>your</em> list"; msg = "Add the first thing you want to do together below. Plan one, and it lands here with a countdown and a checklist."; }
+          if (!c.total) { title = "Start <em>your</em> list"; msg = w ? "Tap + to add the first thing you want to do together." : "Nothing on the list yet."; }
           else if (!c.by.todo.length) { title = "Every stamp <em>collected</em>"; msg = "You've done everything on the list. Time to dream up more."; }
-          else if (!todo.length) { title = "Where <em>to</em> next?"; msg = "Nothing left to do in this category. Show all categories to pick from everything."; }
+          else if (!todo.length) { title = "Where <em>to</em> next?"; msg = "Nothing left to do in this category."; }
           else {
             title = "Where <em>to</em> next?";
-            msg = `${plural(todo.length, "activity is", "activities are")} waiting for a date. Plan one and it lands here.`;
-            if (w) action = `<div class="doc-actions"><button type="button" class="btn primary" data-act="pick">${ICON.dice} Pick one for us</button></div>`;
+            msg = `${plural(todo.length, "activity is", "activities are")} waiting for a date.`;
+            if (w) action = `<button type="button" class="btn primary nx-done" data-act="pick">${ICON.dice}<span>Pick one</span></button>`;
           }
-          html = `<article class="doc">
-            <canvas class="guill" aria-hidden="true"></canvas>
-            ${top("Next up", `Adventure <b>Nº ${pad(no)}</b>`)}
-            <div class="doc-idle"><h2>${title}</h2><p>${msg}</p></div>
-            ${action}
-            <div class="mrz" aria-hidden="true">${mrzLines("BL WHERE TO NEXT", pad(no))}</div>
+          html = `<article class="doc compact idle">
+            ${guill}
+            <div class="nx-row">
+              <div class="nx-sum"><span class="label nx-label">Next up · Adventure Nº ${pad(no)}</span><h2 class="nx-title">${title}</h2><span class="nx-sub"><span>${msg}</span></span></div>
+              ${action}
+            </div>
           </article>`;
         }
       }
@@ -1493,7 +1592,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     else if (state.shuffle) { cls = "shuffling"; t = since(state.shuffle.t0); }
     else if (state.landedAt && since(state.landedAt) < 450) { cls = "landed"; t = since(state.landedAt); }
     else if (state.docEnter && since(state.docEnter) < 500) { cls = "doc-enter"; t = since(state.docEnter); }
-    if (cls && html) html = html.replace('<article class="doc">', `<article class="doc ${cls}" style="--t:-${t}ms">`);
+    if (cls && html) html = html.replace(/<article class="doc([^"]*)"/, `<article class="doc$1 ${cls}" style="--t:-${t}ms"`);
     el.innerHTML = html;
     const cv = $("canvas.guill", el);
     if (cv) { if (guillRO) { guillRO.disconnect(); guillRO.observe(cv); } else drawGuilloche(cv); }
@@ -1518,7 +1617,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     } else if (st === "done") {
       end = `<span class="mini-stamp" style="--ink-c:${cat ? catVar(cat) : "var(--done)"}">${validISO(item.doneOn) ? stampDate(item.doneOn) : "Done"}</span>`;
     } else if (item.addedBy) end = avatar(item.addedBy, "Added by {name}");
-    const leaving = lg && state.filter !== "all";
+    const leaving = !!lg;
     const planBtn = w && st === "todo" && !lg;
     // To do is the priority list: its rows can be dragged into order.
     const grip = w && st === "todo" && state.filter === "todo";
@@ -1568,7 +1667,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   }
   function emptyHTML(c) {
     let t, s;
-    if (!c.total) { t = "Nothing on the list yet"; s = "Type your first idea above, or paste a whole list to add everything at once."; }
+    if (!c.total) { t = "Nothing on the list yet"; s = state.canWrite ? "Tap + to add your first idea. You can paste a whole list to add everything at once." : ""; }
     else if (state.catFilter) {
       const name = state.catFilter === "none" ? "without a category" : `in ${esc((catById(state.catFilter) || {}).name || "this category")}`;
       t = `Nothing here ${name}`; s = `Try another tab, or <button type="button" class="link" data-act="clear-cat">show all categories</button>.`;
@@ -1639,20 +1738,53 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       ${w ? `<label class="step-add">${ICON.plus}<input id="cat-new" data-key="cat:new" maxlength="40" placeholder="New category, e.g. Road Trips" aria-label="New category name"><button type="button" class="btn sm ghost" data-act="cat-add">Add</button></label>` : ""}`;
     return { head, body, foot: null };
   }
+  // Adding something: a name, a category, Add. Pasting several lines offers to add them all.
+  function addParts(c) {
+    const cats = sortedCats(), cur = state.composerCat, lines = state.paste;
+    const head = `<h2 class="dlg-title" id="dlg-title">Add to the list</h2>
+      <button type="button" class="icon-btn" data-act="close-dialog" aria-label="Close">${ICON.x}</button>`;
+    const chips = cats.length ? `<div class="add-field">
+        <div class="add-label" id="add-cat-label">Category${state.addNeedsCat ? `<span class="add-warn">Pick one to add ${lines ? "them" : "it"}</span>` : ""}</div>
+        <div class="add-cats${state.addNeedsCat ? " warn" : ""}" role="group" aria-labelledby="add-cat-label">
+          ${cats.map((k) => `<button type="button" class="add-cat" data-act="add-cat" data-v="${esc(k.id)}" aria-pressed="${k.id === cur}" style="--dot:${catVar(k)}">${catMini(k)}<span>${esc(k.name)}</span></button>`).join("")}
+          <button type="button" class="add-cat new" data-act="open-manager">${ICON.plus}<span>New category</span></button>
+        </div>
+      </div>` : "";
+    let body;
+    if (lines && lines.length) {
+      const cat = catById(cur);
+      body = `<div class="add-paste">
+          <div class="paste-head"><strong>Add ${plural(lines.length, "activity", "activities")}?</strong><span>From your paste${cat ? ` · into ${esc(cat.name)}` : ""}</span></div>
+          <ol>${lines.slice(0, 6).map((l) => `<li>${esc(l)}</li>`).join("")}${lines.length > 6 ? `<li class="more">and ${lines.length - 6} more</li>` : ""}</ol>
+        </div>
+        ${chips}
+        <div class="paste-actions"><button type="button" class="btn ghost" data-act="paste-cancel">Cancel</button><button type="button" class="btn primary" data-act="paste-add">Add all ${lines.length}</button></div>`;
+    } else {
+      const pre = state.addPrefill; state.addPrefill = "";
+      body = `<div class="add-field">
+          <label class="add-label" for="add-title">What do you want to do?</label>
+          <input id="add-title" class="add-input" data-key="add:title" maxlength="200" placeholder="Add something to do together…" autocomplete="off" enterkeyhint="done" value="${esc(pre)}">
+        </div>
+        ${chips}
+        <button type="button" class="btn primary add-go" data-act="add-submit">Add to To do</button>
+        <p class="add-hint">Paste a list to add several at once.</p>`;
+    }
+    return { head, body, foot: null };
+  }
   function renderDialog(c) {
     const root = $("#dialog-root");
     if (state.sheet && !find(state.sheet)) state.sheet = null;
-    const open = !!(state.sheet || state.manager);
+    const open = !!(state.sheet || state.manager || state.adding);
     $("#app").inert = open;
     document.documentElement.style.overflow = open ? "hidden" : "";
     if (!open) { if (!root.dataset.closing) root.innerHTML = ""; return; }
-    const kind = state.sheet ? "sheet" : "manager";
-    const parts = kind === "sheet" ? sheetParts(find(state.sheet)) : managerParts(c);
+    const kind = state.sheet ? "sheet" : state.manager ? "manager" : "add";
+    const parts = kind === "sheet" ? sheetParts(find(state.sheet)) : kind === "manager" ? managerParts(c) : addParts(c);
     let sheet = $(".sheet", root);
     if (!sheet || root.dataset.closing || state.dialogFresh || sheet.dataset.kind !== kind) {
       delete root.dataset.closing;
-      const label = kind === "manager" ? 'aria-labelledby="dlg-title"' : 'aria-label="Activity details"';
-      root.innerHTML = `<div class="scrim" data-act="scrim"><div class="sheet${kind === "manager" ? " narrow" : ""}" data-kind="${kind}" role="dialog" aria-modal="true" ${label} tabindex="-1">
+      const label = kind === "sheet" ? 'aria-label="Activity details"' : 'aria-labelledby="dlg-title"';
+      root.innerHTML = `<div class="scrim" data-act="scrim"><div class="sheet${kind === "sheet" ? "" : " narrow"}" data-kind="${kind}" role="dialog" aria-modal="true" ${label} tabindex="-1">
         <div class="grab" aria-hidden="true"></div>
         <header class="sheet-head${kind === "manager" ? " tall" : ""}">${parts.head}</header>
         <div class="sheet-body">${parts.body}</div>
@@ -1665,7 +1797,9 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       if (fresh) {
         const fv = state.sheetFocus && $(`[data-field="${state.sheetFocus}"]`, sheet);
         const f = fv && fv.hidden ? $(`.dp-trigger[data-for="${state.sheetFocus}"]`, sheet) : fv;
-        if (f) { f.focus({ preventScroll: true }); f.classList.add("flash"); } else sheet.focus({ preventScroll: true });
+        const addInput = kind === "add" && $("#add-title", sheet);
+        if (addInput) addInput.focus({ preventScroll: true });
+        else if (f) { f.focus({ preventScroll: true }); f.classList.add("flash"); } else sheet.focus({ preventScroll: true });
         state.sheetFocus = null;
       }
     } else {
@@ -1682,20 +1816,31 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     state.cal.open = null;
     if (focusField === "plannedFor") { const it = find(id); openCal("plannedFor", it && it.plannedFor); }
     state.sheet = id; state.sheetFocus = focusField || null; state.sheetLeave = false; state.manager = false; state.dialogFresh = true; render(); }
-  function openManager() { closePop(); state.managerReturn = state.sheet; state.sheet = null; state.manager = true; state.catConfirm = null; state.dialogFresh = true; render(); }
+  function openManager() {
+    // Coming from the add sheet: keep what was typed for when it comes back.
+    if (state.adding) { const i = $("#add-title"); state.addPrefill = i ? i.value : ""; }
+    closePop(); state.managerReturn = state.sheet; state.managerReturnAdd = state.adding; state.adding = false; state.sheet = null; state.manager = true; state.catConfirm = null; state.dialogFresh = true; render(); }
+  function openAdd(prefill) {
+    if (!state.canWrite) return;
+    closePop(); closeSwipe();
+    state.adding = true; state.addNeedsCat = false; state.addPrefill = prefill || ""; state.sheet = null; state.manager = false; state.dialogFresh = true;
+    render();
+  }
   function closeDialog(force) {
-    if (!state.sheet && !state.manager) return;
+    if (!state.sheet && !state.manager && !state.adding) return;
     // Ask before throwing away typed changes.
     if (!force && state.sheet && state.canWrite && Object.keys(sheetChanges()).length) { state.sheetLeave = true; render(); return; }
     state.sheetLeave = false;
     if (state.manager && state.managerReturn && find(state.managerReturn)) { const back = state.managerReturn; state.managerReturn = null; openSheet(back); return; }
-    const backSel = state.sheet ? `[data-act="open-sheet"][data-id="${CSS.escape(state.sheet)}"]` : "#filter-cat";
-    state.sheet = null; state.manager = false; state.managerReturn = null; state.catConfirm = null;
+    if (state.manager && state.managerReturnAdd) { state.managerReturnAdd = false; state.manager = false; openAdd(state.addPrefill); return; }
+    const backSel = state.sheet ? `[data-act="open-sheet"][data-id="${CSS.escape(state.sheet)}"]` : state.adding ? "#fab" : "#filter-cat";
+    state.sheet = null; state.manager = false; state.managerReturn = null; state.managerReturnAdd = false; state.catConfirm = null;
+    state.adding = false; state.addNeedsCat = false; state.paste = null;
     closePop();
     const root = $("#dialog-root"), scrim = $(".scrim", root);
     if (scrim) {
       root.dataset.closing = "1"; scrim.classList.remove("open");
-      setTimeout(() => { if (root.dataset.closing && !state.sheet && !state.manager) { delete root.dataset.closing; root.innerHTML = ""; } }, 260);
+      setTimeout(() => { if (root.dataset.closing && !state.sheet && !state.manager && !state.adding) { delete root.dataset.closing; root.innerHTML = ""; } }, 260);
     }
     render();
     const back = document.querySelector(backSel); if (back) back.focus({ preventScroll: true });
@@ -1709,7 +1854,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       for (const it of c.items) { const k = resolveCat(it); if (k && k.id) counts[k.id] = (counts[k.id] || 0) + 1; else if (!k) none++; }
       return { cur: state.catFilter, opts: [{ v: "", label: "All categories", count: c.total, all: true }, ...cats.map((k) => ({ v: k.id, label: k.name, dot: catVar(k), cat: k, count: counts[k.id] || 0 })), ...(none || state.catFilter === "none" ? [{ v: "none", label: "No category", count: none }] : [])] };
     }
-    const cur = kind === "composer-cat" ? state.composerCat : ((resolveCat(find(state.sheet)) || {}).id || "");
+    const cur = (resolveCat(find(state.sheet)) || {}).id || "";
     return { cur, opts: cats.map((k) => ({ v: k.id, label: k.name, dot: catVar(k), cat: k })) };
   }
   function popHTML(c) {
@@ -1756,7 +1901,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   function closePop(returnFocus) {
     if (!state.pop) return;
     const anchor = state.pop.anchor;
-    state.pop = null; state.pendingAdd = null;
+    state.pop = null;
     const pop = $("#pop"); pop.classList.remove("in"); pop.hidden = true; pop.innerHTML = "";
     syncAnchors();
     if (returnFocus) { const a = document.querySelector(`[data-pop-anchor="${CSS.escape(anchor)}"]`); if (a) a.focus({ preventScroll: true }); }
@@ -1822,9 +1967,6 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     gd.style.flexGrow = d; gp.style.flexGrow = p; gt.style.flexGrow = c.total ? t : 1;
     gd.hidden = !d; gp.hidden = !p; gt.hidden = !!c.total && !t;
     $("#legend").innerHTML = loading ? "&nbsp;" : `<span><i style="background:var(--done)"></i><b>${d}</b> done</span><span><i style="background:var(--gold)"></i><b>${p}</b> planned</span><span><i style="background:var(--line-2)"></i><b>${t}</b> to go</span>`;
-    $("#pct").textContent = c.total ? `${Math.round((d / c.total) * 100)}% complete` : "";
-    const first = c.items.reduce((m, x) => (x.createdAt > 1e12 && x.createdAt < m ? x.createdAt : m), Infinity);
-    $("#since").textContent = isFinite(first) ? `Since ${new Date(first).toLocaleDateString(undefined, { month: "short", year: "numeric" })}` : "";
 
     // notice
     let n = "";
@@ -1833,18 +1975,15 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     else if (state.mode === "db" && !state.canWrite) n = "You can view this list. To add or tick off activities, ask the owner to share it with you as an Editor.";
     $("#notice").innerHTML = n ? `${ICON.info}<span>${esc(n)}</span>` : ""; $("#notice").hidden = !n;
 
-    // composer + paste
-    $("#add-area").hidden = !state.canWrite || loading || state.mode === "unavailable";
-    $("#composer-cat").innerHTML = catLabel(catById(state.composerCat), "Select Category") + ICON.chev;
-    renderPaste();
+    $("#fab").hidden = !state.canWrite || loading || state.mode === "unavailable";
 
     // toolbar
     const fil = (arr) => arr.filter(matchesCat).length;
     const counts = { todo: fil(c.by.todo), planned: fil(c.by.planned), done: fil(c.by.done) };
-    counts.all = counts.todo + counts.planned + counts.done;
     $$("#tabs [data-act='tab']").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.v === state.filter)));
     $$("#tabs [data-n]").forEach((s) => (s.textContent = loading ? "" : counts[s.dataset.n]));
     syncSeg($("#tabs"));
+    $("#list-title").innerHTML = `${TAB_NAMES[state.filter]} <span class="n">${loading ? "" : counts[state.filter]}</span>`;
     const fc = state.catFilter === "none" ? null : catById(state.catFilter);
     $("#filter-cat").innerHTML = (state.catFilter === "none" ? `<i class="dot hollow"></i><span class="pl">No category</span>` : fc ? catLabel(fc) : `<span class="pl">All categories</span>`) + ICON.chev;
     $("#filter-cat").hidden = loading || state.mode === "unavailable";
@@ -1860,23 +1999,35 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     renderChanges();
     fillAvatars();
   }
-  function renderPaste() {
-    const el = $("#paste");
-    if (!state.paste || !state.paste.length) { el.hidden = true; el.innerHTML = ""; return; }
-    const lines = state.paste, cat = catById(state.composerCat);
-    el.hidden = false;
-    el.innerHTML = `<div class="paste-head"><strong>Add ${plural(lines.length, "activity", "activities")}?</strong><span>From your paste${cat ? ` · into ${esc(cat.name)}` : ""}</span></div>
-      <ol>${lines.slice(0, 6).map((l) => `<li>${esc(l)}</li>`).join("")}${lines.length > 6 ? `<li class="more">and ${lines.length - 6} more</li>` : ""}</ol>
-      <div class="paste-actions"><button type="button" class="btn sm ghost" data-act="paste-cancel">Cancel</button><button type="button" class="btn sm primary" data-act="paste-add">Add all ${lines.length}</button></div>`;
-  }
+  const TAB_NAMES = { todo: "To do", planned: "Planned", done: "Stamps" };
 
   /* ---------- actions ---------- */
   // New activities need a category (unless the list has none yet).
   function needsCategory() { return !catById(state.composerCat) && sortedCats().length > 0; }
-  function askForCategory(kind) {
-    openPop("composer-cat", "composer-cat");
-    state.pendingAdd = kind;
-    toast("Pick a category to add it.");
+  function askForCategory() {
+    state.addNeedsCat = true; render();
+    const first = $("#dialog-root .add-cat"); if (first) first.focus({ preventScroll: true });
+    announce("Pick a category to add it.");
+  }
+  // After adding, show the new activity in To do.
+  function showAdded() {
+    if (state.filter !== "todo") { state.filter = "todo"; safeSet("bucketlist.filter", "todo"); }
+    state.composerCat = "";
+    render();
+  }
+  async function addFromSheet() {
+    const inp = $("#add-title"); if (!inp) return;
+    const title = inp.value.replace(/\s+/g, " ").trim();
+    if (!title) { inp.focus(); return; }
+    if (needsCategory()) { askForCategory(); return; }
+    const cat = state.composerCat;
+    inp.value = ""; closeDialog(true);
+    const id = await add("activities", baseItem(title.slice(0, 200), cat));
+    if (!id) { openAdd(title); return; }
+    showAdded();
+    const row = $(`#list [data-row="${CSS.escape(id)}"]`);
+    if (row && !reduceMotion()) row.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    toast(`Added “${title.slice(0, 60)}” to To do`);
   }
   function baseItem(title, categoryId, i = 0) {
     return { title, categoryId: categoryId || null, category: "", notes: "", status: "todo", plannedFor: null, doneOn: null, doneAt: null, memory: "", createdAt: Date.now() + i, addedBy: state.me || null, doneBy: null };
@@ -1969,6 +2120,25 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     const id = b.dataset.id, item = id ? find(id) : null;
     const tid = b.dataset.task, task = item && tid ? tasksOf(item).find((x) => x.id === tid) : null;
     switch (act) {
+      case "next-toggle": {
+        // Opens in place: flip the class so the height animates, without redrawing the card.
+        state.nextOpen = !state.nextOpen;
+        const doc = b.closest(".doc"), more = $("#next-more");
+        if (doc) doc.classList.toggle("open", state.nextOpen);
+        b.setAttribute("aria-expanded", String(state.nextOpen));
+        if (more) more.inert = !state.nextOpen;
+        break;
+      }
+      case "open-add": openAdd(); break;
+      case "add-cat": {
+        const v = b.dataset.v;
+        state.composerCat = state.composerCat === v ? "" : v; state.addNeedsCat = false;
+        const typing = document.activeElement && document.activeElement.id === "add-title";
+        render();
+        if (!typing) { const nb = $(`#dialog-root .add-cat[data-v="${CSS.escape(v)}"]`); if (nb) nb.focus({ preventScroll: true }); }
+        break;
+      }
+      case "add-submit": addFromSheet(); break;
       case "tab":
         closeSwipe();
         state.filter = b.dataset.v; safeSet("bucketlist.filter", state.filter); render();
@@ -1988,16 +2158,8 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       }
       case "opt": {
         const p = state.pop, v = b.dataset.v; if (!p) break;
-        const pending = state.pendingAdd;
         closePop(true);
-        if (p.kind === "composer-cat") {
-          state.composerCat = v; render();
-          // Picked because Add was pressed without a category: finish adding.
-          if (pending === "single") { const f = $("#composer"); f.requestSubmit ? f.requestSubmit() : f.dispatchEvent(new Event("submit", { cancelable: true })); }
-          else if (pending === "paste") { const btn = $('[data-act="paste-add"]'); if (btn) btn.click(); }
-          else $("#new-title").focus();
-        }
-        else if (p.kind === "filter-cat") { state.catFilter = v; safeSet("bucketlist.cat", v); state.suggestion = null; render(); }
+        if (p.kind === "filter-cat") { state.catFilter = v; safeSet("bucketlist.cat", v); state.suggestion = null; render(); }
         else if (p.kind === "sheet-cat") { const it = find(state.sheet); if (it) await updateItem(it.id, { categoryId: v || null, category: "" }); }
         break;
       }
@@ -2016,7 +2178,8 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
         if (!item) break;
         state.heroStamp = id; state.heroT0 = Date.now(); state.heroLeave = 0;
         setTimeout(() => { if (state.heroStamp === id) { state.heroLeave = Date.now(); render(); } }, 1500);
-        setTimeout(() => { if (state.heroStamp === id) { state.heroStamp = null; state.heroLeave = 0; state.docEnter = Date.now(); render(); } }, 1780);
+        // The next adventure arrives folded.
+        setTimeout(() => { if (state.heroStamp === id) { state.heroStamp = null; state.heroLeave = 0; state.docEnter = Date.now(); state.nextOpen = false; render(); } }, 1780);
         complete(item, null); break;
       }
       case "pick": {
@@ -2109,14 +2272,14 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       }
       case "sheet-save": saveSheet(b.dataset.close === "1"); break;
       case "sheet-discard": closeDialog(true); break;
-      case "paste-cancel": state.paste = null; render(); $("#new-title").focus(); break;
+      case "paste-cancel": { state.paste = null; render(); const i = $("#add-title"); if (i) i.focus(); break; }
       case "paste-add": {
-        if (needsCategory()) { askForCategory("paste"); break; }
+        if (needsCategory()) { askForCategory(); break; }
         const lines = state.paste || [], cat = state.composerCat;
-        state.paste = null; state.composerCat = ""; render();
+        state.paste = null; closeDialog(true);
         let ok = 0;
         for (let i = 0; i < lines.length; i++) { if (await add("activities", baseItem(lines[i], cat, i))) ok++; else break; }
-        if (ok) { toast(`Added ${plural(ok, "activity", "activities")}`); if (state.filter !== "all") { state.filter = "todo"; safeSet("bucketlist.filter", "todo"); render(); } }
+        if (ok) { showAdded(); toast(`Added ${plural(ok, "activity", "activities")} to To do`); }
         break;
       }
 
@@ -2145,7 +2308,9 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
         if (used.has(color)) color = (state.cats.length % COLORS) + 1;
         const order = state.cats.reduce((m, k) => Math.max(m, Number(k.order) || 0), 0) + 1;
         input.value = ""; input.defaultValue = "";
-        if (!(await add("categories", { name, color, order }))) { const i = $("#cat-new"); if (i) i.value = name; }
+        const nid = await add("categories", { name, color, order });
+        if (!nid) { const i = $("#cat-new"); if (i) i.value = name; }
+        else if (state.managerReturnAdd) state.composerCat = nid;
         focusKey("cat:new"); break;
       }
       case "cat-del": state.catConfirm = b.dataset.cat; render(); break;
@@ -2162,12 +2327,12 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   document.addEventListener("keydown", (ev) => {
     const t = ev.target;
     if (ev.key === "Escape") {
-      if (state.swipeOpen && !state.sheet && !state.manager) { closeSwipe(); return; }
+      if (state.swipeOpen && !state.sheet && !state.manager && !state.adding) { closeSwipe(); return; }
       if (state.pop) { ev.preventDefault(); closePop(true); }
       else if (state.catConfirm) { state.catConfirm = null; render(); }
       else if (state.sheetLeave) { state.sheetLeave = false; render(); }
-      else if (state.sheet || state.manager) closeDialog();
-      else if (state.paste) { state.paste = null; render(); }
+      else if (state.adding && state.paste) { state.paste = null; render(); }
+      else if (state.sheet || state.manager || state.adding) closeDialog();
       return;
     }
     if (state.pop && t.closest && t.closest("#pop")) {
@@ -2179,11 +2344,12 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     }
     if ((ev.metaKey || ev.ctrlKey) && (ev.key === "s" || ev.key === "S") && state.sheet) { ev.preventDefault(); saveSheet(false); return; }
     const typing = t.matches && t.matches("input, textarea, select, [contenteditable]");
-    if (!typing && !ev.metaKey && !ev.ctrlKey && !ev.altKey && (ev.key === "n" || ev.key === "N") && !state.sheet && !state.manager && !$("#add-area").hidden) {
-      ev.preventDefault(); $("#new-title").focus(); return;
+    if (!typing && !ev.metaKey && !ev.ctrlKey && !ev.altKey && (ev.key === "n" || ev.key === "N") && !state.sheet && !state.manager && !state.adding && !$("#fab").hidden) {
+      ev.preventDefault(); openAdd(); return;
     }
     if (ev.key !== "Enter" || !t.matches) return;
-    if (t.matches("[data-key^='task:']")) { ev.preventDefault(); const btn = t.parentElement.querySelector("[data-act='task-add']"); if (btn) btn.click(); }
+    if (t.id === "add-title") { ev.preventDefault(); addFromSheet(); }
+    else if (t.matches("[data-key^='task:']")) { ev.preventDefault(); const btn = t.parentElement.querySelector("[data-act='task-add']"); if (btn) btn.click(); }
     else if (t.id === "cat-new") { ev.preventDefault(); const btn = $("[data-act='cat-add']"); if (btn) btn.click(); }
     else if (t.matches("[data-cat-name]")) { ev.preventDefault(); t.blur(); }
     else if (t.matches("#dialog-root .title-input, #dialog-root input.fp")) { ev.preventDefault(); saveSheet(false); }
@@ -2198,24 +2364,17 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   addEventListener("resize", () => { placePop(); $$(".seg").forEach(syncSeg); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { $$(".seg").forEach(syncSeg); redrawAll(); });
 
-  $("#composer").addEventListener("submit", async (ev) => {
-    ev.preventDefault();
-    const inp = $("#new-title"), title = inp.value.replace(/\s+/g, " ").trim();
-    if (!title) { inp.focus(); return; }
-    if (needsCategory()) { askForCategory("single"); return; }
-    inp.value = "";
-    if (await add("activities", baseItem(title.slice(0, 200), state.composerCat))) {
-      state.composerCat = "";
-      if (state.filter === "planned" || state.filter === "done") { state.filter = "todo"; safeSet("bucketlist.filter", "todo"); }
-      render();
-    } else inp.value = title;
-    inp.focus();
-  });
-  $("#new-title").addEventListener("paste", (ev) => {
+  // Pasting several lines into the add sheet offers to add them all.
+  document.addEventListener("paste", (ev) => {
+    if (!ev.target || ev.target.id !== "add-title") return;
     const text = (ev.clipboardData && ev.clipboardData.getData("text")) || "";
     const lines = text.split(/\r?\n/).map(cleanLine).filter(Boolean).map((l) => l.slice(0, 200));
     if (lines.length < 2) return;
-    ev.preventDefault(); state.paste = lines; renderPaste();
+    ev.preventDefault(); state.paste = lines; render();
+  });
+  // Picking a category keeps the cursor (and the phone keyboard) in the name box.
+  document.addEventListener("mousedown", (ev) => {
+    if (ev.target.closest && ev.target.closest(".add-cat:not(.new)") && document.activeElement && document.activeElement.id === "add-title") ev.preventDefault();
   });
 
   /* ---------- swipe left to delete, like Apple's lists ---------- */
