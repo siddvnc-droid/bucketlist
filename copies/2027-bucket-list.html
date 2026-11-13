@@ -2123,12 +2123,14 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   function popHTML(c) {
     const p = state.pop;
     if (p.kind === "add-cal") {
-      // Calendar files can't be handed over from inside claude.ai, so there it's Google only.
-      const ics = !inFrame();
+      // Calendar files can't be handed over from inside claude.ai, and iPhones and iPads won't take
+      // one made by the page (the screen just hangs), so there it's Google only.
+      const iphone = appleMobile(), ics = !inFrame() && !iphone;
       return `<div role="menu" aria-label="Add to calendar">
         ${ics ? `<button type="button" class="opt" role="menuitem" data-act="cal-apple" data-id="${esc(p.cat)}">${ICON.calAdd}<span class="ol">Apple Calendar</span></button>` : ""}
         <button type="button" class="opt" role="menuitem" data-act="cal-google" data-id="${esc(p.cat)}">${ICON.calAdd}<span class="ol">Google Calendar</span></button>
-      </div>${ics ? `<div class="pop-note">Apple Calendar also works with Outlook. Reminds you the day before.</div>` : ""}`;
+      </div>${ics ? `<div class="pop-note">Apple Calendar also works with Outlook. Reminds you the day before.</div>`
+        : iphone ? `<div class="pop-note">Shows in your Calendar app too once your Google account is added to Calendar in Settings.</div>` : ""}`;
     }
     if (p.kind === "color") {
       const k = catById(p.cat), cur = k ? colorIndex(k) : 0, icon = catIconKey(k);
@@ -2938,6 +2940,8 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
 
   /* ---------- add to calendar ---------- */
   const inFrame = () => { try { return window.top !== window; } catch { return true; } };
+  // iPhones and iPads (iPads say they're a Mac, but have a touch screen).
+  const appleMobile = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
   // The date shown in the details panel (even before Save), else the saved one.
   function plannedDateOf(item) {
     const inp = state.sheet === item.id && $('#dialog-root [data-field="plannedFor"]');
