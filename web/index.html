@@ -2685,13 +2685,13 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
   });
 
   // Planning from the list: it moves to Planned and its details open on the calendar.
+  // No undo message: Cancel plan in the details does the same.
   async function planFromRow(item) {
     const id = item.id, prev = statusOf(item);
     state.swipeOpen = null;
     state.filter = "planned"; safeSet("bucketlist.filter", "planned");
     if (prev !== "planned" && !(await updateItem(id, { status: "planned" }))) { render(); return; }
     openSheet(id, "plannedFor", true);
-    if (prev !== "planned") toast(`Moved “${item.title}” to Planned`, () => updateItem(id, { status: prev }));
   }
   function swipePlan(id, li) {
     const item = find(id); if (!item) return;
