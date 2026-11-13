@@ -971,6 +971,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     adding: false, addNeedsCat: false, addPrefill: "",  // the add sheet
     nextOpen: false,           // Next up opened in place
     sheet: null,
+    sheetPlanning: false,      // the open details are for planning: Plan (save and close) replaces We did it
     changes: { events: [], seenAt: null, dismissed: false, all: false, hiddenAt: 0 },  // "While you were away"
     manager: false, managerReturn: null, managerReturnAdd: false, catConfirm: null,
     dialogFresh: false,
@@ -1941,7 +1942,9 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       <div class="prop-card">${rows}</div>
       ${st === "planned" || tasks.length ? `<section class="sheet-cl">${checklistHTML(item, "sheet")}</section>` : ""}`;
     const actions = !w ? ""
-      : st === "planned" ? `<button type="button" class="btn primary" data-act="set-status" data-v="done">${ICON.check} We did it</button><button type="button" class="btn" data-act="cancel-plan" data-id="${id}">${ICON.x} Cancel plan</button>`
+      : st === "planned" ? `${state.sheetPlanning
+          ? `<button type="button" class="btn primary" data-act="close-dialog">${ICON.cal} Plan</button>`
+          : `<button type="button" class="btn primary" data-act="set-status" data-v="done">${ICON.check} We did it</button>`}<button type="button" class="btn" data-act="cancel-plan" data-id="${id}">${ICON.x} Cancel plan</button>`
       : st === "done" ? `<button type="button" class="btn ghost" data-act="unstamp" data-id="${id}">${ICON.undo} Remove stamp</button>` : "";
     const foot = `<div class="foot-meta">${w ? `<span class="save-state" id="save-state" data-s="${state.saveState}">${saveStateHTML(state.saveState)}</span>` : ""}${who}</div>
       ${w && state.sheetLeave ? `<span class="foot-confirm">Couldn't save your changes.<button type="button" class="btn sm ghost" data-act="sheet-discard">Discard</button><button type="button" class="btn sm primary" data-act="sheet-save" data-close="1">Try again</button></span>`
@@ -2062,12 +2065,14 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     window.visualViewport.addEventListener("resize", fitToKeyboard);
     window.visualViewport.addEventListener("scroll", fitToKeyboard);
   }
-  function openSheet(id, focusField) {
+  // `planning`: the details opened to plan the activity, so the main button is Plan (save and
+  // close) rather than We did it.
+  function openSheet(id, focusField, planning) {
     closePop(); closeSwipe();
     state.cal.open = null;
     if (focusField === "plannedFor") { const it = find(id); openCal("plannedFor", it && it.plannedFor); }
     state.saveState = "idle";
-    state.sheet = id; state.sheetFocus = focusField || null; state.sheetLeave = false; state.manager = false; state.dialogFresh = true; render(); }
+    state.sheet = id; state.sheetFocus = focusField || null; state.sheetPlanning = !!planning; state.sheetLeave = false; state.manager = false; state.dialogFresh = true; render(); }
   function openManager() {
     // Leaving the details for the categories: save what was typed first.
     if (state.sheet && state.canWrite && Object.keys(sheetChanges()).length) saveSheet(false, true);
@@ -2089,7 +2094,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       return;
     }
     state.sheetLeave = false;
-    if (state.manager && state.managerReturn && find(state.managerReturn)) { const back = state.managerReturn; state.managerReturn = null; openSheet(back); return; }
+    if (state.manager && state.managerReturn && find(state.managerReturn)) { const back = state.managerReturn; state.managerReturn = null; openSheet(back, null, state.sheetPlanning); return; }
     if (state.manager && state.managerReturnAdd) { state.managerReturnAdd = false; state.manager = false; openAdd(state.addPrefill); return; }
     const backSel = state.sheet ? `[data-act="open-sheet"][data-id="${CSS.escape(state.sheet)}"]` : state.adding ? "#fab" : "#filter-cat";
     state.sheet = null; state.manager = false; state.managerReturn = null; state.managerReturnAdd = false; state.catConfirm = null;
@@ -2460,7 +2465,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
       case "close-dialog": closeDialog(); break;
       case "unstamp": if (item && statusOf(item) === "done") uncomplete(item); break;
       case "cancel-plan": if (item && statusOf(item) === "planned") cancelPlan(item); break;
-      case "reschedule": if (item) openSheet(id, "plannedFor"); break;
+      case "reschedule": if (item) openSheet(id, "plannedFor", true); break;
       case "hero-done": {
         if (!item) break;
         state.heroStamp = id; state.heroT0 = Date.now(); state.heroLeave = 0;
@@ -2490,10 +2495,11 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
         render(); break;
       }
       case "clear-pick": state.suggestion = null; render(); break;
-      case "plan-pick": if (item) { state.suggestion = null; if (await updateItem(id, { status: "planned" })) openSheet(id); } break;
+      case "plan-pick": if (item) { state.suggestion = null; if (await updateItem(id, { status: "planned" })) openSheet(id, null, true); } break;
       case "set-status": {
         const it = find(state.sheet), v = b.dataset.v; if (!it || statusOf(it) === v) break;
         state.cal.open = null;
+        if (v === "planned") state.sheetPlanning = true;
         // Planning from the sheet opens the calendar, the same as the Plan button on a row.
         if (v === "planned" && !validISO(it.plannedFor)) openCal("plannedFor", null);
         // Keep anything typed but not yet saved (a date, plan notes) by saving it with the status.
@@ -2665,7 +2671,7 @@ canvas.snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-even
     state.swipeOpen = null;
     state.filter = "planned"; safeSet("bucketlist.filter", "planned");
     if (prev !== "planned" && !(await updateItem(id, { status: "planned" }))) { render(); return; }
-    openSheet(id, "plannedFor");
+    openSheet(id, "plannedFor", true);
     if (prev !== "planned") toast(`Moved “${item.title}” to Planned`, () => updateItem(id, { status: prev }));
   }
   function swipePlan(id, li) {
